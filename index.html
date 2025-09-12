@@ -38,9 +38,10 @@ body {
   z-index: -1;
 }
 
+/* Aumentado o tamanho máximo do container para melhor aproveitar o espaço */
 .winamp-container {
-  width: min(600px, 90vw);
-  max-height: 90vh;
+  width: min(1000px, 95vw); /* Aumentado de 600px para 1000px */
+  max-height: 95vh;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -140,14 +141,18 @@ body {
   font-size: clamp(12px, 2.5vw, 16px);
 }
 
+/* ########## MUDANÇA PRINCIPAL: LAYOUT FLEX PARA LISTA E PLAYER ########## */
 .main { 
   display: flex; 
-  flex-direction: column;
+  flex-direction: row; /* Coloca os itens lado a lado */
   gap: 10px; 
+  align-items: flex-start; /* Alinha os itens no topo */
 }
 
+/* Lista de músicas (esquerda) */
 .sidebar { 
-  height: min(300px, 30vh);
+  flex: 1; /* Ocupa o espaço disponível */
+  height: 45vh; /* Altura fixa para permitir rolagem interna */
   background: #000000; 
   padding: 8px;
   overflow-y: auto; 
@@ -155,6 +160,20 @@ body {
   font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
 }
+
+/* Player (direita) */
+.player { 
+  flex: 1; /* Ocupa o espaço disponível */
+  min-width: 280px; /* Largura mínima para não espremer o conteúdo */
+  background: #000000; 
+  padding: 12px;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  border: 1px solid #444444; 
+  position: relative; 
+}
+/* ########## FIM DA MUDANÇA PRINCIPAL ########## */
 
 .artist-title { 
   font-weight: bold; 
@@ -190,16 +209,6 @@ body {
   background: #000066; 
   color: #ffcc00;
   font-weight: bold; 
-}
-
-.player { 
-  background: #000000; 
-  padding: 12px;
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  border: 1px solid #444444; 
-  position: relative; 
 }
 
 .cover-art { 
@@ -372,15 +381,19 @@ body {
   background: #555555; 
 }
 
-/* Ajustes para telas muito pequenas */
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
+/* Ajustes para telas médias e pequenas (tablets e celulares) */
+@media (max-width: 768px) {
+  .main {
+    flex-direction: column; /* Volta para o layout de coluna */
   }
   
-  .winamp-container {
-    width: 95vw;
-    gap: 8px;
+  .sidebar {
+    height: 35vh; /* Ajusta a altura da lista de músicas */
+    width: 100%;
+  }
+  
+  .player {
+    width: 100%;
   }
   
   .header {
@@ -395,16 +408,6 @@ body {
   
   .search-box {
     min-width: 100%;
-  }
-  
-  .player-controls {
-    gap: 3px;
-  }
-  
-  #volumeControl {
-    margin-left: 0;
-    margin-top: 5px;
-    width: 100px;
   }
   
   .progress-container {
@@ -431,7 +434,7 @@ body {
         <div class="titlebar-button">□</div>
         <div class="titlebar-button">×</div>
       </div>
-      <div class="titlebar-text">Winamp</div>
+      <div class="titlebar-text">Caverna do Rock Player</div>
       <div class="titlebar-buttons">
         <div class="titlebar-button">—</div>
       </div>
@@ -446,6 +449,8 @@ body {
           <input type="text" id="searchInput" placeholder="Buscar...">
         </div>
       </div>
+      
+      <!-- A estrutura do .main agora controla o layout lado a lado -->
       <div class="main">
         <div class="sidebar" id="sidebar">
           <div class="format-filters" id="formatFilters"></div>
@@ -471,11 +476,13 @@ body {
           <div id="track-info"></div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
+// SEU CÓDIGO JAVASCRIPT PERMANECE O MESMO AQUI
 // Configurações
 var ALLOWED_EXT=['mp3','wav','ogg','flac','mp4'];
 var IMAGE_EXT=['jpg','jpeg','png','gif'];
@@ -483,7 +490,7 @@ var tracks=[], allTracks=[], currentTrack=0, currentFormat='mp3';
 var shuffle=false, repeat=false;
 var isSeeking = false;
 
-var audioPlayer=document.getElementById('audio-player');
+var audioPlayer=document.getElementById('audio-player' );
 var resultsContainer=document.getElementById('results');
 var trackInfo=document.getElementById('track-info');
 var coverArt=document.getElementById('cover-art');
@@ -511,7 +518,7 @@ var outrosUsuarios = [
   "https://archive.org/details/100-hits-rock-jukebox-2016"
 ];
 
-var albumLinks = minhaColecao.concat(outrosUsuarios);
+var albumLinks = minhaColecao.concat(outrosUsuarios );
 
 // Estrutura de dados
 var albumsData = {}; // artista → [{title, year, cover, tracks}]
@@ -548,7 +555,7 @@ function carregarAlbuns(){
   albumLinks.forEach(link=>{
     var id=link.split('/').pop();
     var xhr=new XMLHttpRequest();
-    xhr.open('GET','https://archive.org/metadata/'+id,true);
+    xhr.open('GET','https://archive.org/metadata/'+id,true );
     xhr.onreadystatechange=function(){
       if(xhr.readyState===4 && xhr.status===200){
         var data=JSON.parse(xhr.responseText);
@@ -568,14 +575,14 @@ function carregarAlbuns(){
           var ext=f.name.split('.').pop().toLowerCase();
           if(IMAGE_EXT.includes(ext)){
             if(/cover|folder|front/i.test(f.name)){
-              coverUrl='https://archive.org/download/'+id+'/'+encodeURIComponent(f.name);
+              coverUrl='https://archive.org/download/'+id+'/'+encodeURIComponent(f.name );
               document.querySelector('.album-background').style.backgroundImage = `url('${coverUrl}')`;
             }
           }
           if(ALLOWED_EXT.includes(ext)){
             var track={
               title:f.name,
-              url:'https://archive.org/download/'+id+'/'+encodeURIComponent(f.name),
+              url:'https://archive.org/download/'+id+'/'+encodeURIComponent(f.name ),
               type:(ext==='mp4'?'video':'audio'),
               artist:artist,
               album:albumTitle,
