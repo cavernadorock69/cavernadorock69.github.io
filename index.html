@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock Player - Winamp Style</title>
+<title>Caverna do Rock 69</title>
 <style>
 * {
   box-sizing: border-box;
@@ -440,7 +440,7 @@ body {
         <div class="titlebar-button">□</div>
         <div class="titlebar-button">×</div>
       </div>
-      <div class="titlebar-text">Caverna do Rock Player</div>
+      <div class="titlebar-text">Caverna do Rock 69</div>
       <div class="titlebar-buttons">
         <div class="titlebar-button">—</div>
       </div>
@@ -650,13 +650,32 @@ function renderAll(){
   applySearchFilter();
 }
 
+// ########## FUNÇÃO DE RENDERIZAÇÃO COM ORDENAÇÃO ##########
 function albumLinksRender(linksArray){
-  const sortedArtists = Object.keys(albumsData).sort();
+  // Pega todos os artistas que têm álbuns na lista de links fornecida
+  const artistsInScope = Object.keys(albumsData).filter(artist => 
+    albumsData[artist].some(album => 
+      linksArray.some(link => 
+        album.tracks.some(t => t.url.includes(link.split('/').pop()))
+      )
+    )
+  );
 
-  sortedArtists.forEach(artist => {
+  // 1. Ordena os artistas alfabeticamente
+  artistsInScope.sort((a, b) => a.localeCompare(b));
+
+  artistsInScope.forEach(artist => {
+    // Pega os álbuns do artista que estão no escopo atual
     const artistAlbums = albumsData[artist]
-      .filter(album => linksArray.some(link => album.tracks.some(t => t.url.includes(link.split('/').pop()))))
-      .sort((a, b) => a.year - b.year || a.title.localeCompare(b.title));
+      .filter(album => linksArray.some(link => album.tracks.some(t => t.url.includes(link.split('/').pop()))));
+
+    // 2. Ordena os álbuns por ano (e depois por título, como desempate)
+    artistAlbums.sort((a, b) => {
+      if (a.year !== b.year) {
+        return a.year - b.year;
+      }
+      return a.title.localeCompare(b.title);
+    });
 
     artistAlbums.forEach(album => {
       const albumContainer = document.createElement('div');
@@ -693,7 +712,6 @@ function albumLinksRender(linksArray){
   });
 }
 
-// ########## FUNÇÃO DE BUSCA CORRIGIDA E MELHORADA ##########
 function applySearchFilter() {
   const term = searchInput.value.toLowerCase();
   const allAlbumContainers = resultsContainer.getElementsByClassName('album-container');
@@ -702,17 +720,15 @@ function applySearchFilter() {
     const artistMatch = container.dataset.artist.includes(term);
     const albumMatch = container.dataset.album.includes(term);
     
-    // Se a busca corresponde ao artista ou ao álbum, todas as faixas devem ser visíveis.
     if (artistMatch || albumMatch) {
       const tracksInContainer = container.getElementsByClassName('track-item');
       for (let trackEl of tracksInContainer) {
         trackEl.style.display = 'block';
       }
       container.style.display = 'block';
-      continue; // Pula para o próximo container de álbum
+      continue;
     }
 
-    // Se não, verifica cada faixa individualmente.
     let hasVisibleTrack = false;
     const tracksInContainer = container.getElementsByClassName('track-item');
     for (let trackEl of tracksInContainer) {
@@ -725,7 +741,6 @@ function applySearchFilter() {
       }
     }
     
-    // Mostra o container do álbum apenas se ele tiver uma faixa visível.
     container.style.display = hasVisibleTrack ? 'block' : 'none';
   }
 }
