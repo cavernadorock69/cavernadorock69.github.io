@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock 69</title>
+<title>Caverna do Rock Player - Winamp Style</title>
 <style>
 * {
   box-sizing: border-box;
@@ -217,11 +217,8 @@ body {
   font-weight: bold; 
 }
 
-/* ########## AJUSTE FINAL DA CAPA DO ÁLBUM ########## */
-#cover-art { 
-  width: 150px;  /* Largura fixa */
-  height: 150px; /* Altura fixa */
-  object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+.cover-art { 
+  max-width: min(120px, 25vw);
   display: none; 
   margin-bottom: 12px;
   border: 1px solid #444444; 
@@ -442,7 +439,7 @@ body {
         <div class="titlebar-button">□</div>
         <div class="titlebar-button">×</div>
       </div>
-      <div class="titlebar-text">Caverna do Rock 69</div>
+      <div class="titlebar-text">Caverna do Rock Player</div>
       <div class="titlebar-buttons">
         <div class="titlebar-button">—</div>
       </div>
