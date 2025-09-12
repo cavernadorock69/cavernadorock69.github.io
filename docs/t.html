@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caverna do Rock Player - Winamp Style</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body { 
+  margin: 0; 
+  padding: 20px;
+  font-family: "Arial", "MS Sans Serif", sans-serif; 
+  background: #000000; 
+  color: #ffffff; 
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: auto;
+}
+
+.album-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  z-index: -1;
+}
+
+.winamp-container {
+  width: min(1000px, 95vw);
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1;
+}
+
+.winamp-window {
+  width: 100%;
+  background: #000000;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.winamp-titlebar {
+  background: #000000;
+  color: #ffcc00;
+  padding: 8px 12px;
+  font-size: clamp(16px, 3vw, 22px);
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #444444;
+  text-transform: uppercase;
+}
+
+.titlebar-text { 
+  flex-grow: 1; 
+  text-align: center; 
+  font-weight: bold; 
+}
+
+.titlebar-buttons { 
+  display: flex; 
+}
+
+.titlebar-button {
+  width: clamp(20px, 4vw, 26px);
+  height: clamp(18px, 4vw, 22px);
+  margin-left: 4px;
+  font-size: clamp(12px, 2.5vw, 16px);
+  text-align: center;
+  line-height: clamp(18px, 4vw, 22px);
+  background: #404040;
+  color: #ffffff;
+  border: 1px solid #808080;
+  cursor: pointer;
+}
+
+.winamp-content { 
+  padding: 12px; 
+  background: #000000; 
+}
+
+.header { 
+  padding: 10px;
+  background: #000000; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  border: 1px solid #444444;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+.header h1 { 
+  font-size: clamp(18px, 4vw, 24px); 
+  font-weight: bold; 
+  margin: 0; 
+  color: #ffcc00; 
+  text-transform: uppercase; 
+}
+
+.search-box { 
+  flex-grow: 1; 
+  min-width: 120px;
+}
+
+.search-box input { 
+  padding: 6px 10px;
+  border: 1px solid #444444; 
+  background: #000000; 
+  color: #ffffff; 
+  width: 100%;
+  font-size: clamp(12px, 2.5vw, 16px);
+}
+
+.main { 
+  display: flex; 
+  flex-direction: row;
+  gap: 10px; 
+  align-items: flex-start;
+}
+
+.playlist-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #444444;
+}
+
+.sidebar { 
+  height: 45vh;
+  background: #000000; 
+  padding: 8px;
+  overflow-y: auto; 
+  font-size: clamp(12px, 2.5vw, 16px);
+  color: #ffffff; 
+}
+
+.player { 
+  flex: 1;
+  min-width: 280px;
+  background: #000000; 
+  padding: 12px;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  border: 1px solid #444444; 
+  position: relative; 
+}
+
+.artist-title { 
+  font-weight: bold; 
+  margin-top: 12px;
+  font-size: clamp(14px, 3vw, 18px);
+  color: #ffcc00; 
+  background: #222222; 
+  padding: 4px 8px;
+}
+
+.album-title { 
+  margin-left: 16px;
+  font-style: italic; 
+  color: #00ccff; 
+  margin-top: 8px;
+  font-size: clamp(12px, 2.5vw, 16px);
+}
+
+.album-artist-name {
+  color: #cccccc;
+  font-style: normal;
+  font-size: 0.9em;
+}
+
+.track-item { 
+  padding: 5px 8px 5px 30px;
+  cursor: pointer; 
+  border-bottom: 1px solid #333333; 
+  font-size: clamp(12px, 2.5vw, 16px);
+  color: #ffffff; 
+}
+
+.track-item:hover { 
+  background: #333333; 
+  color: #ffcc00; 
+}
+
+.track-item.playing { 
+  background: #000066; 
+  color: #ffcc00;
+  font-weight: bold; 
+}
+
+#cover-art { 
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  display: none; 
+  margin-bottom: 12px;
+  border: 1px solid #444444; 
+}
+
+.player-controls { 
+  display: flex; 
+  margin-bottom: 12px;
+  align-items: center; 
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.winamp-button {
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
+  background: #333333;
+  color: #ffffff;
+  border: 1px solid #808080;
+  cursor: pointer;
+  font-size: clamp(14px, 3vw, 18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.winamp-button:hover { 
+  background: #444444; 
+}
+
+.winamp-button:active { 
+  background: #222222; 
+  border-color: #666666; 
+}
+
+.winamp-button.toggled { 
+  background: #000066; 
+  color: #ffcc00; 
+}
+
+#volumeControl { 
+  width: min(120px, 25vw);
+  height: 20px;
+  -webkit-appearance: none; 
+  background: #333333; 
+  border: 1px solid #808080; 
+  margin-left: 8px;
+}
+
+#volumeControl::-webkit-slider-thumb { 
+  -webkit-appearance: none; 
+  width: 16px;
+  height: 24px;
+  background: #ffcc00; 
+  border: 1px solid #808080; 
+}
+
+.progress-container {
+  width: 100%;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#progressBar {
+  flex-grow: 1;
+  height: 15px;
+  -webkit-appearance: none;
+  background: #333333;
+  border: 1px solid #808080;
+  cursor: pointer;
+}
+
+#progressBar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 20px;
+  background: #ffcc00;
+  border: 1px solid #808080;
+}
+
+#progressBar::-webkit-slider-runnable-track {
+  height: 15px;
+  background: #222222;
+  border: none;
+}
+
+.time-display {
+  font-size: clamp(12px, 2.5vw, 14px);
+  color: #ffcc00;
+  min-width: 100px;
+  text-align: center;
+}
+
+#track-info { 
+  margin-top: 10px;
+  font-weight: bold; 
+  text-align: center; 
+  font-size: clamp(12px, 2.5vw, 16px);
+  background: #222222; 
+  padding: 5px 10px;
+  border: 1px solid #444444; 
+  width: 100%; 
+  color: #ffcc00; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#startIcon { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  font-size: clamp(3rem, 10vw, 5rem);
+  cursor: pointer; 
+  color: #ffcc00; 
+  z-index: 1000; 
+  text-shadow: 2px 2px 0 #000; 
+}
+
+.format-filters { 
+  display: flex; 
+  padding: 8px;
+  background: #111111;
+  border-bottom: 1px solid #444444;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.format-button { 
+  padding: 4px 10px;
+  background: #333333; 
+  color: #ffffff; 
+  border: 1px solid #808080; 
+  font-size: clamp(11px, 2vw, 14px);
+  cursor: pointer; 
+}
+
+.format-button.active { 
+  background: #000066; 
+  color: #ffcc00; 
+}
+
+#audio-player { 
+  display: none; 
+}
+
+.sidebar::-webkit-scrollbar { 
+  width: 12px; 
+}
+
+.sidebar::-webkit-scrollbar-track { 
+  background: #222222; 
+  border-left: 1px solid #444444; 
+}
+
+.sidebar::-webkit-scrollbar-thumb { 
+  background: #444444; 
+  border: 1px solid #222222; 
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover { 
+  background: #555555; 
+}
+
+@media (max-width: 768px) {
+  .main {
+    flex-direction: column;
+  }
+  
+  .playlist-container, .player {
+    width: 100%;
+  }
+  
+  .sidebar {
+    height: 35vh;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .logo-container {
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .progress-container {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .time-display {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="album-background"></div>
+<div class="winamp-container">
+  <div class="winamp-window">
+    <div class="winamp-titlebar">
+      <div class="titlebar-buttons">
+        <div class="titlebar-button">—</div>
+        <div class="titlebar-button">□</div>
+        <div class="titlebar-button">×</div>
+      </div>
+      <div class="titlebar-text">Caverna do Rock Player</div>
+      <div class="titlebar-buttons">
+        <div class="titlebar-button">—</div>
+      </div>
+    </div>
+    <div class="winamp-content">
+      <div class="header">
+        <div class="logo-container">
+          <img src="https://github.com/cavernadorock69/cavernadorock69.github.io/blob/main/logo_caverna_do_rock_69.png?raw=true" alt="Caverna do Rock" class="logo">
+          <h1>Caverna do Rock</h1>
+        </div>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Buscar por música, artista ou álbum...">
+        </div>
+      </div>
+      <div class="main">
+        <div class="playlist-container">
+          <div class="format-filters" id="formatFilters"></div>
+          <div class="sidebar" id="sidebar">
+            <div id="results">Carregando...</div>
+          </div>
+        </div>
+        <div class="player">
+          <div id="startIcon">▶</div>
+          <img id="cover-art" class="cover-art">
+          <div class="player-controls">
+            <button class="winamp-button" id="prevBtn">⏮</button>
+            <button class="winamp-button" id="playPauseBtn">▶</button>
+            <button class="winamp-button" id="stopBtn">⏹</button>
+            <button class="winamp-button" id="nextBtn">⏭</button>
+            <button class="winamp-button" id="shuffleBtn">🔀</button>
+            <button class="winamp-button" id="repeatBtn">🔁</button>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5">
+          </div>
+          <div class="progress-container">
+            <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1">
+            <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+          </div>
+          <audio id="audio-player"></audio>
+          <div id="track-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Configurações
+var ALLOWED_EXT=['mp3','wav','ogg','flac','mp4'];
+var IMAGE_EXT=['jpg','jpeg','png','gif'];
+var tracks=[], allTracks=[], currentTrack=0, currentFormat='mp3';
+var shuffle=false, repeat=false;
+var isSeeking = false;
+var minhaColecao = [], outrosUsuarios = [];
+
+// Elementos do DOM
+var audioPlayer=document.getElementById('audio-player' );
+var resultsContainer=document.getElementById('results');
+var trackInfo=document.getElementById('track-info');
+var coverArt=document.getElementById('cover-art');
+var playPauseBtn=document.getElementById('playPauseBtn');
+var volumeControl=document.getElementById('volumeControl');
+var formatFilters=document.getElementById('formatFilters');
+var searchInput=document.getElementById('searchInput');
+var startIcon=document.getElementById('startIcon');
+var prevBtn=document.getElementById('prevBtn');
+var stopBtn=document.getElementById('stopBtn');
+var nextBtn=document.getElementById('nextBtn');
+var shuffleBtn=document.getElementById('shuffleBtn');
+var repeatBtn=document.getElementById('repeatBtn');
+var progressBar=document.getElementById('progressBar');
+var timeDisplay=document.getElementById('timeDisplay');
+
+// Estrutura de dados
+var albumsData = {};
+
+// ########## CARREGAMENTO COM MÁXIMA COMPATIBILIDADE (XMLHttpRequest) ##########
+
+function fetchCollection(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var lines = xhr.responseText.split('\n').map(function(line) {
+          return line.trim();
+        }).filter(function(line) {
+          return line.length > 0;
+        });
+        callback(null, lines);
+      } else {
+        console.error('Erro ao buscar ' + url + ': ' + xhr.statusText);
+        callback(new Error('Falha ao carregar coleção'), []);
+      }
+    }
+  };
+  xhr.onerror = function() {
+    console.error('Erro de rede ao tentar buscar ' + url);
+    callback(new Error('Erro de rede'), []);
+  };
+  xhr.send();
+}
+
+function initializePlayer() {
+  resultsContainer.innerHTML = 'Carregando listas de coleções...';
+  
+  var minhasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/minhas_colecoes.txt';
+  var outrasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/outras_colecoes.txt';
+
+  fetchCollection(minhasColecoesUrl, function(err, minhasLinhas ) {
+    minhaColecao = minhasLinhas;
+    
+    fetchCollection(outrasColecoesUrl, function(err, outrasLinhas) {
+      outrosUsuarios = outrasLinhas;
+      
+      if (minhaColecao.length === 0 && outrosUsuarios.length === 0) {
+        resultsContainer.innerHTML = 'Nenhuma coleção encontrada. Verifique os arquivos no GitHub.';
+        return;
+      }
+      
+      carregarAlbuns();
+    });
+  });
+}
+
+// ##########################################################################################
+
+function formatTime(seconds) {
+  if (isNaN(seconds)) return "00:00";
+  var mins = Math.floor(seconds / 60);
+  var secs = Math.floor(seconds % 60);
+  return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+}
+
+function updateProgress() {
+  if (!isSeeking && audioPlayer.duration) {
+    var percentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    progressBar.value = percentage;
+    timeDisplay.textContent = formatTime(audioPlayer.currentTime) + ' / ' + formatTime(audioPlayer.duration);
+  }
+}
+
+function carregarAlbuns(){
+  resultsContainer.innerHTML='Carregando metadados dos álbuns...';
+  allTracks=[];
+  albumsData = {};
+  
+  var albumLinks = minhaColecao.concat(outrosUsuarios);
+  if(albumLinks.length === 0){
+    resultsContainer.innerHTML='Nenhum álbum para carregar.';
+    return;
+  }
+
+  var remaining = albumLinks.length;
+  albumLinks.forEach(function(link) {
+    var id = link.split('/').pop();
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://archive.org/metadata/' + id, true );
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
+          var artist = (data.metadata && data.metadata.creator) ? data.metadata.creator : 'Desconhecido';
+          var albumTitle = (data.metadata && data.metadata.title) ? data.metadata.title : id;
+          var year = 9999;
+          if(data.metadata){
+            if(data.metadata.date) year = parseInt(data.metadata.date) || 9999;
+            else if(data.metadata.year) year = parseInt(data.metadata.year) || 9999;
+          }
+
+          var trackList=[];
+          var coverUrl=null;
+
+          data.files.forEach(function(f) {
+            var ext = f.name.split('.').pop().toLowerCase();
+            if(IMAGE_EXT.indexOf(ext) !== -1 && /cover|folder|front/i.test(f.name)){
+              coverUrl='https://archive.org/download/'+id+'/'+encodeURIComponent(f.name );
+            }
+            if(ALLOWED_EXT.indexOf(ext) !== -1){
+              var track={
+                title:f.name,
+                url:'https://archive.org/download/'+id+'/'+encodeURIComponent(f.name ),
+                type:(ext==='mp4'?'video':'audio'),
+                artist:artist,
+                album:albumTitle,
+                format:ext
+              };
+              trackList.push(track);
+              allTracks.push(track);
+            }
+          });
+
+          if(!albumsData[artist]) albumsData[artist]=[];
+          albumsData[artist].push({title:albumTitle, year:year, cover:coverUrl, tracks:trackList});
+        }
+        remaining--;
+        if(remaining === 0){
+          criarFiltros();
+          renderAll();
+        }
+      }
+    };
+    xhr.send();
+  });
+}
+
+function criarFiltros(){
+  var formats={};
+  allTracks.forEach(function(t){ formats[t.format]=true; });
+  formatFilters.innerHTML='';
+  for(var fmt in formats){
+    (function(fmt){
+      var btn=document.createElement('button');
+      btn.textContent=fmt.toUpperCase();
+      btn.className='format-button' + (fmt===currentFormat?' active':'');
+      btn.onclick=function(){
+        currentFormat=fmt;
+        var buttons = formatFilters.getElementsByTagName('button');
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].className = 'format-button';
+        }
+        this.className='format-button active';
+        renderAll();
+      };
+      formatFilters.appendChild(btn);
+    })(fmt);
+  }
+}
+
+function renderAll(){
+  resultsContainer.innerHTML='';
+  tracks=[];
+  
+  var renderSection = function(linksArray, title) {
+    if(linksArray.length > 0) {
+      var headerDiv = document.createElement('div');
+      headerDiv.className = 'artist-title';
+      headerDiv.textContent = title;
+      resultsContainer.appendChild(headerDiv);
+      albumLinksRender(linksArray);
+    }
+  };
+
+  renderSection(minhaColecao, 'Minha Coleção');
+  renderSection(outrosUsuarios, 'Outros Usuários');
+  
+  applySearchFilter();
+}
+
+function albumLinksRender(linksArray){
+  var artistsInScope = Object.keys(albumsData).filter(function(artist) {
+    return albumsData[artist].some(function(album) {
+      return linksArray.some(function(link) {
+        return album.tracks.some(function(t) { return t.url.indexOf(link.split('/').pop()) !== -1; });
+      });
+    });
+  });
+
+  artistsInScope.sort(function(a, b) { return a.localeCompare(b); });
+
+  artistsInScope.forEach(function(artist) {
+    var artistAlbums = albumsData[artist].filter(function(album) {
+      return linksArray.some(function(link) {
+        return album.tracks.some(function(t) { return t.url.indexOf(link.split('/').pop()) !== -1; });
+      });
+    });
+
+    artistAlbums.sort(function(a, b) {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.title.localeCompare(b.title);
+    });
+
+    artistAlbums.forEach(function(album) {
+      var albumContainer = document.createElement('div');
+      albumContainer.className = 'album-container';
+      albumContainer.setAttribute('data-artist', artist.toLowerCase());
+      albumContainer.setAttribute('data-album', album.title.toLowerCase());
+      
+      var albDiv = document.createElement('div');
+      albDiv.className = 'album-title';
+      albDiv.innerHTML = album.title + (album.year !== 9999 ? ' (' + album.year + ')' : '') + ' <span class="album-artist-name">- ' + artist + '</span>';
+      albumContainer.appendChild(albDiv);
+
+      album.tracks.forEach(function(track) {
+        if(track.format !== currentFormat) return;
+        
+        track.index = tracks.length;
+        track.albumCover = album.cover;
+        
+        var trackDiv = document.createElement('div');
+        trackDiv.className = 'track-item';
+        trackDiv.textContent = track.title;
+        trackDiv.setAttribute('data-title', track.title.toLowerCase());
+        trackDiv.onclick = function(){ shuffle = false; playTrack(track.index); };
+        
+        track.element = trackDiv;
+        tracks.push(track);
+        albumContainer.appendChild(trackDiv);
+      });
+      
+      if (albumContainer.getElementsByClassName('track-item').length > 0) {
+        resultsContainer.appendChild(albumContainer);
+      }
+    });
+  });
+}
+
+function applySearchFilter() {
+  var term = searchInput.value.toLowerCase();
+  var allAlbumContainers = resultsContainer.getElementsByClassName('album-container');
+
+  for (var i = 0; i < allAlbumContainers.length; i++) {
+    var container = allAlbumContainers[i];
+    var artistMatch = container.getAttribute('data-artist').indexOf(term) !== -1;
+    var albumMatch = container.getAttribute('data-album').indexOf(term) !== -1;
+    
+    if (artistMatch || albumMatch) {
+      var tracksInContainer = container.getElementsByClassName('track-item');
+      for (var j = 0; j < tracksInContainer.length; j++) {
+        tracksInContainer[j].style.display = 'block';
+      }
+      container.style.display = 'block';
+      continue;
+    }
+
+    var hasVisibleTrack = false;
+    var tracksInContainer = container.getElementsByClassName('track-item');
+    for (var k = 0; k < tracksInContainer.length; k++) {
+      var trackEl = tracksInContainer[k];
+      var titleMatch = trackEl.getAttribute('data-title').indexOf(term) !== -1;
+      if (titleMatch) {
+        trackEl.style.display = 'block';
+        hasVisibleTrack = true;
+      } else {
+        trackEl.style.display = 'none';
+      }
+    }
+    
+    container.style.display = hasVisibleTrack ? 'block' : 'none';
+  }
+}
+
+function playTrack(index){
+  var track=tracks[index]; if(!track) return;
+  currentTrack=index;
+  tracks.forEach(function(t) {
+    if(t.element) t.element.classList.remove('playing');
+  });
+  track.element.classList.add('playing');
+  trackInfo.textContent=track.artist+' - '+track.title;
+  playPauseBtn.textContent='⏸';
+  audioPlayer.pause(); audioPlayer.src='';
+  audioPlayer.src=track.url;
+  
+  progressBar.value = 0;
+  timeDisplay.textContent = "00:00 / 00:00";
+  
+  if(track.albumCover){
+    coverArt.src=track.albumCover;
+    coverArt.style.display='block';
+    document.querySelector('.album-background').style.backgroundImage = "url('" + track.albumCover + "')";
+  } else { 
+    coverArt.style.display='none'; 
+  }
+  
+  audioPlayer.play().catch(function(e){
+    console.error("Erro ao reproduzir áudio:", e);
+    trackInfo.textContent = "Erro ao reproduzir: " + track.title;
+  });
+}
+
+function playRandomTrack(){ if(tracks.length===0) return; var r=Math.floor(Math.random()*tracks.length); playTrack(r); }
+function stopTrack(){ audioPlayer.pause(); audioPlayer.currentTime=0; playPauseBtn.textContent='▶'; progressBar.value = 0; timeDisplay.textContent = "00:00 / 00:00"; }
+function togglePlayPause(){ 
+  if (audioPlayer.paused) {
+    if (audioPlayer.src) {
+      audioPlayer.play();
+      playPauseBtn.textContent='⏸';
+    } else if (tracks.length > 0) {
+      playRandomTrack();
+    }
+  } else {
+    audioPlayer.pause();
+    playPauseBtn.textContent='▶';
+  }
+}
+
+function toggleShuffle(){ shuffle=!shuffle; shuffleBtn.classList.toggle('toggled', shuffle); }
+function toggleRepeat(){ repeat=!repeat; repeatBtn.classList.toggle('toggled', repeat); }
+
+// Event listeners
+volumeControl.addEventListener('input',function(){ audioPlayer.volume=volumeControl.value; });
+audioPlayer.addEventListener('loadedmetadata', function(){ timeDisplay.textContent = '00:00 / ' + formatTime(audioPlayer.duration); });
+audioPlayer.addEventListener('timeupdate', updateProgress);
+audioPlayer.addEventListener('ended',function(){ 
+  if(repeat){playTrack(currentTrack);} 
+  else{ shuffle?playRandomTrack():playTrack((currentTrack+1)%tracks.length); } 
+});
+
+progressBar.addEventListener('input', function(){ isSeeking = true; });
+progressBar.addEventListener('change', function(){
+  if (audioPlayer.duration) {
+    audioPlayer.currentTime = (progressBar.value / 100) * audioPlayer.duration;
+  }
+  isSeeking = false;
+});
+
+searchInput.addEventListener('input', applySearchFilter);
+
+startIcon.addEventListener('click',function(){ startIcon.style.display='none'; if (tracks.length > 0) playRandomTrack(); });
+prevBtn.addEventListener('click',function(){ if(tracks.length > 0) { currentTrack=(currentTrack-1+tracks.length)%tracks.length; playTrack(currentTrack); }});
+nextBtn.addEventListener('click',function(){ if(tracks.length > 0) { currentTrack=(currentTrack+1)%tracks.length; playTrack(currentTrack); }});
+playPauseBtn.addEventListener('click',togglePlayPause);
+stopBtn.addEventListener('click',stopTrack);
+shuffleBtn.addEventListener('click',toggleShuffle);
+repeatBtn.addEventListener('click',toggleRepeat);
+
