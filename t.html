@@ -182,18 +182,18 @@ body {
   color: #ffcc00; 
   background: #222222; 
   padding: 4px 8px;
-  text-align: left; /* Garantindo alinhamento à esquerda */
-  width: 100%; /* Garantindo que ocupe toda a largura */
+  text-align: left;
+  width: 100%;
 }
 
 .album-title { 
-  margin-left: 0; /* Removendo a margem esquerda */
+  margin-left: 0;
   font-style: italic; 
   color: #00ccff; 
   margin-top: 8px;
   font-size: clamp(12px, 2.5vw, 16px);
-  text-align: left; /* Garantindo alinhamento à esquerda */
-  width: 100%; /* Garantindo que ocupe toda a largura */
+  text-align: left;
+  width: 100%;
 }
 
 .album-artist-name {
@@ -203,13 +203,13 @@ body {
 }
 
 .track-item { 
-  padding: 5px 8px; /* Removendo o padding-left extra */
+  padding: 5px 8px;
   cursor: pointer; 
   border-bottom: 1px solid #333333; 
   font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
-  text-align: left; /* Garantindo alinhamento à esquerda */
-  width: 100%; /* Garantindo que ocupe toda a largura */
+  text-align: left;
+  width: 100%;
 }
 
 .track-item:hover { 
@@ -223,11 +223,19 @@ body {
   font-weight: bold; 
 }
 
-.cover-art { 
-  max-width: min(120px, 25vw);
-  display: none; 
+.cover-art-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
   margin-bottom: 12px;
-  border: 1px solid #444444; 
+}
+
+.cover-art { 
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border: 1px solid #444444;
+  display: none;
 }
 
 .player-controls { 
@@ -452,6 +460,11 @@ body {
     width: 100%;
     text-align: center;
   }
+  
+  .cover-art {
+    width: 140px;
+    height: 140px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -480,6 +493,11 @@ body {
     width: 36px;
     height: 36px;
     font-size: 14px;
+  }
+  
+  .cover-art {
+    width: 120px;
+    height: 120px;
   }
 }
 </style>
@@ -519,7 +537,9 @@ body {
         </div>
         <div class="player">
           <div id="startIcon">▶</div>
-          <img id="cover-art" class="cover-art" onerror="this.style.display='none'">
+          <div class="cover-art-container">
+            <img id="cover-art" class="cover-art" onerror="this.style.display='none'">
+          </div>
           <div class="player-controls">
             <button class="winamp-button" id="prevBtn">⏮</button>
             <button class="winamp-button" id="playPauseBtn">▶</button>
