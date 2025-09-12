@@ -182,14 +182,18 @@ body {
   color: #ffcc00; 
   background: #222222; 
   padding: 4px 8px;
+  text-align: left; /* Garantindo alinhamento à esquerda */
+  width: 100%; /* Garantindo que ocupe toda a largura */
 }
 
 .album-title { 
-  margin-left: 16px;
+  margin-left: 0; /* Removendo a margem esquerda */
   font-style: italic; 
   color: #00ccff; 
   margin-top: 8px;
   font-size: clamp(12px, 2.5vw, 16px);
+  text-align: left; /* Garantindo alinhamento à esquerda */
+  width: 100%; /* Garantindo que ocupe toda a largura */
 }
 
 .album-artist-name {
@@ -199,11 +203,13 @@ body {
 }
 
 .track-item { 
-  padding: 5px 8px 5px 30px;
+  padding: 5px 8px; /* Removendo o padding-left extra */
   cursor: pointer; 
   border-bottom: 1px solid #333333; 
   font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
+  text-align: left; /* Garantindo alinhamento à esquerda */
+  width: 100%; /* Garantindo que ocupe toda a largura */
 }
 
 .track-item:hover { 
