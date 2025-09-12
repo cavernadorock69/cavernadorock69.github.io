@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock 69</title>
+<title>Caverna do Rock Player - Winamp Style</title>
 <style>
 * {
   box-sizing: border-box;
@@ -217,8 +217,11 @@ body {
   font-weight: bold; 
 }
 
-.cover-art { 
-  max-width: min(120px, 25vw);
+/* ########## AJUSTE FINAL DA CAPA DO ÁLBUM ########## */
+#cover-art { 
+  width: 150px;  /* Largura fixa */
+  height: 150px; /* Altura fixa */
+  object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
   display: none; 
   margin-bottom: 12px;
   border: 1px solid #444444; 
@@ -431,7 +434,6 @@ body {
 <body>
 
 <div class="album-background"></div>
-
 <div class="winamp-container">
   <div class="winamp-window">
     <div class="winamp-titlebar">
@@ -440,7 +442,7 @@ body {
         <div class="titlebar-button">□</div>
         <div class="titlebar-button">×</div>
       </div>
-      <div class="titlebar-text">Caverna do Rock 69</div>
+      <div class="titlebar-text">Caverna do Rock Player</div>
       <div class="titlebar-buttons">
         <div class="titlebar-button">—</div>
       </div>
@@ -455,7 +457,6 @@ body {
           <input type="text" id="searchInput" placeholder="Buscar por música, artista ou álbum...">
         </div>
       </div>
-      
       <div class="main">
         <div class="playlist-container">
           <div class="format-filters" id="formatFilters"></div>
@@ -463,7 +464,6 @@ body {
             <div id="results">Carregando...</div>
           </div>
         </div>
-
         <div class="player">
           <div id="startIcon">▶</div>
           <img id="cover-art" class="cover-art">
@@ -484,7 +484,6 @@ body {
           <div id="track-info"></div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -496,7 +495,9 @@ var IMAGE_EXT=['jpg','jpeg','png','gif'];
 var tracks=[], allTracks=[], currentTrack=0, currentFormat='mp3';
 var shuffle=false, repeat=false;
 var isSeeking = false;
+var minhaColecao = [], outrosUsuarios = [];
 
+// Elementos do DOM
 var audioPlayer=document.getElementById('audio-player' );
 var resultsContainer=document.getElementById('results');
 var trackInfo=document.getElementById('track-info');
@@ -514,23 +515,45 @@ var repeatBtn=document.getElementById('repeatBtn');
 var progressBar=document.getElementById('progressBar');
 var timeDisplay=document.getElementById('timeDisplay');
 
-// ############################## LINKS ############################## //
-var minhaColecao = [
-  "https://archive.org/details/master-of-puppets_202509",
-  "https://archive.org/details/1980-Back-in-Black"
-];
-
-var outrosUsuarios = [
-  "https://archive.org/details/14.-for-those-about-to-rock-we-sa",
-  "https://archive.org/details/100-hits-rock-jukebox-2016"
-];
-
-var albumLinks = minhaColecao.concat(outrosUsuarios );
-
 // Estrutura de dados
-var albumsData = {}; // artista → [{title, year, cover, tracks}]
+var albumsData = {};
 
-// Função para formatar o tempo (segundos para MM:SS)
+// Função para buscar um arquivo de texto e retornar um array de linhas
+async function fetchCollection(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Erro ao buscar ${url}: ${response.statusText}`);
+      return [];
+    }
+    const text = await response.text();
+    return text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  } catch (error) {
+    console.error(`Falha na requisição para ${url}:`, error);
+    return [];
+  }
+}
+
+// Função principal que inicia todo o processo
+async function initializePlayer() {
+  resultsContainer.innerHTML = 'Carregando listas de coleções...';
+  
+  const minhasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/minhas_colecoes.txt';
+  const outrasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/outras_colecoes.txt';
+
+  [minhaColecao, outrosUsuarios] = await Promise.all([
+    fetchCollection(minhasColecoesUrl ),
+    fetchCollection(outrasColecoesUrl)
+  ]);
+
+  if (minhaColecao.length === 0 && outrosUsuarios.length === 0) {
+    resultsContainer.innerHTML = 'Nenhuma coleção encontrada. Verifique os arquivos no GitHub.';
+    return;
+  }
+
+  carregarAlbuns();
+}
+
 function formatTime(seconds) {
   if (isNaN(seconds)) return "00:00";
   const mins = Math.floor(seconds / 60);
@@ -538,7 +561,6 @@ function formatTime(seconds) {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Atualizar a barra de progresso e o tempo
 function updateProgress() {
   if (!isSeeking && audioPlayer.duration) {
     const percentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -547,23 +569,22 @@ function updateProgress() {
   }
 }
 
-// Função principal para carregar álbuns
 function carregarAlbuns(){
-  resultsContainer.innerHTML='Carregando...';
+  resultsContainer.innerHTML='Carregando metadados dos álbuns...';
   allTracks=[];
-  if(albumLinks.length===0){
-    resultsContainer.innerHTML='Nenhum álbum adicionado.';
+  albumsData = {};
+  
+  const albumLinks = minhaColecao.concat(outrosUsuarios);
+  if(albumLinks.length === 0){
+    resultsContainer.innerHTML='Nenhum álbum para carregar.';
     return;
   }
-  var remaining=albumLinks.length;
-  albumLinks.forEach(link=>{
-    var id=link.split('/').pop();
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET','https://archive.org/metadata/'+id,true );
-    xhr.onreadystatechange=function(){
-      if(xhr.readyState===4 && xhr.status===200){
-        var data=JSON.parse(xhr.responseText);
 
+  let promises = albumLinks.map(link => {
+    const id = link.split('/').pop();
+    return fetch(`https://archive.org/metadata/${id}` )
+      .then(response => response.json())
+      .then(data => {
         var artist = (data.metadata && data.metadata.creator) ? data.metadata.creator : 'Desconhecido';
         var albumTitle = (data.metadata && data.metadata.title) ? data.metadata.title : id;
         var year = 9999;
@@ -596,19 +617,16 @@ function carregarAlbuns(){
 
         if(!albumsData[artist]) albumsData[artist]=[];
         albumsData[artist].push({title:albumTitle, year:year, cover:coverUrl, tracks:trackList});
+      })
+      .catch(error => console.error(`Erro ao carregar metadados de ${id}:`, error));
+  });
 
-        remaining--;
-        if(remaining===0){
-          criarFiltros();
-          renderAll();
-        }
-      }
-    };
-    xhr.send();
+  Promise.all(promises).then(() => {
+    criarFiltros();
+    renderAll();
   });
 }
 
-// Criação de filtros por formato
 function criarFiltros(){
   var formats={};
   allTracks.forEach(t=>formats[t.format]=true);
@@ -629,7 +647,6 @@ function criarFiltros(){
   }
 }
 
-// Renderiza lista de álbuns e músicas
 function renderAll(){
   resultsContainer.innerHTML='';
   tracks=[];
@@ -650,9 +667,7 @@ function renderAll(){
   applySearchFilter();
 }
 
-// ########## FUNÇÃO DE RENDERIZAÇÃO COM ORDENAÇÃO ##########
 function albumLinksRender(linksArray){
-  // Pega todos os artistas que têm álbuns na lista de links fornecida
   const artistsInScope = Object.keys(albumsData).filter(artist => 
     albumsData[artist].some(album => 
       linksArray.some(link => 
@@ -661,19 +676,14 @@ function albumLinksRender(linksArray){
     )
   );
 
-  // 1. Ordena os artistas alfabeticamente
   artistsInScope.sort((a, b) => a.localeCompare(b));
 
   artistsInScope.forEach(artist => {
-    // Pega os álbuns do artista que estão no escopo atual
     const artistAlbums = albumsData[artist]
       .filter(album => linksArray.some(link => album.tracks.some(t => t.url.includes(link.split('/').pop()))));
 
-    // 2. Ordena os álbuns por ano (e depois por título, como desempate)
     artistAlbums.sort((a, b) => {
-      if (a.year !== b.year) {
-        return a.year - b.year;
-      }
+      if (a.year !== b.year) return a.year - b.year;
       return a.title.localeCompare(b.title);
     });
 
@@ -745,7 +755,6 @@ function applySearchFilter() {
   }
 }
 
-// Funções de reprodução
 function playTrack(index){
   var track=tracks[index]; if(!track) return;
   currentTrack=index;
@@ -821,8 +830,8 @@ stopBtn.addEventListener('click',stopTrack);
 shuffleBtn.addEventListener('click',toggleShuffle);
 repeatBtn.addEventListener('click',toggleRepeat);
 
-// Iniciar carregamento
-carregarAlbuns();
+// Inicia todo o processo de carregamento
+initializePlayer();
 </script>
 </body>
 </html>
