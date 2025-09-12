@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock Player - Winamp Style</title>
+<title>Caverna do Rock Player 69</title>
 <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body { 
   margin: 0; 
   padding: 20px;
@@ -18,6 +24,7 @@ body {
   position: relative;
   overflow: auto;
 }
+
 .album-background {
   position: fixed;
   top: 0;
@@ -30,208 +37,320 @@ body {
   opacity: 0.15;
   z-index: -1;
 }
+
 .winamp-container {
-  width: 350px; /* Aumentado de 275px */
+  width: min(600px, 90vw);
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  gap: 6px; /* Aumentado de 4px */
+  gap: 10px;
   z-index: 1;
 }
+
 .winamp-window {
   width: 100%;
   background: #000000;
-  border: 1px solid #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
+
 .winamp-titlebar {
   background: #000000;
   color: #ffcc00;
-  padding: 4px 6px; /* Aumentado */
-  font-size: 13px; /* Aumentado de 11px */
+  padding: 8px 12px;
+  font-size: clamp(16px, 3vw, 22px);
   font-weight: bold;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #444444;
+  border-bottom: 2px solid #444444;
   text-transform: uppercase;
 }
-.titlebar-text { flex-grow: 1; text-align: center; font-weight: bold; }
-.titlebar-buttons { display: flex; }
+
+.titlebar-text { 
+  flex-grow: 1; 
+  text-align: center; 
+  font-weight: bold; 
+}
+
+.titlebar-buttons { 
+  display: flex; 
+}
+
 .titlebar-button {
-  width: 16px; /* Aumentado de 14px */
-  height: 14px; /* Aumentado de 12px */
-  margin-left: 3px; /* Aumentado de 2px */
-  font-size: 10px; /* Aumentado de 9px */
+  width: clamp(20px, 4vw, 26px);
+  height: clamp(18px, 4vw, 22px);
+  margin-left: 4px;
+  font-size: clamp(12px, 2.5vw, 16px);
   text-align: center;
-  line-height: 14px; /* Ajustado */
+  line-height: clamp(18px, 4vw, 22px);
   background: #404040;
   color: #ffffff;
   border: 1px solid #808080;
   cursor: pointer;
 }
-.winamp-content { padding: 6px; background: #000000; } /* Aumentado de 4px */
+
+.winamp-content { 
+  padding: 12px; 
+  background: #000000; 
+}
+
 .header { 
-  padding: 6px; /* Aumentado de 4px */
+  padding: 10px;
   background: #000000; 
   display: flex; 
   justify-content: space-between; 
   align-items: center;
   border: 1px solid #444444;
-  margin-bottom: 6px; /* Aumentado de 4px */
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.header h1 { font-size: 16px; font-weight: bold; margin: 0; color: #ffcc00; text-transform: uppercase; } /* Aumentado de 13px */
+
+.header h1 { 
+  font-size: clamp(18px, 4vw, 24px); 
+  font-weight: bold; 
+  margin: 0; 
+  color: #ffcc00; 
+  text-transform: uppercase; 
+}
+
+.search-box { 
+  flex-grow: 1; 
+  min-width: 120px;
+}
+
 .search-box input { 
-  padding: 3px 6px; /* Aumentado */
+  padding: 6px 10px;
   border: 1px solid #444444; 
   background: #000000; 
   color: #ffffff; 
-  width: 150px; /* Aumentado de 120px */
-  font-size: 12px; /* Aumentado de 11px */
+  width: 100%;
+  font-size: clamp(12px, 2.5vw, 16px);
 }
-.main { display: flex; flex-direction: column; gap: 6px; } /* Aumentado de 4px */
+
+.main { 
+  display: flex; 
+  flex-direction: column;
+  gap: 10px; 
+}
+
 .sidebar { 
-  height: 250px; /* Aumentado de 200px */
+  height: min(300px, 30vh);
   background: #000000; 
-  padding: 6px; /* Aumentado de 4px */
+  padding: 8px;
   overflow-y: auto; 
   border: 1px solid #444444; 
-  font-size: 12px; /* Aumentado de 11px */
+  font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
 }
+
 .artist-title { 
   font-weight: bold; 
-  margin-top: 8px; /* Aumentado de 6px */
-  font-size: 13px; /* Aumentado de 11px */
+  margin-top: 12px;
+  font-size: clamp(14px, 3vw, 18px);
   color: #ffcc00; 
   background: #222222; 
-  padding: 3px 6px; /* Aumentado */
+  padding: 4px 8px;
 }
+
 .album-title { 
-  margin-left: 12px; /* Aumentado de 10px */
+  margin-left: 16px;
   font-style: italic; 
   color: #00ccff; 
-  margin-top: 6px; /* Aumentado de 4px */
-  font-size: 12px; /* Aumentado de 11px */
+  margin-top: 8px;
+  font-size: clamp(12px, 2.5vw, 16px);
 }
+
 .track-item { 
-  padding: 3px 6px 3px 24px; /* Aumentado */
+  padding: 5px 8px 5px 30px;
   cursor: pointer; 
   border-bottom: 1px solid #333333; 
-  font-size: 12px; /* Aumentado de 11px */
+  font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
 }
-.track-item:hover { background: #333333; color: #ffcc00; }
-.track-item.playing { background: #000066; color: #ffcc00; font-weight: bold; }
+
+.track-item:hover { 
+  background: #333333; 
+  color: #ffcc00; 
+}
+
+.track-item.playing { 
+  background: #000066; 
+  color: #ffcc00;
+  font-weight: bold; 
+}
+
 .player { 
   background: #000000; 
-  padding: 8px; /* Aumentado de 6px */
+  padding: 12px;
   display: flex; 
   flex-direction: column; 
   align-items: center; 
   border: 1px solid #444444; 
   position: relative; 
 }
+
 .cover-art { 
-  max-width: 80px; /* Aumentado de 60px */
+  max-width: min(120px, 25vw);
   display: none; 
-  margin-bottom: 8px; /* Aumentado de 6px */
+  margin-bottom: 12px;
   border: 1px solid #444444; 
 }
+
 .player-controls { 
   display: flex; 
-  margin-bottom: 8px; /* Aumentado de 6px */
+  margin-bottom: 12px;
   align-items: center; 
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
 }
+
 .winamp-button {
-  width: 28px; /* Aumentado de 23px */
-  height: 28px; /* Aumentado de 23px */
-  margin: 3px; /* Aumentado de 2px */
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
   background: #333333;
   color: #ffffff;
   border: 1px solid #808080;
   cursor: pointer;
-  font-size: 13px; /* Aumentado de 11px */
+  font-size: clamp(14px, 3vw, 18px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
 }
-.winamp-button:hover { background: #444444; }
-.winamp-button:active { background: #222222; border-color: #666666; }
-.winamp-button.toggled { background: #000066; color: #ffcc00; }
+
+.winamp-button:hover { 
+  background: #444444; 
+}
+
+.winamp-button:active { 
+  background: #222222; 
+  border-color: #666666; 
+}
+
+.winamp-button.toggled { 
+  background: #000066; 
+  color: #ffcc00; 
+}
+
 #volumeControl { 
-  width: 100px; /* Aumentado de 80px */
-  margin-left: 10px; /* Aumentado de 8px */
-  height: 18px; /* Aumentado de 16px */
+  width: min(120px, 25vw);
+  height: 20px;
   -webkit-appearance: none; 
   background: #333333; 
   border: 1px solid #808080; 
+  margin-left: 8px;
 }
+
 #volumeControl::-webkit-slider-thumb { 
   -webkit-appearance: none; 
-  width: 12px; /* Aumentado de 10px */
-  height: 17px; /* Aumentado de 15px */
+  width: 16px;
+  height: 24px;
   background: #ffcc00; 
   border: 1px solid #808080; 
 }
+
 #track-info { 
-  margin-top: 8px; /* Aumentado de 6px */
+  margin-top: 10px;
   font-weight: bold; 
   text-align: center; 
-  font-size: 13px; /* Aumentado de 11px */
+  font-size: clamp(12px, 2.5vw, 16px);
   background: #222222; 
-  padding: 3px 6px; /* Aumentado */
+  padding: 5px 10px;
   border: 1px solid #444444; 
-  width: 90%; 
+  width: 100%; 
   color: #ffcc00; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
 #startIcon { 
   position: absolute; 
   top: 50%; 
   left: 50%; 
   transform: translate(-50%, -50%); 
-  font-size: 4rem; /* Aumentado de 3rem */
+  font-size: clamp(3rem, 10vw, 5rem);
   cursor: pointer; 
   color: #ffcc00; 
   z-index: 1000; 
-  text-shadow: 1px 1px 0 #000; 
+  text-shadow: 2px 2px 0 #000; 
 }
+
 .format-filters { 
   display: flex; 
-  margin-bottom: 8px; /* Aumentado de 6px */
-  flex-wrap: wrap; 
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 5px;
 }
+
 .format-button { 
-  padding: 3px 8px; /* Aumentado */
-  margin: 0 3px 3px 0; /* Aumentado */
+  padding: 4px 10px;
   background: #333333; 
   color: #ffffff; 
   border: 1px solid #808080; 
-  font-size: 11px; /* Aumentado de 10px */
+  font-size: clamp(11px, 2vw, 14px);
   cursor: pointer; 
 }
-.format-button.active { background: #000066; color: #ffcc00; }
-#audio-player { display: none; }
-.sidebar::-webkit-scrollbar { width: 14px; } /* Aumentado de 12px */
-.sidebar::-webkit-scrollbar-track { background: #222222; border-left: 1px solid #444444; }
-.sidebar::-webkit-scrollbar-thumb { background: #444444; border: 1px solid #222222; }
-.sidebar::-webkit-scrollbar-thumb:hover { background: #555555; }
 
-/* Ajustes de responsividade para o novo tamanho */
-@media (min-width: 768px) { 
-  .winamp-container { width: 380px; } /* Aumentado de 300px */
-  .sidebar { height: 280px; } /* Aumentado de 250px */
+.format-button.active { 
+  background: #000066; 
+  color: #ffcc00; 
 }
-@media (min-width: 1024px) { 
-  .winamp-container { width: 420px; } /* Aumentado de 325px */
-  .sidebar { height: 320px; } /* Aumentado de 300px */
+
+#audio-player { 
+  display: none; 
 }
+
+.sidebar::-webkit-scrollbar { 
+  width: 12px; 
+}
+
+.sidebar::-webkit-scrollbar-track { 
+  background: #222222; 
+  border-left: 1px solid #444444; 
+}
+
+.sidebar::-webkit-scrollbar-thumb { 
+  background: #444444; 
+  border: 1px solid #222222; 
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover { 
+  background: #555555; 
+}
+
+/* Ajustes para telas muito pequenas */
 @media (max-width: 480px) {
-  body { padding: 10px; }
-  .winamp-container { width: 300px; } /* Aumentado de 250px */
-  .sidebar { height: 220px; } /* Aumentado de 180px */
-  .header { flex-direction: column; gap: 6px; } /* Aumentado de 5px */
-  .search-box input { width: 100%; }
+  body {
+    padding: 10px;
+  }
+  
+  .winamp-container {
+    width: 95vw;
+    gap: 8px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .player-controls {
+    gap: 3px;
+  }
+  
+  #volumeControl {
+    margin-left: 0;
+    margin-top: 5px;
+    width: 100px;
+  }
 }
 </style>
 </head>
