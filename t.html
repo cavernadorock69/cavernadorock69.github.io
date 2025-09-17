@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock 69</title>
+<title>Caverna do Rock Player - Enhanced Edition</title>
 <style>
 * {
   box-sizing: border-box;
@@ -578,6 +578,7 @@ body {
 }
 
 .debug-log {
+  display: none; /* Oculta o terminal de debug */
   position: fixed;
   bottom: 10px;
   left: 10px;
@@ -591,6 +592,20 @@ body {
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
+}
+
+.cors-info {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  color: #00ccff;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid #333;
+  z-index: 1000;
+  max-width: 200px;
 }
 
 /* Animações suaves */
@@ -696,6 +711,7 @@ body {
 <div class="album-background"></div>
 <div class="status-indicator" id="statusIndicator">Inicializando...</div>
 <div class="debug-log" id="debugLog"></div>
+<div class="cors-info" id="corsInfo">Usando proxy CORS</div>
 <div class="winamp-container">
   <div class="winamp-window">
     <div class="winamp-titlebar">
@@ -762,6 +778,15 @@ var isSeeking = false;
 var minhaColecao = [], outrosUsuarios = [];
 var isSimpleMode = false;
 
+// Proxies CORS disponíveis
+var CORS_PROXIES = [
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://cors.sh/'
+];
+var currentProxyIndex = 0;
+
 // Elementos do DOM
 var audioPlayer = document.getElementById('audio-player');
 var resultsContainer = document.getElementById('results');
@@ -781,6 +806,7 @@ var progressBar = document.getElementById('progressBar');
 var timeDisplay = document.getElementById('timeDisplay');
 var statusIndicator = document.getElementById('statusIndicator');
 var debugLog = document.getElementById('debugLog');
+var corsInfo = document.getElementById('corsInfo');
 
 // Estrutura de dados
 var albumsData = {};
@@ -797,6 +823,54 @@ function debugMessage(message) {
 function updateStatus(message) {
   statusIndicator.textContent = message;
   debugMessage('Status: ' + message);
+}
+
+// Função para atualizar info do CORS
+function updateCorsInfo(message) {
+  corsInfo.textContent = message;
+}
+
+// Função para obter URL com proxy CORS
+function getCorsProxyUrl(originalUrl) {
+  var proxy = CORS_PROXIES[currentProxyIndex];
+  return proxy + encodeURIComponent(originalUrl);
+}
+
+// Função para tentar próximo proxy CORS
+function tryNextProxy() {
+  currentProxyIndex = (currentProxyIndex + 1) % CORS_PROXIES.length;
+  var proxyName = CORS_PROXIES[currentProxyIndex].split('/')[2] || 'proxy';
+  updateCorsInfo('Proxy: ' + proxyName);
+  debugMessage('Mudando para proxy: ' + proxyName);
+}
+
+// Função para verificar se URL está acessível
+function checkUrlAccessibility(url) {
+  return new Promise(function(resolve) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', url, true);
+    xhr.timeout = 5000; // 5 segundos de timeout
+    
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200 || xhr.status === 206) {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      }
+    };
+    
+    xhr.onerror = function() {
+      resolve(false);
+    };
+    
+    xhr.ontimeout = function() {
+      resolve(false);
+    };
+    
+    xhr.send();
+  });
 }
 
 // Detectar dispositivos com recursos limitados
@@ -888,6 +962,9 @@ function initializePlayer() {
   updateStatus('Inicializando player...');
   resultsContainer.innerHTML = 'Carregando listas de coleções...';
   isSimpleMode = detectLowResourceDevice();
+  
+  // Inicializar proxy CORS
+  updateCorsInfo('Proxy: ' + CORS_PROXIES[0].split('/')[2]);
   
   if (isSimpleMode) {
     document.body.classList.add('simple-mode');
@@ -1246,7 +1323,7 @@ function playTrack(index){
   if(!track) return;
   
   debugMessage('Tentando reproduzir: ' + track.title);
-  debugMessage('URL: ' + track.url);
+  debugMessage('URL original: ' + track.url);
   
   currentTrack = index;
   for (var i = 0; i < tracks.length; i++) {
@@ -1261,10 +1338,6 @@ function playTrack(index){
   audioPlayer.pause(); 
   audioPlayer.currentTime = 0;
   
-  // Configurar nova fonte
-  audioPlayer.src = track.url;
-  audioPlayer.load(); // Forçar carregamento
-  
   progressBar.value = 0;
   timeDisplay.textContent = "00:00 / 00:00";
   
@@ -1276,24 +1349,66 @@ function playTrack(index){
     coverArt.style.display = 'none'; 
   }
   
-  updateStatus('Reproduzindo: ' + track.title);
-  debugMessage('Elemento audio configurado, tentando reproduzir...');
+  updateStatus('Verificando URL...');
   
-  // Tentar reproduzir
-  var playPromise = audioPlayer.play();
-  if (playPromise !== undefined) {
-    playPromise.then(function() {
-      debugMessage('Reprodução iniciada com sucesso');
-      updateStatus('Reproduzindo');
-    }).catch(function(e){
-      debugMessage('Erro ao reproduzir áudio: ' + e.message);
-      trackInfo.textContent = "Erro ao reproduzir: " + track.title;
-      updateStatus('Erro na reprodução');
-      playPauseBtn.textContent = '▶';
+  // Tentar reproduzir com proxy CORS
+  function tryPlayWithProxy(proxyAttempt) {
+    if (proxyAttempt >= CORS_PROXIES.length) {
+      debugMessage('Todos os proxies falharam, tentando URL direta');
+      audioPlayer.src = track.url;
+      audioPlayer.load();
+      attemptPlay();
+      return;
+    }
+    
+    var proxiedUrl = getCorsProxyUrl(track.url);
+    debugMessage('Tentando com proxy ' + (proxyAttempt + 1) + ': ' + proxiedUrl);
+    
+    checkUrlAccessibility(proxiedUrl).then(function(accessible) {
+      if (accessible) {
+        debugMessage('URL acessível via proxy');
+        audioPlayer.src = proxiedUrl;
+        audioPlayer.load();
+        attemptPlay();
+      } else {
+        debugMessage('Proxy ' + (proxyAttempt + 1) + ' falhou, tentando próximo');
+        tryNextProxy();
+        tryPlayWithProxy(proxyAttempt + 1);
+      }
     });
-  } else {
-    debugMessage('Play promise não definida');
   }
+  
+  function attemptPlay() {
+    updateStatus('Reproduzindo: ' + track.title);
+    debugMessage('Elemento audio configurado, tentando reproduzir...');
+    
+    var playPromise = audioPlayer.play();
+    if (playPromise !== undefined) {
+      playPromise.then(function() {
+        debugMessage('Reprodução iniciada com sucesso');
+        updateStatus('Reproduzindo');
+      }).catch(function(e){
+        debugMessage('Erro ao reproduzir áudio: ' + e.message);
+        trackInfo.textContent = "Erro ao reproduzir: " + track.title;
+        updateStatus('Erro na reprodução');
+        playPauseBtn.textContent = '▶';
+        
+        // Se falhou, tentar próximo proxy
+        if (audioPlayer.src.indexOf('cors') !== -1 || audioPlayer.src.indexOf('proxy') !== -1) {
+          debugMessage('Tentando próximo proxy devido ao erro');
+          tryNextProxy();
+          setTimeout(function() {
+            tryPlayWithProxy(currentProxyIndex);
+          }, 1000);
+        }
+      });
+    } else {
+      debugMessage('Play promise não definida');
+    }
+  }
+  
+  // Iniciar tentativa com proxy
+  tryPlayWithProxy(0);
 }
 
 function playRandomTrack(){ 
@@ -1384,17 +1499,17 @@ audioPlayer.addEventListener('canplaythrough', function() {
 
 audioPlayer.addEventListener('timeupdate', updateProgress);
 
-audioPlayer.addEventListener('ended', function(){ 
-  debugMessage('Reprodução finalizada');
+audioPlayer.addEventListener("ended", function(){ 
+  debugMessage("Reprodução finalizada");
   if(repeat){
-    playTrack(currentTrack);
-  } else { 
-    if (shuffle) {
-      playRandomTrack();
-    } else {
-      playTrack((currentTrack + 1) % tracks.length);
-    }
-  } 
+    playTrack(currentTrack); // Repete a faixa atual
+  } else if (shuffle) {
+    playRandomTrack(); // Toca uma faixa aleatória
+  } else {
+    // Toca a próxima faixa sequencialmente
+    var nextTrackIndex = (currentTrack + 1) % tracks.length;
+    playTrack(nextTrackIndex);
+  }
 });
 
 audioPlayer.addEventListener('play', function() {
