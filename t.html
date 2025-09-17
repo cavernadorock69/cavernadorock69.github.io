@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caverna do Rock Player - Winamp Style</title>
+<title>Caverna do Rock 69</title>
 <style>
 * {
   box-sizing: border-box;
@@ -14,8 +14,8 @@
 body { 
   margin: 0; 
   padding: 20px;
-  font-family: "Arial", "MS Sans Serif", sans-serif; 
-  background: #000000; 
+  font-family: "Segoe UI", "Arial", "MS Sans Serif", sans-serif; 
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
   color: #ffffff; 
   min-height: 100vh;
   display: flex;
@@ -34,8 +34,10 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.15;
+  opacity: 0.08;
   z-index: -1;
+  filter: blur(2px);
+  transition: opacity 0.5s ease;
 }
 
 .winamp-container {
@@ -43,79 +45,109 @@ body {
   max-height: 95vh;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   z-index: 1;
 }
 
 .winamp-window {
   width: 100%;
-  background: #000000;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  border: 2px solid #333;
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 .winamp-titlebar {
-  background: #000000;
+  background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a);
   color: #ffcc00;
-  padding: 8px 12px;
+  padding: 12px 16px;
   font-size: clamp(16px, 3vw, 22px);
   font-weight: bold;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #444444;
+  border-bottom: 1px solid #333;
   text-transform: uppercase;
+  position: relative;
+}
+
+.winamp-titlebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ffcc00, transparent);
+  opacity: 0.5;
 }
 
 .titlebar-text { 
   flex-grow: 1; 
   text-align: center; 
-  font-weight: bold; 
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
 }
 
 .titlebar-buttons { 
   display: flex; 
+  gap: 4px;
 }
 
 .titlebar-button {
-  width: clamp(20px, 4vw, 26px);
-  height: clamp(18px, 4vw, 22px);
-  margin-left: 4px;
+  width: clamp(24px, 4vw, 30px);
+  height: clamp(20px, 4vw, 24px);
   font-size: clamp(12px, 2.5vw, 16px);
   text-align: center;
-  line-height: clamp(18px, 4vw, 22px);
-  background: #404040;
+  line-height: clamp(20px, 4vw, 24px);
+  background: linear-gradient(145deg, #404040, #2a2a2a);
   color: #ffffff;
-  border: 1px solid #808080;
+  border: 1px solid #555;
+  border-radius: 4px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.titlebar-button:hover {
+  background: linear-gradient(145deg, #505050, #3a3a3a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .winamp-content { 
-  padding: 12px; 
-  background: #000000; 
+  padding: 16px; 
+  background: transparent;
 }
 
 .header { 
-  padding: 10px;
-  background: #000000; 
+  padding: 12px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
   display: flex; 
   justify-content: space-between; 
   align-items: center;
-  border: 1px solid #444444;
-  margin-bottom: 10px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-bottom: 15px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .logo {
-  height: 40px;
+  height: 45px;
   width: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .header h1 { 
@@ -123,27 +155,39 @@ body {
   font-weight: bold; 
   margin: 0; 
   color: #ffcc00; 
-  text-transform: uppercase; 
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
 .search-box { 
   flex-grow: 1; 
-  min-width: 120px;
+  min-width: 140px;
 }
 
 .search-box input { 
-  padding: 6px 10px;
-  border: 1px solid #444444; 
-  background: #000000; 
+  padding: 8px 12px;
+  border: 1px solid #444; 
+  border-radius: 6px;
+  background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
   color: #ffffff; 
   width: 100%;
   font-size: clamp(12px, 2.5vw, 16px);
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #ffcc00;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 204, 0, 0.2);
 }
 
 .main { 
   display: flex; 
   flex-direction: row;
-  gap: 10px; 
+  gap: 15px; 
   align-items: flex-start;
 }
 
@@ -151,28 +195,38 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  border: 1px solid #444444;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  overflow: hidden;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .sidebar { 
   height: 45vh;
-  background: #000000; 
-  padding: 8px;
+  background: transparent;
+  padding: 10px;
   overflow-y: auto; 
   font-size: clamp(12px, 2.5vw, 16px);
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .player { 
   flex: 1;
-  min-width: 280px;
-  background: #000000; 
-  padding: 12px;
+  min-width: 300px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  padding: 16px;
   display: flex; 
   flex-direction: column; 
   align-items: center; 
-  border: 1px solid #444444; 
-  position: relative; 
+  border: 1px solid #333;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .artist-title { 
@@ -180,10 +234,13 @@ body {
   margin-top: 12px;
   font-size: clamp(14px, 3vw, 18px);
   color: #ffcc00; 
-  background: #222222; 
-  padding: 4px 8px;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  padding: 6px 12px;
   text-align: left;
   width: 100%;
+  border-radius: 6px;
+  border: 1px solid #333;
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
 }
 
 .album-title { 
@@ -194,6 +251,10 @@ body {
   font-size: clamp(12px, 2.5vw, 16px);
   text-align: left;
   width: 100%;
+  padding: 4px 8px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  border-radius: 4px;
+  border-left: 3px solid #00ccff;
 }
 
 .album-artist-name {
@@ -203,147 +264,198 @@ body {
 }
 
 .track-item { 
-  padding: 5px 8px;
+  padding: 8px 12px;
   cursor: pointer; 
-  border-bottom: 1px solid #333333; 
+  border-bottom: 1px solid #2a2a2a; 
   font-size: clamp(12px, 2.5vw, 16px);
   color: #ffffff; 
   text-align: left;
   width: 100%;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  margin-bottom: 2px;
 }
 
 .track-item:hover { 
-  background: #333333; 
-  color: #ffcc00; 
+  background: linear-gradient(145deg, #333333, #2a2a2a);
+  color: #ffcc00;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .track-item.playing { 
-  background: #000066; 
+  background: linear-gradient(145deg, #003366, #001a33);
   color: #ffcc00;
-  font-weight: bold; 
+  font-weight: bold;
+  border-left: 4px solid #ffcc00;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 204, 0, 0.2);
 }
 
 .cover-art-container {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .cover-art { 
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
-  border: 1px solid #444444;
+  border: 2px solid #333;
+  border-radius: 12px;
   display: none;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.cover-art:hover {
+  transform: scale(1.02);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .player-controls { 
   display: flex; 
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   align-items: center; 
   flex-wrap: wrap;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
   width: 100%;
 }
 
 .winamp-button {
-  width: clamp(36px, 8vw, 44px);
-  height: clamp(36px, 8vw, 44px);
-  background: #333333;
+  width: clamp(40px, 8vw, 48px);
+  height: clamp(40px, 8vw, 48px);
+  background: linear-gradient(145deg, #333333, #1a1a1a);
   color: #ffffff;
-  border: 1px solid #808080;
+  border: 1px solid #555;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: clamp(14px, 3vw, 18px);
+  font-size: clamp(16px, 3vw, 20px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .winamp-button:hover { 
-  background: #444444; 
+  background: linear-gradient(145deg, #444444, #2a2a2a);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .winamp-button:active { 
-  background: #222222; 
-  border-color: #666666; 
+  background: linear-gradient(145deg, #222222, #111111);
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .winamp-button.toggled { 
-  background: #000066; 
-  color: #ffcc00; 
+  background: linear-gradient(145deg, #003366, #001a33);
+  color: #ffcc00;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 204, 0, 0.2);
 }
 
 #volumeControl { 
-  width: min(120px, 25vw);
-  height: 20px;
+  width: min(140px, 25vw);
+  height: 24px;
   -webkit-appearance: none; 
-  background: #333333; 
-  border: 1px solid #808080; 
-  margin-left: 8px;
+  background: linear-gradient(145deg, #333333, #1a1a1a);
+  border: 1px solid #555;
+  border-radius: 12px;
+  margin-left: 10px;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #volumeControl::-webkit-slider-thumb { 
   -webkit-appearance: none; 
-  width: 16px;
-  height: 24px;
-  background: #ffcc00; 
-  border: 1px solid #808080; 
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(145deg, #ffcc00, #e6b800);
+  border: 1px solid #333;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .progress-container {
   width: 100%;
-  margin: 8px 0;
+  margin: 12px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 #progressBar {
   flex-grow: 1;
-  height: 15px;
+  height: 20px;
   -webkit-appearance: none;
-  background: #333333;
-  border: 1px solid #808080;
+  background: linear-gradient(145deg, #333333, #1a1a1a);
+  border: 1px solid #555;
+  border-radius: 10px;
   cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #progressBar::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 20px;
-  background: #ffcc00;
-  border: 1px solid #808080;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(145deg, #ffcc00, #e6b800);
+  border: 1px solid #333;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 #progressBar::-webkit-slider-runnable-track {
-  height: 15px;
-  background: #222222;
+  height: 20px;
+  background: linear-gradient(145deg, #222222, #111111);
   border: none;
+  border-radius: 10px;
 }
 
 .time-display {
   font-size: clamp(12px, 2.5vw, 14px);
   color: #ffcc00;
-  min-width: 100px;
+  min-width: 110px;
   text-align: center;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 6px rgba(255, 204, 0, 0.3);
 }
 
 #track-info { 
-  margin-top: 10px;
+  margin-top: 12px;
   font-weight: bold; 
   text-align: center; 
   font-size: clamp(12px, 2.5vw, 16px);
-  background: #222222; 
-  padding: 5px 10px;
-  border: 1px solid #444444; 
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  padding: 8px 12px;
+  border: 1px solid #333;
+  border-radius: 8px;
   width: 100%; 
   color: #ffcc00; 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #startIcon { 
@@ -355,30 +467,51 @@ body {
   cursor: pointer; 
   color: #ffcc00; 
   z-index: 1000; 
-  text-shadow: 2px 2px 0 #000; 
+  text-shadow: 
+    0 0 20px rgba(255, 204, 0, 0.8),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+#startIcon:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  text-shadow: 
+    0 0 30px rgba(255, 204, 0, 1),
+    2px 2px 6px rgba(0, 0, 0, 0.9);
 }
 
 .format-filters { 
   display: flex; 
-  padding: 8px;
-  background: #111111;
-  border-bottom: 1px solid #444444;
+  padding: 10px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  border-bottom: 1px solid #333;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
 .format-button { 
-  padding: 4px 10px;
-  background: #333333; 
+  padding: 6px 12px;
+  background: linear-gradient(145deg, #333333, #1a1a1a);
   color: #ffffff; 
-  border: 1px solid #808080; 
+  border: 1px solid #555;
+  border-radius: 6px;
   font-size: clamp(11px, 2vw, 14px);
-  cursor: pointer; 
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.format-button:hover {
+  background: linear-gradient(145deg, #444444, #2a2a2a);
+  transform: translateY(-1px);
 }
 
 .format-button.active { 
-  background: #000066; 
-  color: #ffcc00; 
+  background: linear-gradient(145deg, #003366, #001a33);
+  color: #ffcc00;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 204, 0, 0.2);
 }
 
 #audio-player { 
@@ -386,33 +519,40 @@ body {
 }
 
 .sidebar::-webkit-scrollbar { 
-  width: 12px; 
+  width: 14px; 
 }
 
 .sidebar::-webkit-scrollbar-track { 
-  background: #222222; 
-  border-left: 1px solid #444444; 
+  background: linear-gradient(145deg, #222222, #111111);
+  border-left: 1px solid #333;
+  border-radius: 7px;
 }
 
 .sidebar::-webkit-scrollbar-thumb { 
-  background: #444444; 
-  border: 1px solid #222222; 
+  background: linear-gradient(145deg, #444444, #333333);
+  border: 1px solid #222222;
+  border-radius: 7px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover { 
-  background: #555555; 
+  background: linear-gradient(145deg, #555555, #444444);
 }
 
 .loading {
-  padding: 10px;
+  padding: 12px;
   text-align: center;
   color: #ffcc00;
+  font-style: italic;
 }
 
 .error {
-  padding: 10px;
+  padding: 12px;
   text-align: center;
-  color: #ff3333;
+  color: #ff6666;
+  background: linear-gradient(145deg, #331111, #220808);
+  border: 1px solid #553333;
+  border-radius: 6px;
+  margin: 8px;
 }
 
 .simple-mode .album-title,
@@ -424,6 +564,55 @@ body {
   padding-left: 8px;
 }
 
+.status-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  color: #ffcc00;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid #333;
+  z-index: 1000;
+}
+
+.debug-log {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #00ff00;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: monospace;
+  max-width: 300px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+/* Animações suaves */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.track-item.playing {
+  animation: pulse 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 204, 0, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 204, 0, 0.6); }
+}
+
+.winamp-button.toggled {
+  animation: glow 3s infinite;
+}
+
+/* Media queries responsivas */
 @media (max-width: 768px) {
   .main {
     flex-direction: column;
@@ -453,7 +642,7 @@ body {
   
   .progress-container {
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
   }
   
   .time-display {
@@ -462,8 +651,8 @@ body {
   }
   
   .cover-art {
-    width: 140px;
-    height: 140px;
+    width: 160px;
+    height: 160px;
   }
 }
 
@@ -477,7 +666,7 @@ body {
   }
   
   .winamp-content {
-    padding: 8px;
+    padding: 12px;
   }
   
   .sidebar {
@@ -486,18 +675,18 @@ body {
   }
   
   .player-controls {
-    gap: 3px;
+    gap: 6px;
   }
   
   .winamp-button {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
   }
   
   .cover-art {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
   }
 }
 </style>
@@ -505,6 +694,8 @@ body {
 <body>
 
 <div class="album-background"></div>
+<div class="status-indicator" id="statusIndicator">Inicializando...</div>
+<div class="debug-log" id="debugLog"></div>
 <div class="winamp-container">
   <div class="winamp-window">
     <div class="winamp-titlebar">
@@ -553,7 +744,7 @@ body {
             <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1">
             <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
           </div>
-          <audio id="audio-player"></audio>
+          <audio id="audio-player" preload="none"></audio>
           <div id="track-info"></div>
         </div>
       </div>
@@ -569,7 +760,7 @@ var tracks = [], allTracks = [], currentTrack = 0, currentFormat = 'mp3';
 var shuffle = false, repeat = false;
 var isSeeking = false;
 var minhaColecao = [], outrosUsuarios = [];
-var isSimpleMode = false; // Modo simplificado para dispositivos limitados
+var isSimpleMode = false;
 
 // Elementos do DOM
 var audioPlayer = document.getElementById('audio-player');
@@ -588,20 +779,34 @@ var shuffleBtn = document.getElementById('shuffleBtn');
 var repeatBtn = document.getElementById('repeatBtn');
 var progressBar = document.getElementById('progressBar');
 var timeDisplay = document.getElementById('timeDisplay');
+var statusIndicator = document.getElementById('statusIndicator');
+var debugLog = document.getElementById('debugLog');
 
 // Estrutura de dados
 var albumsData = {};
 
+// Função para debug
+function debugMessage(message) {
+  console.log(message);
+  var timestamp = new Date().toLocaleTimeString();
+  debugLog.innerHTML += timestamp + ': ' + message + '<br>';
+  debugLog.scrollTop = debugLog.scrollHeight;
+}
+
+// Função para atualizar status
+function updateStatus(message) {
+  statusIndicator.textContent = message;
+  debugMessage('Status: ' + message);
+}
+
 // Detectar dispositivos com recursos limitados
 function detectLowResourceDevice() {
-  // Verificar se é uma TV antiga ou dispositivo com recursos limitados
   var isOldTV = (
     navigator.userAgent.includes('TV') || 
     navigator.userAgent.includes('SmartTV') ||
     navigator.userAgent.includes('CrKey')
   );
   
-  // Verificar se há limitações de memória (aproximação)
   var isLowMemory = (
     navigator.deviceMemory !== undefined && 
     navigator.deviceMemory < 2
@@ -626,13 +831,13 @@ function fetchCollection(url) {
           });
           resolve(lines);
         } else {
-          console.error('Erro ao buscar ' + url + ': ' + xhr.statusText);
+          debugMessage('Erro ao buscar ' + url + ': ' + xhr.statusText);
           resolve([]);
         }
       }
     };
     xhr.onerror = function() {
-      console.error('Falha na requisição para ' + url);
+      debugMessage('Falha na requisição para ' + url);
       resolve([]);
     };
     xhr.send();
@@ -651,17 +856,17 @@ function fetchAlbumMetadata(id) {
             var data = JSON.parse(xhr.responseText);
             resolve(data);
           } catch (e) {
-            console.error('Erro ao analisar JSON para ' + id + ':', e);
+            debugMessage('Erro ao analisar JSON para ' + id + ': ' + e);
             resolve(null);
           }
         } else {
-          console.error('Erro ao buscar metadados de ' + id + ': ' + xhr.statusText);
+          debugMessage('Erro ao buscar metadados de ' + id + ': ' + xhr.statusText);
           resolve(null);
         }
       }
     };
     xhr.onerror = function() {
-      console.error('Falha na requisição para ' + id);
+      debugMessage('Falha na requisição para ' + id);
       resolve(null);
     };
     
@@ -669,10 +874,10 @@ function fetchAlbumMetadata(id) {
     setTimeout(function() {
       if (xhr.readyState !== 4) {
         xhr.abort();
-        console.error('Timeout ao buscar metadados de ' + id);
+        debugMessage('Timeout ao buscar metadados de ' + id);
         resolve(null);
       }
-    }, 15000); // 15 segundos de timeout
+    }, 15000);
     
     xhr.send();
   });
@@ -680,13 +885,20 @@ function fetchAlbumMetadata(id) {
 
 // Função principal que inicia todo o processo
 function initializePlayer() {
+  updateStatus('Inicializando player...');
   resultsContainer.innerHTML = 'Carregando listas de coleções...';
   isSimpleMode = detectLowResourceDevice();
   
   if (isSimpleMode) {
     document.body.classList.add('simple-mode');
     resultsContainer.innerHTML = 'Modo simplificado ativado para melhor desempenho...';
+    updateStatus('Modo simplificado');
   }
+  
+  // Configurar elemento de áudio
+  audioPlayer.volume = 0.5;
+  audioPlayer.preload = 'none';
+  debugMessage('Elemento de áudio configurado');
   
   var minhasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/minhas_colecoes.txt';
   var outrasColecoesUrl = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main/outras_colecoes.txt';
@@ -700,13 +912,16 @@ function initializePlayer() {
     
     if (minhaColecao.length === 0 && outrosUsuarios.length === 0) {
       resultsContainer.innerHTML = 'Nenhuma coleção encontrada. Verifique os arquivos no GitHub.';
+      updateStatus('Nenhuma coleção encontrada');
       return;
     }
     
+    updateStatus('Carregando álbuns...');
     carregarAlbuns();
   }).catch(function(error) {
-    console.error('Erro ao carregar coleções:', error);
+    debugMessage('Erro ao carregar coleções: ' + error);
     resultsContainer.innerHTML = 'Erro ao carregar as coleções. Tentando novamente...';
+    updateStatus('Erro ao carregar coleções');
     setTimeout(initializePlayer, 3000);
   });
 }
@@ -734,6 +949,7 @@ function carregarAlbuns(){
   var albumLinks = minhaColecao.concat(outrosUsuarios);
   if(albumLinks.length === 0){
     resultsContainer.innerHTML = 'Nenhum álbum para carregar.';
+    updateStatus('Nenhum álbum para carregar');
     return;
   }
 
@@ -750,8 +966,10 @@ function carregarAlbuns(){
   function loadNextAlbum(index) {
     if (index >= albumLinks.length) {
       // Todos os álbuns foram carregados
+      updateStatus('Criando filtros...');
       criarFiltros();
       renderAll();
+      updateStatus('Player pronto');
       return;
     }
     
@@ -759,6 +977,7 @@ function carregarAlbuns(){
     var id = link.split('/').pop();
     
     resultsContainer.innerHTML = 'Carregando álbum ' + (index + 1) + ' de ' + totalCount + '...';
+    updateStatus('Carregando álbum ' + (index + 1) + '/' + totalCount);
     
     fetchAlbumMetadata(id).then(function(data) {
       if (!data) {
@@ -996,7 +1215,7 @@ function applySearchFilter() {
     var artistMatch = container.dataset.artist.indexOf(term) !== -1;
     var albumMatch = container.dataset.album.indexOf(term) !== -1;
     
-    if (artistMatch || albumMatch) {
+    if (term === '' || artistMatch || albumMatch) {
       var tracksInContainer = container.getElementsByClassName('track-item');
       for (var j = 0; j < tracksInContainer.length; j++) {
         tracksInContainer[j].style.display = 'block';
@@ -1026,6 +1245,9 @@ function playTrack(index){
   var track = tracks[index]; 
   if(!track) return;
   
+  debugMessage('Tentando reproduzir: ' + track.title);
+  debugMessage('URL: ' + track.url);
+  
   currentTrack = index;
   for (var i = 0; i < tracks.length; i++) {
     if(tracks[i].element) tracks[i].element.classList.remove('playing');
@@ -1034,9 +1256,14 @@ function playTrack(index){
   track.element.classList.add('playing');
   trackInfo.textContent = track.artist + ' - ' + track.title;
   playPauseBtn.textContent = '⏸';
+  
+  // Parar reprodução atual
   audioPlayer.pause(); 
-  audioPlayer.src = '';
+  audioPlayer.currentTime = 0;
+  
+  // Configurar nova fonte
   audioPlayer.src = track.url;
+  audioPlayer.load(); // Forçar carregamento
   
   progressBar.value = 0;
   timeDisplay.textContent = "00:00 / 00:00";
@@ -1049,12 +1276,23 @@ function playTrack(index){
     coverArt.style.display = 'none'; 
   }
   
+  updateStatus('Reproduzindo: ' + track.title);
+  debugMessage('Elemento audio configurado, tentando reproduzir...');
+  
+  // Tentar reproduzir
   var playPromise = audioPlayer.play();
   if (playPromise !== undefined) {
-    playPromise.catch(function(e){
-      console.error("Erro ao reproduzir áudio:", e);
+    playPromise.then(function() {
+      debugMessage('Reprodução iniciada com sucesso');
+      updateStatus('Reproduzindo');
+    }).catch(function(e){
+      debugMessage('Erro ao reproduzir áudio: ' + e.message);
       trackInfo.textContent = "Erro ao reproduzir: " + track.title;
+      updateStatus('Erro na reprodução');
+      playPauseBtn.textContent = '▶';
     });
+  } else {
+    debugMessage('Play promise não definida');
   }
 }
 
@@ -1069,45 +1307,85 @@ function stopTrack(){
   audioPlayer.currentTime = 0; 
   playPauseBtn.textContent = '▶'; 
   progressBar.value = 0; 
-  timeDisplay.textContent = "00:00 / 00:00"; 
+  timeDisplay.textContent = "00:00 / 00:00";
+  updateStatus('Parado');
+  debugMessage('Reprodução parada');
 }
 
 function togglePlayPause(){ 
+  debugMessage('Toggle play/pause - paused: ' + audioPlayer.paused);
+  
   if (audioPlayer.paused) {
     if (audioPlayer.src) {
-      audioPlayer.play();
-      playPauseBtn.textContent = '⏸';
+      debugMessage('Tentando retomar reprodução');
+      var playPromise = audioPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.then(function() {
+          playPauseBtn.textContent = '⏸';
+          updateStatus('Reproduzindo');
+          debugMessage('Reprodução retomada');
+        }).catch(function(e) {
+          debugMessage('Erro ao retomar reprodução: ' + e.message);
+          updateStatus('Erro na reprodução');
+        });
+      }
     } else if (tracks.length > 0) {
+      debugMessage('Nenhuma música carregada, tocando aleatória');
       playRandomTrack();
     }
   } else {
+    debugMessage('Pausando reprodução');
     audioPlayer.pause();
     playPauseBtn.textContent = '▶';
+    updateStatus('Pausado');
   }
 }
 
 function toggleShuffle(){ 
   shuffle = !shuffle; 
-  shuffleBtn.classList.toggle('toggled', shuffle); 
+  shuffleBtn.classList.toggle('toggled', shuffle);
+  updateStatus(shuffle ? 'Shuffle ativo' : 'Shuffle desativo');
+  debugMessage('Shuffle: ' + shuffle);
 }
 
 function toggleRepeat(){ 
   repeat = !repeat; 
-  repeatBtn.classList.toggle('toggled', repeat); 
+  repeatBtn.classList.toggle('toggled', repeat);
+  updateStatus(repeat ? 'Repeat ativo' : 'Repeat desativo');
+  debugMessage('Repeat: ' + repeat);
 }
 
 // Event listeners
 volumeControl.addEventListener('input', function(){
   audioPlayer.volume = volumeControl.value;
+  debugMessage('Volume alterado para: ' + volumeControl.value);
+});
+
+audioPlayer.addEventListener('loadstart', function() {
+  debugMessage('Iniciando carregamento do áudio');
+});
+
+audioPlayer.addEventListener('loadeddata', function() {
+  debugMessage('Dados do áudio carregados');
 });
 
 audioPlayer.addEventListener('loadedmetadata', function() {
   timeDisplay.textContent = '00:00 / ' + formatTime(audioPlayer.duration);
+  debugMessage('Metadados carregados - duração: ' + audioPlayer.duration);
+});
+
+audioPlayer.addEventListener('canplay', function() {
+  debugMessage('Áudio pode ser reproduzido');
+});
+
+audioPlayer.addEventListener('canplaythrough', function() {
+  debugMessage('Áudio pode ser reproduzido completamente');
 });
 
 audioPlayer.addEventListener('timeupdate', updateProgress);
 
 audioPlayer.addEventListener('ended', function(){ 
+  debugMessage('Reprodução finalizada');
   if(repeat){
     playTrack(currentTrack);
   } else { 
@@ -1119,6 +1397,38 @@ audioPlayer.addEventListener('ended', function(){
   } 
 });
 
+audioPlayer.addEventListener('play', function() {
+  updateStatus('Reproduzindo');
+  debugMessage('Evento play disparado');
+});
+
+audioPlayer.addEventListener('pause', function() {
+  if (audioPlayer.currentTime === 0) {
+    updateStatus('Parado');
+  } else {
+    updateStatus('Pausado');
+  }
+  debugMessage('Evento pause disparado');
+});
+
+audioPlayer.addEventListener('error', function(e) {
+  debugMessage('Erro no elemento audio: ' + e.message);
+  if (audioPlayer.error) {
+    debugMessage('Código do erro: ' + audioPlayer.error.code);
+    debugMessage('Mensagem do erro: ' + audioPlayer.error.message);
+  }
+  updateStatus('Erro no áudio');
+  playPauseBtn.textContent = '▶';
+});
+
+audioPlayer.addEventListener('stalled', function() {
+  debugMessage('Carregamento do áudio travou');
+});
+
+audioPlayer.addEventListener('waiting', function() {
+  debugMessage('Aguardando dados do áudio');
+});
+
 progressBar.addEventListener('input', function() {
   isSeeking = true;
 });
@@ -1126,6 +1436,7 @@ progressBar.addEventListener('input', function() {
 progressBar.addEventListener('change', function() {
   if (audioPlayer.duration) {
     audioPlayer.currentTime = (progressBar.value / 100) * audioPlayer.duration;
+    debugMessage('Posição alterada para: ' + audioPlayer.currentTime);
   }
   isSeeking = false;
 });
@@ -1157,6 +1468,7 @@ shuffleBtn.addEventListener('click', toggleShuffle);
 repeatBtn.addEventListener('click', toggleRepeat);
 
 // Inicia todo o processo de carregamento
+debugMessage('Iniciando player...');
 initializePlayer();
 </script>
 </body>
