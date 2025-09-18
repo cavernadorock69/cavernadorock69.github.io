@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de M3U do Archive.org</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
+    input, button, textarea { width: 100%; margin-top: 10px; padding: 10px; font-size: 1em; }
+    textarea { height: 300px; background: #222; color: #0f0; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>🎶 Gerador de M3U do Archive.org</h1>
+  <input type="text" id="link" placeholder="Cole o link do Archive.org aqui">
+  <button onclick="gerarM3U()">Gerar M3U</button>
+  <textarea id="saida" readonly></textarea>
+
+  <script>
+    async function gerarM3U() {
+      const url = document.getElementById('link').value.trim();
+      const id = url.split('/').pop();
+      const api = `https://archive.org/metadata/${id}`;
+      const res = await fetch(api);
+      const data = await res.json();
+
+      const files = data.files.filter(f => f.name.endsWith('.mp3') || f.name.endsWith('.flac'));
+      const base = `https://archive.org/download/${id}/`;
+      const artist = data.metadata.creator || 'Desconhecido';
+      const album = data.metadata.title || 'Sem título';
+      const cover = base + (data.files.find(f => f.name.match(/\.(jpg|png)$/))?.name || '');
+
+      let m3u = '#EXTM3U\n';
+      m3u += `#EXTART:${artist}\n`;
+      m3u += `#EXTALB:${album}\n`;
+      if (cover) m3u += `#EXTIMG:${cover}\n\n`;
+
+      files.forEach(f => {
+        const title = f.title || f.name.replace(/\.(mp3|flac)/, '');
+        const length = f.length ? Math.round(f.length) : -1;
+        m3u += `#EXTINF:${length},${artist} - ${title}\n`;
+        m3u += base + encodeURIComponent(f.name) + '\n\n';
+      });
+
+      document.getElementById('saida').value = m3u;
+    }
+  </script>
+</body>
+</html>
+
