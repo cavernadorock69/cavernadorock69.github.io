@@ -5,25 +5,25 @@
   <title>Gerador de M3U do Archive.org</title>
   <style>
     body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
-    input, button, textarea { width: 100%; margin-top: 10px; padding: 10px; font-size: 1em; }
-    textarea { height: 300px; background: #222; color: #0f0; font-family: monospace; }
+    input, button { width: 100%; margin-top: 10px; padding: 10px; font-size: 1em; }
   </style>
 </head>
 <body>
   <h1>🎶 Gerador de M3U do Archive.org</h1>
   <input type="text" id="link" placeholder="Cole o link do Archive.org aqui">
-  <button onclick="gerarM3U()">Gerar M3U</button>
-  <textarea id="saida" readonly></textarea>
+  <button onclick="gerarEM3U()">Baixar M3U</button>
 
   <script>
-    async function gerarM3U() {
+    async function gerarEM3U() {
       const url = document.getElementById('link').value.trim();
       const id = url.split('/').pop();
       const api = `https://archive.org/metadata/${id}`;
       const res = await fetch(api);
       const data = await res.json();
 
-      const files = data.files.filter(f => f.name.endsWith('.mp3') || f.name.endsWith('.flac'));
+      const files = data.files.filter(f =>
+        f.name.endsWith('.mp3') || f.name.endsWith('.flac') || f.name.endsWith('.mp4') || f.name.endsWith('.wav')
+      );
       const base = `https://archive.org/download/${id}/`;
       const artist = data.metadata.creator || 'Desconhecido';
       const album = data.metadata.title || 'Sem título';
@@ -35,15 +35,18 @@
       if (cover) m3u += `#EXTIMG:${cover}\n\n`;
 
       files.forEach(f => {
-        const title = f.title || f.name.replace(/\.(mp3|flac)/, '');
+        const title = f.title || f.name.replace(/\.(mp3|flac|mp4|wav)/, '');
         const length = f.length ? Math.round(f.length) : -1;
         m3u += `#EXTINF:${length},${artist} - ${title}\n`;
         m3u += base + encodeURIComponent(f.name) + '\n\n';
       });
 
-      document.getElementById('saida').value = m3u;
+      const blob = new Blob([m3u], { type: 'audio/x-mpegurl' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${id}.m3u`;
+      link.click();
     }
   </script>
 </body>
 </html>
-
