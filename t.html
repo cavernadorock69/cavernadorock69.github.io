@@ -1,461 +1,748 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player com Display de Qualidade</title>
-    <!-- Biblioteca para ler metadados de áudio -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-    <style>
-        /* CSS da versão anterior com a adição da status-bar */
-        :root {
-            --cor-fundo: #000; --cor-texto-principal: #fff; --cor-texto-display: #0f0;
-            --cor-destaque: #008080; --cor-gradiente-inicio: #000080; --cor-gradiente-fim: #1084d0;
-            --cor-cinza-claro: #c0c0c0; --cor-cinza-medio: #808080; --cor-cinza-escuro: #404040;
-            --cor-borda-clara: #dfdfdf;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', 'Arial', sans-serif; font-size: 14px; }
-        body {
-            background-color: var(--cor-fundo ); color: var(--cor-texto-principal); display: flex;
-            justify-content: center; align-items: center; min-height: 100vh; padding: 10px;
-        }
-        .player-container {
-            width: 100%; max-width: 480px; min-width: 320px; background: var(--cor-cinza-claro);
-            border: 2px solid; border-color: var(--cor-borda-clara) var(--cor-cinza-escuro) var(--cor-cinza-escuro) var(--cor-borda-clara);
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column;
-        }
-        .title-bar {
-            background: linear-gradient(to right, var(--cor-gradiente-inicio), var(--cor-gradiente-fim));
-            padding: 4px 8px; display: flex; justify-content: space-between; align-items: center;
-            cursor: move; color: var(--cor-texto-principal);
-        }
-        .main-content { padding: 10px; }
-        .display-area { display: flex; gap: 10px; margin-bottom: 10px; }
-        .album-art {
-            width: 60px; height: 60px; border: 2px inset var(--cor-cinza-escuro); background: var(--cor-fundo);
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;
-        }
-        .album-art img { width: 100%; height: 100%; object-fit: cover; }
-        .album-art-placeholder { font-size: 10px; color: var(--cor-texto-display); text-align: center; padding: 2px; }
-        .info-display {
-            flex-grow: 1; height: 60px; background: var(--cor-fundo); color: var(--cor-texto-display);
-            padding: 4px 8px; font-family: 'MS Sans Serif', 'Courier New', monospace; overflow: hidden;
-            border: 2px inset var(--cor-cinza-escuro); position: relative;
-        }
-        .track-info-scroller { position: absolute; white-space: nowrap; animation: scroll 20s linear infinite paused; }
-        .track-info-scroller.scrolling { animation-play-state: running; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .progress-container { height: 12px; background: var(--cor-fundo); border: 1px solid var(--cor-cinza-medio); margin-bottom: 10px; cursor: pointer; }
-        .progress-bar { height: 100%; width: 0%; background: linear-gradient(to right, var(--cor-gradiente-inicio), var(--cor-gradiente-fim)); }
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 5px; margin-bottom: 10px; }
-        .btn {
-            padding: 8px 5px; background: var(--cor-cinza-claro); border: 2px outset var(--cor-borda-clara);
-            cursor: pointer; font-weight: bold; color: #000; transition: background 0.1s;
-        }
-        .btn:active { border-style: inset; }
-        .btn.active { background: var(--cor-destaque); color: var(--cor-texto-principal); border-style: inset; }
-        .filters { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-        .filter-btn { padding: 4px 8px; font-size: 12px; }
-        .search-box { width: 100%; padding: 6px; margin-bottom: 10px; border: 2px inset var(--cor-cinza-escuro); background-color: var(--cor-texto-principal); color: #000; }
-        
-        .library-content { max-height: 250px; overflow-y: auto; border: 1px solid var(--cor-cinza-medio); background: var(--cor-texto-principal); color: #000; }
-        .artist-item, .album-item { padding: 6px 8px; cursor: pointer; font-weight: bold; border-bottom: 1px solid #eee; }
-        .artist-item { background-color: #e0e0e0; }
-        .album-item { background-color: #f0f0f0; padding-left: 20px; }
-        .track-item { padding: 5px 8px 5px 35px; border-bottom: 1px solid #f5f5f5; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .artist-item:hover, .album-item:hover { background-color: #ddd; }
-        .track-item:hover { background-color: #e8e8e8; }
-        .track-item.playing { background: var(--cor-gradiente-inicio); color: var(--cor-texto-principal); font-weight: bold; }
-        .album-container, .track-container { display: none; }
-        .hidden { display: none; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player Winamp-style (Busca + Filtro + Organização)</title>
 
-        /* --- Barra de Status --- */
-        .status-bar {
-            background: var(--cor-cinza-claro);
-            padding: 3px 8px;
-            border-top: 1px solid var(--cor-cinza-medio);
-            display: flex;
-            justify-content: space-between;
-            color: #000;
-            font-size: 11px;
-            font-weight: bold;
-        }
-    </style>
+<!-- opcional: jsmediatags (mantido, mas não obrigatório) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+
+<style>
+/* Winamp-like dark theme (sem CSS variables para compatibilidade) */
+html,body{height:100%;margin:0;padding:12px;background:#111;color:#bfffbf;font-family:Arial,Helvetica,sans-serif;}
+.container{max-width:900px;margin:0 auto;border:6px solid #1e1e1e;background:#222;box-shadow:0 6px 20px rgba(0,0,0,.7);}
+.header{background:#0b0b0b;padding:10px 14px;border-bottom:4px solid #050505;color:#9df79d;font-weight:bold;font-size:18px;}
+.top-controls{padding:12px;background:#1b1b1b;border-bottom:4px solid #0a0a0a;overflow:hidden;}
+.controls-left{display:inline-block;vertical-align:top;}
+.controls-right{display:inline-block;vertical-align:top;float:right;}
+.btn{display:inline-block;padding:8px 10px;margin-right:6px;background:#2c2c2c;border:2px solid #444;color:#bfffbf;font-weight:bold;cursor:pointer;user-select:none;}
+.btn:active{transform:translateY(1px);}
+.btn.active{background:#0f7f5f;color:#fff;border-style:inset;}
+.display{padding:12px;background:#000;border-top:4px solid #050505;border-bottom:4px solid #050505;display:block;color:#00ff3b;font-family: "Courier New", monospace;}
+.display .title{font-size:15px;font-weight:bold;color:#aaf7aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.display .meta{font-size:12px;color:#8ffb8f;margin-top:6px;}
+.row{padding:12px;background:#101010;border-bottom:4px solid #060606;overflow:hidden;}
+.left-col{display:inline-block;vertical-align:top;width:36%;padding-right:10px;}
+.right-col{display:inline-block;vertical-align:top;width:62%;}
+.art{width:100%;height:140px;background:#040404;border:3px inset #000;text-align:center;color:#2ff07f;line-height:140px;font-size:12px;overflow:hidden;}
+.search{width:100%;padding:8px;margin-bottom:8px;border:2px inset #333;background:#ebfbe9;color:#000;}
+.filters{margin-bottom:8px;}
+.filter-btn{display:inline-block;padding:6px 10px;margin-right:6px;background:#cfcfcf;border:2px solid #888;cursor:pointer;color:#000;font-weight:bold;}
+.filter-btn.active{background:#0c8b6f;color:#fff;border-style:inset;}
+.playlist{background:#020202;color:#11ff4d;border:3px solid #0b0b0b;height:360px;overflow:auto;padding:6px;font-family:monospace;font-size:13px;}
+.artist-item{padding:6px 8px;background:#062806;margin-bottom:6px;cursor:pointer;font-weight:bold;border:1px solid #0b5a36;}
+.album-item{padding:6px 8px 6px 18px;background:#083b20;margin-bottom:4px;cursor:pointer;border:1px solid #064b2b;color:#bfffbf;}
+.track-item{padding:4px 8px 4px 30px;background:#062b18;margin-bottom:2px;cursor:pointer;border-left:2px solid #0a7a46;color:#bfffbf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.track-item.playing{background:#0f7f5f;color:#fff;font-weight:bold;}
+.small{font-size:12px;color:#9bd9a5;}
+.statusbar{background:#dfeee0;color:#0b2a1a;padding:8px 12px;border-top:4px solid #b6cdb8;font-weight:bold;display:flex;justify-content:space-between;}
+.fallback{padding:10px;background:#141414;border-top:4px solid #0b0b0b;color:#cfe9cf;}
+textarea.m3u{width:100%;min-height:80px;background:#0b0b0b;color:#bfffbf;padding:8px;border:2px solid #111;}
+.note{font-size:12px;color:#9fbf9f;margin-top:6px;}
+@media (max-width:720px){ .left-col, .right-col{display:block;width:100%;} .art{height:100px;line-height:100px;} .playlist{height:260px;} }
+</style>
 </head>
 <body>
-    <div class="player-container">
-        <div class="title-bar"><span class="title-text">Web Player M3U</span></div>
-        <div class="main-content">
-            <div class="display-area">
-                <div id="albumArt" class="album-art"><div class="album-art-placeholder">Capa</div></div>
-                <div class="info-display"><span id="trackInfoScroller" class="track-info-scroller">Bem-vindo!</span></div>
-            </div>
-            <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-            <div class="controls">
-                <button class="btn" id="prevBtn" title="Anterior">◀◀</button>
-                <button class="btn" id="playPauseBtn" title="Play/Pause">▶</button>
-                <button class="btn" id="stopBtn" title="Parar">■</button>
-                <button class="btn" id="nextBtn" title="Próxima">▶▶</button>
-                <button class="btn" id="shuffleBtn" title="Modo Aleatório">🔀</button>
-            </div>
-            <div class="filters">
-                <button class="btn filter-btn active" data-filter="all">Todos</button>
-                <button class="btn filter-btn" data-filter="mp3">MP3</button>
-                <button class="btn filter-btn" data-filter="flac">FLAC</button>
-                <button class="btn filter-btn" data-filter="wav">WAV</button>
-            </div>
-            <input type="text" id="searchInput" class="search-box" placeholder="Buscar por Artista, Álbum ou Título...">
-            <div class="library-content" id="libraryContent"></div>
+<div class="container">
+  <div class="header">Web Player • Estilo Winamp (Busca · Filtros · Organização)</div>
+
+  <div class="top-controls">
+    <div class="controls-left">
+      <button id="prevBtn" class="btn" title="Anterior">⟸</button>
+      <button id="playPauseBtn" class="btn" title="Play/Pause">▶</button>
+      <button id="stopBtn" class="btn" title="Parar">■</button>
+      <button id="nextBtn" class="btn" title="Próxima">⟹</button>
+      <button id="shuffleBtn" class="btn" title="Aleatório">🔀</button>
+    </div>
+    <div class="controls-right">
+      <div class="small">Filtro Qualidade:</div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="mp3">MP3</button>
+        <button class="filter-btn" data-filter="wav">WAV</button>
+        <button class="filter-btn" data-filter="flac">FLAC</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="display">
+    <div id="displayTitle" class="title">Pronto — carregando playlists do GitHub...</div>
+    <div id="displayMeta" class="meta">Aguarde — buscando .m3u em "minhas_coleções" e "outras_coleções".</div>
+  </div>
+
+  <div class="row">
+    <div class="left-col">
+      <div id="albumArt" class="art">CAPA</div>
+      <input id="searchInput" class="search" placeholder="Buscar artista, álbum ou faixa..." />
+      <div class="note">Se a TV bloquear o GitHub API, cole uma M3U no campo abaixo e clique em "Carregar M3U".</div>
+      <div style="margin-top:8px;">
+        <textarea id="m3uInput" class="m3u" placeholder="#EXTM3U&#10;#EXTINF:-1,Artista - Título&#10;https://.../track.mp3"></textarea>
+        <div style="margin-top:6px;">
+          <button id="loadM3UBtn" class="btn">Carregar M3U</button>
+          <button id="clearBtn" class="btn">Limpar Biblioteca</button>
         </div>
-        <div class="status-bar">
-            <span id="bitrateInfo">-- kbps</span>
-            <span id="samplerateInfo">-- kHz</span>
-        </div>
+      </div>
     </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const LASTFM_API_KEY = 'SUA_CHAVE_DE_API_AQUI';
-        const LASTFM_API_URL = 'https://ws.audioscrobbler.com/2.0/';
+    <div class="right-col">
+      <div id="playlist" class="playlist">Carregando...</div>
+    </div>
+  </div>
 
-        const playPauseBtn = document.getElementById('playPauseBtn' ), stopBtn = document.getElementById('stopBtn'),
-              prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn'),
-              shuffleBtn = document.getElementById('shuffleBtn'), progressContainer = document.getElementById('progressContainer'),
-              progressBar = document.getElementById('progressBar'), libraryContent = document.getElementById('libraryContent'),
-              trackInfoScroller = document.getElementById('trackInfoScroller'), searchInput = document.getElementById('searchInput'),
-              albumArt = document.getElementById('albumArt'), filterButtons = document.querySelectorAll('.filter-btn'),
-              bitrateInfo = document.getElementById('bitrateInfo'), samplerateInfo = document.getElementById('samplerateInfo'),
-              audioElement = new Audio();
+  <div class="statusbar">
+    <div id="bitrateInfo">--</div>
+    <div id="progressContainer" style="flex:1;margin:0 12px;align-self:center;cursor:pointer;background:#e6f6e8;height:10px;border:1px solid #b7e7c7;">
+      <div id="progressBar" style="width:0;height:100%;background:#2f9f6f;"></div>
+    </div>
+    <div id="samplerateInfo">--</div>
+  </div>
+</div>
 
-        let flatTracks = [], library = {}, currentTrackIndex = -1, isPlaying = false, isShuffle = false, originalFlatTracks = [], currentFilter = 'all';
-        const artCache = new Map();
+<audio id="audio" preload="metadata"></audio>
 
-        const repositories = [
-            'https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/minhas_cole%C3%A7%C3%B5es',
-            'https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/outras_cole%C3%A7%C3%B5es'
-        ];
+<script>
+/*
+ Retro-compatível: usa var, XMLHttpRequest (sem async/await).
+ Funcionalidades:
+  - busca .m3u nas pastas do GitHub
+  - parse #EXTINF quando disponível
+  - deduz artist/album/title a partir do link quando necessário
+  - organização Artist -> Album -> Tracks
+  - search, filter por formato (mp3/wav/flac/all)
+  - play/pause/stop/prev/next/shuffle, progress
+*/
 
-        async function init( ) {
-            addEventListeners();
-            await loadAndBuildLibrary();
-            if (flatTracks.length > 0) {
-                originalFlatTracks = [...flatTracks];
-                renderLibrary();
-                updateTrackInfo('Pronto para tocar. Selecione uma música.');
-            } else {
-                updateTrackInfo('Nenhuma música encontrada.');
-            }
-        }
+var GITHUB_API_DIRS = [
+  'https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/minhas_cole%C3%A7%C3%B5es',
+  'https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/outras_cole%C3%A7%C3%B5es'
+];
 
-        async function loadAndBuildLibrary() {
-            // ... (código de carregamento da biblioteca, igual ao anterior)
-            updateTrackInfo('Buscando playlists...');
-            const m3uUrls = [];
-            for (const repoUrl of repositories) {
-                try {
-                    const response = await fetch(repoUrl);
-                    const files = await response.json();
-                    files.filter(file => file.name.endsWith('.m3u')).forEach(file => m3uUrls.push(file.download_url));
-                } catch (error) { console.error(`Erro ao buscar no repositório ${repoUrl}:`, error); }
-            }
+var audio = document.getElementById('audio');
+var displayTitle = document.getElementById('displayTitle');
+var displayMeta = document.getElementById('displayMeta');
+var playlistEl = document.getElementById('playlist');
+var albumArtEl = document.getElementById('albumArt');
+var searchInput = document.getElementById('searchInput');
+var progressContainer = document.getElementById('progressContainer');
+var progressBar = document.getElementById('progressBar');
+var bitrateInfo = document.getElementById('bitrateInfo');
+var samplerateInfo = document.getElementById('samplerateInfo');
 
-            if (m3uUrls.length === 0) return;
-            updateTrackInfo(`Carregando ${m3uUrls.length} playlists...`);
+var playPauseBtn = document.getElementById('playPauseBtn');
+var nextBtn = document.getElementById('nextBtn');
+var prevBtn = document.getElementById('prevBtn');
+var stopBtn = document.getElementById('stopBtn');
+var shuffleBtn = document.getElementById('shuffleBtn');
+var filterButtons = document.querySelectorAll('.filter-btn');
 
-            const m3uContents = await Promise.all(m3uUrls.map(url => fetch(url).then(res => res.text())));
-            
-            let tempTracks = [];
-            m3uContents.forEach(content => {
-                let currentArtist = "Artista Desconhecido", currentAlbum = "Álbum Desconhecido", currentArtwork = "";
-                const lines = content.split('\n').map(l => l.trim()).filter(l => l);
+var loadM3UBtn = document.getElementById('loadM3UBtn');
+var clearBtn = document.getElementById('clearBtn');
+var m3uInput = document.getElementById('m3uInput');
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    if (line.startsWith('#EXTART:')) currentArtist = line.substring(8);
-                    if (line.startsWith('#EXTALB:')) currentAlbum = line.substring(8);
-                    if (line.startsWith('#EXTIMG:')) currentArtwork = line.substring(8);
-                    
-                    if (line.startsWith('#EXTINF:')) {
-                        const title = line.split(',').slice(1).join(',');
-                        const urlLine = lines[i + 1];
-                        
-                        if (urlLine && !urlLine.startsWith('#')) {
-                            const format = urlLine.split('.').pop().toLowerCase();
-                            const existingTrack = tempTracks.find(t => t.title === title && t.artist === currentArtist && t.album === currentAlbum);
+var library = {}; // library[artist][album] = {year, artwork, tracks: [trackObj,...]}
+var flatTracks = []; // flattened list of track objects for indexing
+var originalFlat = [];
+var currentIndex = -1;
+var isPlaying = false;
+var isShuffle = false;
+var currentFilter = 'all';
+var artCache = {};
+var jsmediatagsAvailable = !!(window.jsmediatags && window.jsmediatags.read);
 
-                            if (existingTrack) {
-                                existingTrack.sources[format] = urlLine;
-                            } else {
-                                const yearMatch = currentAlbum.match(/\b(\d{4})\b/);
-                                tempTracks.push({
-                                    title: title, artist: currentArtist, album: currentAlbum,
-                                    artwork: currentArtwork, year: yearMatch ? yearMatch[1] : '0000',
-                                    sources: { [format]: urlLine }
-                                });
-                            }
-                            i++;
-                        }
-                    }
-                }
-            });
+/* ---------- Helpers: XHR JSON ---------- */
+function xhrGetJson(url, cb) {
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e, null); }
+        } else { cb(new Error('HTTP ' + xhr.status), null); }
+      }
+    };
+    xhr.send();
+  } catch(e) {
+    cb(e, null);
+  }
+}
 
-            library = {};
-            tempTracks.forEach(track => {
-                if (!library[track.artist]) library[track.artist] = {};
-                if (!library[track.artist][track.album]) {
-                    library[track.artist][track.album] = { year: track.year, artwork: track.artwork, tracks: [] };
-                }
-                library[track.artist][track.album].tracks.push(track);
-            });
+function xhrGetText(url, cb) {
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) cb(null, xhr.responseText);
+        else cb(new Error('HTTP ' + xhr.status), null);
+      }
+    };
+    xhr.send();
+  } catch(e) {
+    cb(e, null);
+  }
+}
 
-            const sortedArtists = Object.keys(library).sort((a, b) => a.localeCompare(b));
-            const sortedLibrary = {};
-            sortedArtists.forEach(artist => {
-                const albums = library[artist];
-                const sortedAlbums = Object.keys(albums).sort((a, b) => albums[a].year.localeCompare(albums[b].year));
-                sortedLibrary[artist] = {};
-                sortedAlbums.forEach(album => {
-                    sortedLibrary[artist][album] = albums[album];
-                });
-            });
-            library = sortedLibrary;
+/* ---------- Parse M3U (EXTINF-aware) ---------- */
+function parseM3uContent(content) {
+  var lines = content.split(/\r?\n/);
+  var temp = [];
+  var currentArtist = 'Artista Desconhecido';
+  var currentAlbum = 'Álbum Desconhecido';
+  var currentArtwork = '';
+  for (var i = 0; i < lines.length; i++) {
+    var l = lines[i].trim();
+    if (!l) continue;
+    if (l.indexOf('#EXTART:') === 0) { currentArtist = l.substring(8).trim(); continue; }
+    if (l.indexOf('#EXTALB:') === 0) { currentAlbum = l.substring(8).trim(); continue; }
+    if (l.indexOf('#EXTIMG:') === 0) { currentArtwork = l.substring(8).trim(); continue; }
+    if (l.indexOf('#EXTINF:') === 0) {
+      var info = l.split(',').slice(1).join(',').trim(); // prefer artist - title or title
+      var title = info || 'Track';
+      var url = (lines[i+1] || '').trim();
+      if (url && url.indexOf('#') !== 0) {
+        i++;
+        var format = getFormatFromUrl(url);
+        temp.push({
+          title: title,
+          artist: currentArtist,
+          album: currentAlbum,
+          artwork: currentArtwork,
+          year: (currentAlbum.match(/\b(\d{4})\b/) || [])[1] || '0000',
+          sources: (function(){ var s={}; s[format]=url; return s; })()
+        });
+      }
+    } else if (l.indexOf('http') === 0 || l.indexOf('/') === 0) {
+      // URL line without EXTINF -> try to deduce
+      var url2 = l;
+      var ded = deduceFromUrl(url2);
+      var fmt2 = getFormatFromUrl(url2);
+      temp.push({
+        title: ded.title || url2.split('/').pop(),
+        artist: ded.artist || 'Artista Desconhecido',
+        album: ded.album || 'Álbum Desconhecido',
+        artwork: '',
+        year: ded.year || '0000',
+        sources: (function(){ var s={}; s[fmt2]=url2; return s; })()
+      });
+    }
+  }
+  return temp;
+}
 
-            flatTracks = [];
-            Object.values(library).forEach(albums => {
-                Object.values(albums).forEach(albumData => {
-                    flatTracks.push(...albumData.tracks);
-                });
-            });
-        }
+/* ---------- Deduz artista/album/titulo a partir do caminho da URL ---------- */
+function deduceFromUrl(url) {
+  try {
+    var decoded = decodeURIComponent(url);
+  } catch(e) {
+    var decoded = url;
+  }
+  // split path
+  var parts = decoded.split('/');
+  // remove empty
+  var segs = [];
+  for (var i=0;i<parts.length;i++){ if (parts[i] !== '') segs.push(parts[i]); }
+  var result = { artist: null, album: null, title: null, year: null };
+  if (segs.length >= 3) {
+    // assume last = file, prev = album, prevprev = artist
+    result.title = segs[segs.length-1];
+    result.album = segs[segs.length-2];
+    result.artist = segs[segs.length-3];
+    // try extract year from album name
+    var y = (result.album.match(/\b(19|20)\d{2}\b/) || [])[0];
+    if (y) result.year = y;
+    // clean title extension
+    result.title = result.title.replace(/\.(mp3|flac|wav|m4a)$/i, '');
+  } else {
+    result.title = segs[segs.length-1] || url;
+  }
+  return result;
+}
 
-        function playTrack(index) {
-            if (index < 0 || index >= flatTracks.length) return;
-            currentTrackIndex = index;
-            const track = flatTracks[currentTrackIndex];
+function getFormatFromUrl(url) {
+  var m = url.split('?')[0].toLowerCase().split('.');
+  return (m.length>1) ? m[m.length-1] : 'unknown';
+}
 
-            const preferredOrder = [currentFilter, 'flac', 'mp3', 'wav', 'all'];
-            let urlToPlay = null;
-            let formatToPlay = '';
-            for (const format of preferredOrder) {
-                if (track.sources[format]) {
-                    urlToPlay = track.sources[format];
-                    formatToPlay = format;
-                    break;
-                }
-            }
-            if (!urlToPlay) {
-                formatToPlay = Object.keys(track.sources)[0];
-                urlToPlay = track.sources[formatToPlay];
-            }
+/* ---------- Build library structure ---------- */
+function buildLibraryFromTrackArray(trackArr) {
+  library = {};
+  for (var i=0;i<trackArr.length;i++){
+    var t = trackArr[i];
+    if (!library[t.artist]) library[t.artist] = {};
+    if (!library[t.artist][t.album]) {
+      library[t.artist][t.album] = { year: t.year||'0000', artwork: t.artwork||'', tracks: [] };
+    }
+    // check duplicates: if same title exists, merge sources
+    var found = false;
+    var albumTracks = library[t.artist][t.album].tracks;
+    for (var k=0;k<albumTracks.length;k++){
+      var at = albumTracks[k];
+      if (at.title === t.title) {
+        // merge sources
+        for (var key in t.sources) { at.sources[key] = t.sources[key]; }
+        found = true; break;
+      }
+    }
+    if (!found) albumTracks.push(t);
+  }
 
-            if (!urlToPlay) {
-                updateTrackInfo(`Nenhuma fonte de áudio para: ${track.title}`);
-                return;
-            }
-
-            audioElement.src = urlToPlay;
-            audioElement.play().catch(e => console.error("Erro ao tocar:", e));
-
-            updateTrackInfo(`Tocando: ${track.artist} - ${track.title}`);
-            playPauseBtn.textContent = '❚❚';
-            isPlaying = true;
-            highlightCurrentTrack();
-            fetchAndSetAlbumArt(track);
-            updateStatusInfo(urlToPlay, formatToPlay); // <-- ATUALIZA AS INFORMAÇÕES DE STATUS
-        }
-
-        function updateStatusInfo(url, format) {
-            // Reseta as informações
-            bitrateInfo.textContent = `${format.toUpperCase()}`;
-            samplerateInfo.textContent = '-- kHz';
-
-            // Usa jsmediatags para ler os metadados
-            window.jsmediatags.read(url, {
-                onSuccess: function(tag) {
-                    const header = tag.tags.v2 || tag.tags.v1;
-                    if (header && header.header) {
-                        const bitrate = header.header.bitrate;
-                        const sampleRate = header.header.sampleRate;
-                        if (bitrate) {
-                            bitrateInfo.textContent = `${format.toUpperCase()} ${bitrate} kbps`;
-                        }
-                        if (sampleRate) {
-                            samplerateInfo.textContent = `${(sampleRate / 1000).toFixed(1)} kHz`;
-                        }
-                    }
-                },
-                onError: function(error) {
-                    console.log('jsmediatags: Não foi possível ler as tags.', error.type, error.info);
-                    // Para FLAC e outros, exibe apenas o formato, pois a leitura de tags é limitada
-                    bitrateInfo.textContent = `${format.toUpperCase()}`;
-                }
-            });
-        }
-        
-        // --- Restante do código (renderLibrary, handleSearch, event listeners, etc.) ---
-        // ... (todo o resto do JS é igual à versão anterior)
-        function renderLibrary() {
-            libraryContent.innerHTML = '';
-            Object.keys(library).forEach(artistName => {
-                const artistData = library[artistName];
-                const artistItem = document.createElement('div');
-                artistItem.className = 'artist-item';
-                artistItem.textContent = artistName;
-                artistItem.dataset.artist = artistName;
-                libraryContent.appendChild(artistItem);
-
-                const albumContainer = document.createElement('div');
-                albumContainer.className = 'album-container';
-                artistItem.after(albumContainer);
-
-                Object.keys(artistData).forEach(albumName => {
-                    const albumData = artistData[albumName];
-                    const albumItem = document.createElement('div');
-                    albumItem.className = 'album-item';
-                    albumItem.textContent = albumName;
-                    albumItem.dataset.album = albumName;
-                    albumContainer.appendChild(albumItem);
-
-                    const trackContainer = document.createElement('div');
-                    trackContainer.className = 'track-container';
-                    albumItem.after(trackContainer);
-
-                    albumData.tracks.forEach(track => {
-                        const trackIndex = flatTracks.findIndex(t => t === track);
-                        const trackItem = document.createElement('div');
-                        trackItem.className = 'track-item';
-                        trackItem.textContent = track.title;
-                        trackItem.dataset.index = trackIndex;
-                        trackContainer.appendChild(trackItem);
-                    });
-                });
-            });
-        }
-        function handleSearch() {
-            const query = searchInput.value.toLowerCase();
-            if (query === "") {
-                document.querySelectorAll('.artist-item, .album-item, .track-item').forEach(el => el.classList.remove('hidden'));
-                document.querySelectorAll('.album-container, .track-container').forEach(el => el.style.display = 'none');
-                return;
-            }
-            Object.keys(library).forEach(artistName => {
-                const artistMatch = artistName.toLowerCase().includes(query);
-                const artistItem = document.querySelector(`.artist-item[data-artist="${artistName}"]`);
-                let artistVisible = false;
-                Object.keys(library[artistName]).forEach(albumName => {
-                    const albumMatch = albumName.toLowerCase().includes(query);
-                    const albumItem = document.querySelector(`.album-item[data-album="${albumName}"]`);
-                    const trackContainer = albumItem.nextElementSibling;
-                    let albumVisible = false;
-                    library[artistName][albumName].tracks.forEach(track => {
-                        const trackMatch = track.title.toLowerCase().includes(query);
-                        const trackIndex = flatTracks.findIndex(t => t === track);
-                        const trackItem = document.querySelector(`.track-item[data-index="${trackIndex}"]`);
-                        const isVisible = artistMatch || albumMatch || trackMatch;
-                        trackItem.classList.toggle('hidden', !isVisible);
-                        if (isVisible) albumVisible = true;
-                    });
-                    albumItem.classList.toggle('hidden', !albumVisible);
-                    trackContainer.style.display = albumVisible ? 'block' : 'none';
-                    if (albumVisible) artistVisible = true;
-                });
-                artistItem.classList.toggle('hidden', !artistVisible);
-                artistItem.nextElementSibling.style.display = artistVisible ? 'block' : 'none';
-            });
-        }
-        function addEventListeners() {
-            searchInput.addEventListener('input', handleSearch);
-            libraryContent.addEventListener('click', e => {
-                const target = e.target;
-                if (target.matches('.artist-item')) target.nextElementSibling.style.display = target.nextElementSibling.style.display === 'block' ? 'none' : 'block';
-                if (target.matches('.album-item')) target.nextElementSibling.style.display = target.nextElementSibling.style.display === 'block' ? 'none' : 'block';
-                if (target.matches('.track-item')) playTrack(parseInt(target.dataset.index));
-            });
-            playPauseBtn.addEventListener('click', () => {
-                if (!audioElement.src && flatTracks.length > 0) { playTrack(0); return; }
-                if (isPlaying) { audioElement.pause(); playPauseBtn.textContent = '▶'; } 
-                else { audioElement.play(); playPauseBtn.textContent = '❚❚'; }
-                isPlaying = !isPlaying;
-            });
-            stopBtn.addEventListener('click', () => {
-                audioElement.pause(); audioElement.currentTime = 0; playPauseBtn.textContent = '▶'; isPlaying = false;
-                updateTrackInfo('Parado.'); albumArt.innerHTML = '<div class="album-art-placeholder">Capa</div>'; progressBar.style.width = '0%';
-                bitrateInfo.textContent = '-- kbps'; samplerateInfo.textContent = '-- kHz';
-            });
-            nextBtn.addEventListener('click', () => playTrack((currentTrackIndex + 1) % flatTracks.length));
-            prevBtn.addEventListener('click', () => playTrack((currentTrackIndex - 1 + flatTracks.length) % flatTracks.length));
-            shuffleBtn.addEventListener('click', () => {
-                isShuffle = !isShuffle; shuffleBtn.classList.toggle('active', isShuffle);
-                const currentTrack = isShuffle && currentTrackIndex > -1 ? flatTracks[currentTrackIndex] : null;
-                flatTracks = isShuffle ? [...originalFlatTracks].sort(() => Math.random() - 0.5) : [...originalFlatTracks];
-                if (currentTrack) currentTrackIndex = flatTracks.findIndex(t => t === currentTrack);
-                renderLibrary();
-                if (currentTrackIndex > -1) highlightCurrentTrack();
-            });
-            filterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentFilter = button.dataset.filter;
-                    if (isPlaying) playTrack(currentTrackIndex);
-                });
-            });
-            audioElement.addEventListener('ended', () => playTrack((currentTrackIndex + 1) % flatTracks.length));
-            audioElement.addEventListener('timeupdate', () => { progressBar.style.width = `${(audioElement.currentTime / audioElement.duration) * 100 || 0}%`; });
-            progressContainer.addEventListener('click', e => {
-                if (audioElement.duration) audioElement.currentTime = ((e.clientX - progressContainer.getBoundingClientRect().left) / progressContainer.clientWidth) * audioElement.duration;
-            });
-        }
-        function highlightCurrentTrack() {
-            document.querySelectorAll('.track-item').forEach(item => {
-                item.classList.remove('playing');
-                if (parseInt(item.dataset.index) === currentTrackIndex) {
-                    item.classList.add('playing');
-                    const trackContainer = item.parentElement;
-                    const albumItem = trackContainer.previousElementSibling;
-                    const albumContainer = albumItem.parentElement;
-                    trackContainer.style.display = 'block';
-                    albumContainer.style.display = 'block';
-                }
-            });
-        }
-        function updateTrackInfo(text) {
-            const scroller = trackInfoScroller;
-            scroller.textContent = text;
-            scroller.classList.toggle('scrolling', scroller.clientWidth > scroller.parentElement.clientWidth);
-        }
-        async function fetchAndSetAlbumArt(track) {
-            if (track.artwork) { albumArt.innerHTML = `<img src="${track.artwork}" alt="${track.album}">`; return; }
-            const cacheKey = `${track.artist}|${track.album}`.toLowerCase();
-            if (artCache.has(cacheKey)) {
-                const cachedArt = artCache.get(cacheKey);
-                if (cachedArt !== 'not_found') albumArt.innerHTML = `<img src="${cachedArt}" alt="${track.album}">`;
-                else albumArt.innerHTML = '<div class="album-art-placeholder">Capa N/D</div>';
-                return;
-            }
-            if (!LASTFM_API_KEY || LASTFM_API_KEY === 'SUA_CHAVE_DE_API_AQUI') { albumArt.innerHTML = '<div class="album-art-placeholder">Capa N/D</div>'; return; }
-            albumArt.innerHTML = '<div class="album-art-placeholder">Buscando...</div>';
-            const url = `${LASTFM_API_URL}?method=album.getinfo&api_key=${LASTFM_API_KEY}&artist=${encodeURIComponent(track.artist)}&album=${encodeURIComponent(track.album)}&format=json`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const imageUrl = data?.album?.image?.find(img => img.size === 'extralarge')?.['#text'];
-                if (imageUrl) {
-                    albumArt.innerHTML = `<img src="${imageUrl}" alt="${track.album}">`;
-                    artCache.set(cacheKey, imageUrl);
-                } else {
-                    albumArt.innerHTML = '<div class="album-art-placeholder">Capa N/D</div>';
-                    artCache.set(cacheKey, 'not_found');
-                }
-            } catch (error) {
-                console.error("Erro na API Last.fm:", error);
-                albumArt.innerHTML = '<div class="album-art-placeholder">Erro API</div>';
-                artCache.set(cacheKey, 'not_found');
-            }
-        }
-
-        init();
+  // sort artists & albums & tracks
+  var sortedLib = {};
+  var artists = Object.keys(library).sort();
+  for (var a=0;a<artists.length;a++){
+    var artist = artists[a];
+    sortedLib[artist] = {};
+    var albums = Object.keys(library[artist]).sort(function(x,y){
+      var xa = (library[artist][x].year||'0000');
+      var ya = (library[artist][y].year||'0000');
+      return xa.localeCompare(ya);
     });
-    </script>
+    for (var b=0;b<albums.length;b++){
+      var album = albums[b];
+      // sort tracks by title
+      library[artist][album].tracks.sort(function(u,v){ return u.title.localeCompare(v.title); });
+      sortedLib[artist][album] = library[artist][album];
+    }
+  }
+  library = sortedLib;
+
+  // flatten
+  flatTracks = [];
+  for (var ar in library) {
+    if (!library.hasOwnProperty(ar)) continue;
+    for (var al in library[ar]) {
+      if (!library[ar].hasOwnProperty(al)) continue;
+      var arr = library[ar][al].tracks;
+      for (var t=0;t<arr.length;t++) flatTracks.push(arr[t]);
+    }
+  }
+  originalFlat = flatTracks.slice();
+}
+
+/* ---------- Render library (Artist -> Album -> Tracks) ---------- */
+function renderLibraryDOM() {
+  playlistEl.innerHTML = '';
+  var artists = Object.keys(library);
+  if (artists.length === 0) {
+    playlistEl.innerHTML = '<div class="small">Biblioteca vazia.</div>';
+    return;
+  }
+  for (var i=0;i<artists.length;i++){
+    var artist = artists[i];
+    var artistDiv = document.createElement('div');
+    artistDiv.className = 'artist-item';
+    artistDiv.textContent = artist;
+    playlistEl.appendChild(artistDiv);
+
+    var albumsContainer = document.createElement('div');
+    albumsContainer.style.display = 'none';
+    playlistEl.appendChild(albumsContainer);
+
+    var albums = Object.keys(library[artist]);
+    for (var j=0;j<albums.length;j++){
+      var album = albums[j];
+      var albumDiv = document.createElement('div');
+      albumDiv.className = 'album-item';
+      albumDiv.textContent = album + ' (' + (library[artist][album].year || '--') + ')';
+      albumsContainer.appendChild(albumDiv);
+
+      var tracksContainer = document.createElement('div');
+      tracksContainer.style.display = 'none';
+      albumsContainer.appendChild(tracksContainer);
+
+      var tracksArr = library[artist][album].tracks;
+      for (var k=0;k<tracksArr.length;k++){
+        var tr = tracksArr[k];
+        var tDiv = document.createElement('div');
+        tDiv.className = 'track-item';
+        // show title and available formats
+        var formats = Object.keys(tr.sources).join(',');
+        tDiv.textContent = (k+1) + '. ' + tr.title + ' [' + formats + ']';
+        tDiv.setAttribute('data-artist', artist);
+        tDiv.setAttribute('data-album', album);
+        tDiv.setAttribute('data-index', flatTracks.indexOf(tr));
+        tracksContainer.appendChild(tDiv);
+      }
+    }
+  }
+}
+
+/* ---------- Events: delegation for playlist clicks ---------- */
+playlistEl.addEventListener('click', function(e){
+  var t = e.target || e.srcElement;
+  if (!t) return;
+  if (t.classList.contains('artist-item')) {
+    var next = t.nextElementSibling;
+    if (next) next.style.display = (next.style.display === 'block') ? 'none' : 'block';
+  } else if (t.classList.contains('album-item')) {
+    var next = t.nextElementSibling;
+    if (next) next.style.display = (next.style.display === 'block') ? 'none' : 'block';
+  } else if (t.classList.contains('track-item')) {
+    var idx = parseInt(t.getAttribute('data-index'), 10);
+    if (!isNaN(idx)) playTrackByIndex(idx);
+  }
+});
+
+/* ---------- Search ---------- */
+searchInput.addEventListener('input', function(){
+  var q = (searchInput.value || '').toLowerCase();
+  if (!q) {
+    // reset: hide album/track containers
+    var artistItems = playlistEl.querySelectorAll('.artist-item');
+    for (var i=0;i<artistItems.length;i++){
+      artistItems[i].style.display = '';
+      var container = artistItems[i].nextElementSibling;
+      if (container) container.style.display = 'none';
+      // hide nested albums/tracks initially
+      var albumItems = container ? container.querySelectorAll('.album-item') : [];
+      for (var j=0;j<albumItems.length;j++){
+        var al = albumItems[j];
+        al.style.display = '';
+        var tc = al.nextElementSibling;
+        if (tc) tc.style.display = 'none';
+      }
+    }
+    return;
+  }
+  // simple filtering: show artist/album/track containing q
+  var artistItems2 = playlistEl.querySelectorAll('.artist-item');
+  for (var a=0;a<artistItems2.length;a++){
+    var artistEl = artistItems2[a];
+    var artistName = artistEl.textContent.toLowerCase();
+    var artistMatch = (artistName.indexOf(q) !== -1);
+    var albumContainer = artistEl.nextElementSibling;
+    var anyAlbumVisible = false;
+    if (albumContainer) {
+      var albumEls = albumContainer.querySelectorAll('.album-item');
+      for (var b=0;b<albumEls.length;b++){
+        var albumEl = albumEls[b];
+        var albumName = albumEl.textContent.toLowerCase();
+        var albumMatch = (albumName.indexOf(q) !== -1);
+        var trackContainer = albumEl.nextElementSibling;
+        var anyTrackVisible = false;
+        if (trackContainer) {
+          var trackEls = trackContainer.querySelectorAll('.track-item');
+          for (var t=0;t<trackEls.length;t++){
+            var tr = trackEls[t];
+            var txt = tr.textContent.toLowerCase();
+            var trackMatch = (txt.indexOf(q) !== -1);
+            tr.style.display = (trackMatch || albumMatch || artistMatch) ? '' : 'none';
+            if (tr.style.display !== 'none') anyTrackVisible = true;
+          }
+        }
+        albumEl.style.display = (anyTrackVisible || albumMatch || artistMatch) ? '' : 'none';
+        if (albumEl.style.display !== 'none') anyAlbumVisible = true;
+        if (trackContainer) trackContainer.style.display = anyTrackVisible ? 'block' : 'none';
+      }
+    }
+    artistEl.style.display = anyAlbumVisible || artistMatch ? '' : 'none';
+    if (albumContainer) albumContainer.style.display = anyAlbumVisible ? 'block' : 'none';
+  }
+});
+
+/* ---------- Filter buttons ---------- */
+for (var fi=0; fi<filterButtons.length; fi++){
+  (function(btn){
+    btn.addEventListener('click', function(){
+      // update UI active style
+      for (var j=0;j<filterButtons.length;j++) filterButtons[j].classList.remove('active');
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-filter') || 'all';
+      // re-render playlist to show only matching tracks (keep hierarchy)
+      applyFilterAndRender();
+    });
+  })(filterButtons[fi]);
+}
+
+function applyFilterAndRender() {
+  // Rebuild flatTracks from library but only include tracks that match currentFilter
+  flatTracks = [];
+  for (var art in library) {
+    if (!library.hasOwnProperty(art)) continue;
+    for (var alb in library[art]) {
+      if (!library[art].hasOwnProperty(alb)) continue;
+      var arr = library[art][alb].tracks;
+      for (var t=0;t<arr.length;t++){
+        var formats = Object.keys(arr[t].sources).map(function(x){ return x.toLowerCase(); });
+        if (currentFilter === 'all' || formats.indexOf(currentFilter) !== -1) {
+          flatTracks.push(arr[t]);
+        } else {
+          // skip
+        }
+      }
+    }
+  }
+  // If shuffle was active, keep originalFlat as original full list (not filtered)
+  // But for rendering we want hierarchy filtered: create a temporary library view
+  var tempLib = {};
+  for (var i=0;i<flatTracks.length;i++){
+    var tr = flatTracks[i];
+    if (!tempLib[tr.artist]) tempLib[tr.artist] = {};
+    if (!tempLib[tr.artist][tr.album]) tempLib[tr.artist][tr.album] = { year: tr.year, artwork: tr.artwork, tracks: [] };
+    tempLib[tr.artist][tr.album].tracks.push(tr);
+  }
+  // render tempLib into playlistEl
+  playlistEl.innerHTML = '';
+  var artKeys = Object.keys(tempLib).sort();
+  if (artKeys.length === 0) {
+    playlistEl.innerHTML = '<div class="small">Nenhuma faixa com esse filtro.</div>';
+    return;
+  }
+  for (var ai=0; ai<artKeys.length; ai++){
+    var aName = artKeys[ai];
+    var aDiv = document.createElement('div'); aDiv.className='artist-item'; aDiv.textContent = aName;
+    playlistEl.appendChild(aDiv);
+    var albumCont = document.createElement('div'); albumCont.style.display='none'; playlistEl.appendChild(albumCont);
+    var albKeys = Object.keys(tempLib[aName]).sort();
+    for (var bi=0; bi<albKeys.length; bi++){
+      var alName = albKeys[bi];
+      var alDiv = document.createElement('div'); alDiv.className='album-item'; alDiv.textContent = alName + ' (' + (tempLib[aName][alName].year||'--') + ')';
+      albumCont.appendChild(alDiv);
+      var trCont = document.createElement('div'); trCont.style.display='none'; albumCont.appendChild(trCont);
+      var arrTr = tempLib[aName][alName].tracks;
+      for (var ti=0; ti<arrTr.length; ti++){
+        var tr = arrTr[ti];
+        var trDiv = document.createElement('div'); trDiv.className='track-item';
+        trDiv.textContent = (ti+1) + '. ' + tr.title + ' ['+ Object.keys(tr.sources).join(',') +']';
+        trDiv.setAttribute('data-index', originalFlat.indexOf(tr) ); // index in originalFlat so play works
+        trCont.appendChild(trDiv);
+      }
+    }
+  }
+}
+
+/* ---------- Playback logic ---------- */
+function pickSourceForTrack(track) {
+  // prefer currentFilter (if available) then flac/mp3/wav then any
+  var pref = [];
+  if (currentFilter && currentFilter !== 'all') pref.push(currentFilter);
+  pref = pref.concat(['flac','mp3','wav']);
+  var keys = Object.keys(track.sources);
+  for (var i=0;i<pref.length;i++){
+    var p = pref[i];
+    for (var j=0;j<keys.length;j++){
+      if (keys[j].toLowerCase() === p.toLowerCase()) return { url: track.sources[keys[j]], fmt: keys[j] };
+    }
+  }
+  // fallback first available
+  if (keys.length>0) return { url: track.sources[keys[0]], fmt: keys[0] };
+  return null;
+}
+
+function playTrackByIndex(idx) {
+  if (!originalFlat || originalFlat.length === 0) return;
+  if (idx < 0 || idx >= originalFlat.length) return;
+  currentIndex = idx;
+  var track = originalFlat[currentIndex];
+  var pick = pickSourceForTrack(track);
+  if (!pick) { displayMeta.textContent = 'Nenhuma fonte para ' + track.title; return; }
+  audio.src = pick.url;
+  audio.play();
+  isPlaying = true;
+  playPauseBtn.textContent = '❚❚';
+  displayTitle.textContent = 'Tocando: ' + track.title;
+  displayMeta.textContent = track.artist + ' • ' + track.album;
+  highlightPlayingInDOM();
+  fetchAndSetAlbumArt(track);
+  updateStatusInfo(pick.url, pick.fmt);
+}
+
+function playPauseToggle() {
+  if (!audio.src) {
+    // try play first track
+    if (originalFlat.length>0) { playTrackByIndex(0); return; }
+    return;
+  }
+  if (audio.paused) { audio.play(); playPauseBtn.textContent = '❚❚'; isPlaying = true; }
+  else { audio.pause(); playPauseBtn.textContent = '▶'; isPlaying = false; }
+}
+
+function stopPlayback() {
+  audio.pause(); audio.currentTime = 0; isPlaying = false; playPauseBtn.textContent = '▶';
+  displayTitle.textContent = 'Parado';
+  highlightPlayingInDOM();
+}
+
+function nextTrack() {
+  if (originalFlat.length===0) return;
+  if (isShuffle) {
+    var r = Math.floor(Math.random()*originalFlat.length);
+    playTrackByIndex(r);
+  } else {
+    var next = (currentIndex + 1) % originalFlat.length;
+    playTrackByIndex(next);
+  }
+}
+
+function prevTrack() {
+  if (originalFlat.length===0) return;
+  var prev = (currentIndex - 1 + originalFlat.length) % originalFlat.length;
+  playTrackByIndex(prev);
+}
+
+function toggleShuffle() {
+  isShuffle = !isShuffle;
+  shuffleBtn.classList.toggle('active', isShuffle);
+  displayMeta.textContent = isShuffle ? 'Shuffle: ON' : 'Shuffle: OFF';
+}
+
+/* ---------- UI helpers ---------- */
+function highlightPlayingInDOM() {
+  var all = playlistEl.querySelectorAll('.track-item');
+  for (var i=0;i<all.length;i++){
+    var el = all[i];
+    var idx = parseInt(el.getAttribute('data-index'), 10);
+    if (!isNaN(idx) && idx === currentIndex) el.classList.add('playing');
+    else el.classList.remove('playing');
+  }
+}
+
+function fetchAndSetAlbumArt(track) {
+  if (track.artwork && track.artwork !== '') {
+    albumArtEl.innerHTML = '<img src="' + track.artwork + '" style="width:100%;height:100%;object-fit:cover;">';
+    return;
+  }
+  var cacheKey = (track.artist + '|' + track.album).toLowerCase();
+  if (artCache[cacheKey]) {
+    albumArtEl.innerHTML = artCache[cacheKey] === 'not_found' ? 'CAPA' : ('<img src="'+artCache[cacheKey]+'" style="width:100%;height:100%;object-fit:cover;">');
+    return;
+  }
+  albumArtEl.innerHTML = 'CAPA';
+  artCache[cacheKey] = 'not_found';
+}
+
+/* ---------- Status info (try jsmediatags, but fallback) ---------- */
+function updateStatusInfo(url, fmt) {
+  bitrateInfo.textContent = (fmt ? fmt.toUpperCase() : '--');
+  samplerateInfo.textContent = '-- kHz';
+  if (!jsmediatagsAvailable) return;
+  try {
+    window.jsmediatags.read(url, {
+      onSuccess: function(tag) {
+        try {
+          var tags = tag.tags || {};
+          // try common fields (may not exist)
+          var br = tags.bitrate || tags.BITRATE || null;
+          var sr = tags.sampleRate || tags.SAMPLERATE || null;
+          if (br) bitrateInfo.textContent = fmt.toUpperCase() + ' ' + br + ' kbps';
+          if (sr) samplerateInfo.textContent = (sr/1000).toFixed(1) + ' kHz';
+        } catch(e){ /* ignore parse errors */ }
+      },
+      onError: function(err){ /* ignore */ }
+    });
+  } catch(e){ /* ignore */ }
+}
+
+/* ---------- Progress handling ---------- */
+audio.addEventListener('timeupdate', function(){
+  if (audio.duration) {
+    var pct = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = pct + '%';
+  }
+});
+progressContainer.addEventListener('click', function(e){
+  if (!audio.duration) return;
+  var rect = progressContainer.getBoundingClientRect ? progressContainer.getBoundingClientRect() : { left:0, width: progressContainer.clientWidth };
+  var x = (e.clientX - rect.left);
+  var percent = x / rect.width;
+  if (percent < 0) percent = 0;
+  if (percent > 1) percent = 1;
+  audio.currentTime = percent * audio.duration;
+});
+
+/* ---------- Audio end ---------- */
+audio.addEventListener('ended', function(){ nextTrack(); });
+
+/* ---------- Controls binding ---------- */
+playPauseBtn.addEventListener('click', playPauseToggle);
+stopBtn.addEventListener('click', stopPlayback);
+nextBtn.addEventListener('click', nextTrack);
+prevBtn.addEventListener('click', prevTrack);
+shuffleBtn.addEventListener('click', toggleShuffle);
+
+/* ---------- Load .m3u from GitHub directories ---------- */
+function loadAllM3uFromGitHub() {
+  displayTitle.textContent = 'Buscando .m3u no GitHub...';
+  var allUrls = [];
+  var pending = GITHUB_API_DIRS.length;
+  for (var i=0;i<GITHUB_API_DIRS.length;i++){
+    (function(dirUrl){
+      xhrGetJson(dirUrl, function(err, data) {
+        if (!err && Array.isArray(data)) {
+          for (var j=0;j<data.length;j++){
+            var f = data[j];
+            if (f && f.name && f.name.toLowerCase().endsWith('.m3u') && f.download_url) {
+              allUrls.push(f.download_url);
+            }
+          }
+        } else {
+          console.log('Erro ao acessar GitHub API:', err, dirUrl);
+        }
+        pending--;
+        if (pending === 0) {
+          if (allUrls.length === 0) {
+            displayTitle.textContent = 'Nenhuma .m3u encontrada nos repositórios.';
+            playlistEl.innerHTML = '<div class="small">Use o fallback manual ou verifique permissões CORS.</div>';
+            return;
+          }
+          // now fetch all m3u contents
+          displayTitle.textContent = 'Carregando ' + allUrls.length + ' playlists...';
+          var accum = [];
+          var need = allUrls.length;
+          for (var k=0;k<allUrls.length;k++){
+            (function(url){
+              xhrGetText(url, function(err2, text) {
+                if (!err2 && text) {
+                  try {
+                    var tarr = parseM3uContent(text);
+                    for (var p=0;p<tarr.length;p++) accum.push(tarr[p]);
+                  } catch(e){}
+                } else {
+                  console.log('Falha ao baixar m3u', url, err2);
+                }
+                need--;
+                if (need === 0) {
+                  // finalize
+                  buildLibraryFromTrackArray(accum);
+                  applyFilterAndRender(); // render filtered view (currentFilter default all)
+                  displayTitle.textContent = 'Biblioteca carregada (' + flatTracks.length + ' faixas detectadas)';
+                  displayMeta.textContent = 'Use busca ou filtros; clique em artista/álbum para expandir.';
+                }
+              });
+            })(allUrls[k]);
+          }
+        }
+      });
+    })(GITHUB_API_DIRS[i]);
+  }
+}
+
+/* ---------- Manual fallback load ---------- */
+loadM3UBtn.addEventListener('click', function(){
+  var text = (m3uInput.value || '').trim();
+  if (!text) { alert('Cole o conteúdo de um arquivo .m3u no campo'); return; }
+  var parsed = parseM3uContent(text);
+  if (parsed.length === 0) { alert('Nenhuma faixa detectada no M3U fornecido'); return; }
+  buildLibraryFromTrackArray(parsed);
+  applyFilterAndRender();
+  displayTitle.textContent = 'Biblioteca carregada (via M3U manual)';
+  displayMeta.textContent = 'Use busca/filtros. ' + flatTracks.length + ' faixas.';
+});
+
+clearBtn.addEventListener('click', function(){
+  library = {}; flatTracks=[]; originalFlat=[]; currentIndex=-1;
+  playlistEl.innerHTML = '<div class="small">Biblioteca limpa.</div>';
+  displayTitle.textContent = 'Pronto';
+  displayMeta.textContent = '--';
+  albumArtEl.innerHTML = 'CAPA';
+  bitrateInfo.textContent = '--';
+  samplerateInfo.textContent = '--';
+});
+
+/* ---------- Initial call ---------- */
+loadAllM3uFromGitHub();
+</script>
 </body>
 </html>
