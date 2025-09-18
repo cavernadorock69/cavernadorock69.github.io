@@ -204,6 +204,7 @@ var filterType = "all";
 var playerState = 'stopped';
 var debounceTimer;
 var randomMode = false;
+var userInteracted = false;
 
 var audioPlayer = document.getElementById("audioPlayer");
 var videoPlayer = document.getElementById("videoPlayer");
@@ -231,6 +232,11 @@ videoPlayer.addEventListener('error', function() {
   playerState = 'stopped';
   updatePlayButton();
 });
+
+// Marcar que o usuário interagiu com a página (necessário para autoplay)
+document.addEventListener('click', function() {
+  userInteracted = true;
+}, { once: true });
 
 function loadPlaylists() {
   statusDiv.textContent = "Carregando playlists...";
@@ -377,16 +383,35 @@ function playTrack(index) {
       
       videoPlayer.oncanplay = function() {
         statusDiv.textContent = "Reproduzindo vídeo";
-        videoPlayer.play();
-        playerState = 'playing';
-        updatePlayButton();
         
-        // Entrar em tela cheia automaticamente para vídeos
-        if (videoPlayer.requestFullscreen) {
-          videoPlayer.requestFullscreen().catch(function(err) {
-            console.error("Erro ao entrar em tela cheia:", err);
-          });
-          closeBtn.style.display="block";
+        // Tentar reproduzir automaticamente se o usuário já interagiu com a página
+        if (userInteracted) {
+          var playPromise = videoPlayer.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(function() {
+              // Reprodução iniciada com sucesso
+              playerState = 'playing';
+              updatePlayButton();
+              
+              // Entrar em tela cheia automaticamente para vídeos
+              if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen().catch(function(err) {
+                  console.error("Erro ao entrar em tela cheia:", err);
+                });
+                closeBtn.style.display="block";
+              }
+            }).catch(function(error) {
+              // Autoplay foi prevenido, mostrar botão de play
+              statusDiv.textContent = "Clique no player para reproduzir";
+              playerState = 'paused';
+              updatePlayButton();
+            });
+          }
+        } else {
+          statusDiv.textContent = "Clique no player para reproduzir";
+          playerState = 'paused';
+          updatePlayButton();
         }
       };
       
@@ -399,9 +424,26 @@ function playTrack(index) {
       
       audioPlayer.oncanplay = function() {
         statusDiv.textContent = "Reproduzindo áudio";
-        audioPlayer.play();
-        playerState = 'playing';
-        updatePlayButton();
+        
+        // Para áudio, tentar reproduzir automaticamente
+        if (userInteracted) {
+          var playPromise = audioPlayer.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(function() {
+              playerState = 'playing';
+              updatePlayButton();
+            }).catch(function(error) {
+              statusDiv.textContent = "Clique para reproduzir";
+              playerState = 'paused';
+              updatePlayButton();
+            });
+          }
+        } else {
+          statusDiv.textContent = "Clique para reproduzir";
+          playerState = 'paused';
+          updatePlayButton();
+        }
       };
     }
     
@@ -431,12 +473,22 @@ function togglePlay() {
     statusDiv.textContent = "Pausado";
   } else {
     if (audioPlayer.style.display==="block") {
-      audioPlayer.play();
+      audioPlayer.play().then(function() {
+        playerState = 'playing';
+        statusDiv.textContent = "Reproduzindo";
+        updatePlayButton();
+      }).catch(function(error) {
+        statusDiv.textContent = "Erro ao reproduzir: " + error.message;
+      });
     } else if (videoPlayer.style.display==="block") {
-      videoPlayer.play();
+      videoPlayer.play().then(function() {
+        playerState = 'playing';
+        statusDiv.textContent = "Reproduzindo";
+        updatePlayButton();
+      }).catch(function(error) {
+        statusDiv.textContent = "Erro ao reproduzir: " + error.message;
+      });
     }
-    playerState = 'playing';
-    statusDiv.textContent = "Reproduzindo";
   }
   updatePlayButton();
 }
