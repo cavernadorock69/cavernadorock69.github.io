@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Player Retrô Winamp Style</title>
 <style>
   body {
@@ -15,26 +16,52 @@
     background: #222;
     border: 2px solid #0f0;
     padding: 10px;
-    max-width: 800px;
+    max-width: 1000px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  #main-content {
+    display: flex;
+    gap: 15px;
+  }
+  #left-panel {
+    flex: 1;
+  }
+  #right-panel {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+  #controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
   }
   #controls button {
     background: #333;
     border: 1px solid #0f0;
     color: #0f0;
     padding: 5px 10px;
-    margin: 2px;
     cursor: pointer;
   }
   #controls button:hover {
     background: #0f0;
     color: #000;
   }
+  #filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
   #filters button {
     background: #111;
     border: 1px solid #0f0;
     color: #0f0;
-    margin: 2px;
+    padding: 5px 10px;
     cursor: pointer;
   }
   #filters button.active {
@@ -67,13 +94,17 @@
   .playing {
     background: #060;
   }
-  video {
+  #video-container {
+    background: #000;
+    border: 1px solid #0f0;
+    margin-bottom: 10px;
+  }
+  #videoPlayer {
     width: 100%;
-    height: auto;
-    display: none;
+    max-height: 170px;
     background: #000;
   }
-  audio {
+  #audioPlayer {
     width: 100%;
   }
   #closeFullscreen {
@@ -88,17 +119,49 @@
     cursor: pointer;
     z-index: 9999;
   }
+  #status {
+    color: #ff0;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  #now-playing {
+    margin-bottom: 10px;
+    padding: 5px;
+    background: #000;
+    border: 1px solid #0f0;
+  }
+  #random-btn {
+    margin-left: auto;
+    background: #111 !important;
+  }
+  #random-btn.active {
+    background: #0f0 !important;
+    color: #000 !important;
+  }
+  @media (max-width: 768px) {
+    #main-content {
+      flex-direction: column;
+    }
+    #right-panel {
+      width: 100%;
+    }
+    #videoPlayer {
+      max-height: 200px;
+    }
+  }
 </style>
 </head>
 <body>
 <div id="player-container">
   <div id="now-playing">Carregando biblioteca...</div>
+  <div id="status"></div>
 
   <div id="controls">
     <button onclick="prevTrack()">⏮</button>
-    <button onclick="togglePlay()">▶️/⏸</button>
+    <button id="playPauseBtn" onclick="togglePlay()">▶️</button>
     <button onclick="stopTrack()">⏹</button>
     <button onclick="nextTrack()">⏭</button>
+    <button id="random-btn" onclick="toggleRandom()">🔀 Aleatório</button>
   </div>
 
   <div id="filters">
@@ -109,14 +172,21 @@
     <button onclick="setFilter('mp4')">Clips</button>
   </div>
 
-  <input type="text" id="search" placeholder="🔍 Buscar música/clipe..." oninput="renderPlaylist()">
-
-  <div id="playlist"></div>
-
-  <audio id="audioPlayer" controls></audio>
-  <video id="videoPlayer" controls>
-    <source id="videoSource" type="video/mp4">
-  </video>
+  <div id="main-content">
+    <div id="left-panel">
+      <input type="text" id="search" placeholder="🔍 Buscar música/clipe..." oninput="debouncedRenderPlaylist()">
+      <div id="playlist"></div>
+    </div>
+    
+    <div id="right-panel">
+      <div id="video-container">
+        <video id="videoPlayer" controls>
+          <source id="videoSource" type="video/mp4">
+        </video>
+      </div>
+      <audio id="audioPlayer" controls></audio>
+    </div>
+  </div>
 </div>
 
 <button id="closeFullscreen" onclick="exitFullscreen()">[X] Fechar</button>
@@ -131,16 +201,46 @@ var repositories = [
 var library = [];
 var currentTrack = -1;
 var filterType = "all";
+var playerState = 'stopped';
+var debounceTimer;
+var randomMode = false;
 
 var audioPlayer = document.getElementById("audioPlayer");
 var videoPlayer = document.getElementById("videoPlayer");
 var videoSource = document.getElementById("videoSource");
 var closeBtn = document.getElementById("closeFullscreen");
 var nowPlaying = document.getElementById("now-playing");
+var statusDiv = document.getElementById("status");
 var playlistDiv = document.getElementById("playlist");
+var playPauseBtn = document.getElementById("playPauseBtn");
+var randomBtn = document.getElementById("random-btn");
+
+// Adiciona event listeners para detectar o fim da reprodução
+audioPlayer.addEventListener('ended', handleMediaEnded);
+videoPlayer.addEventListener('ended', handleMediaEnded);
+
+// Adiciona tratamento de erros
+audioPlayer.addEventListener('error', function() {
+  statusDiv.textContent = "Erro ao reproduzir áudio";
+  playerState = 'stopped';
+  updatePlayButton();
+});
+
+videoPlayer.addEventListener('error', function() {
+  statusDiv.textContent = "Erro ao reproduzir vídeo";
+  playerState = 'stopped';
+  updatePlayButton();
+});
 
 function loadPlaylists() {
+  statusDiv.textContent = "Carregando playlists...";
   var pending = repositories.length;
+  
+  if (pending === 0) {
+    statusDiv.textContent = "Nenhum repositório configurado";
+    return;
+  }
+  
   repositories.forEach(function(repoUrl){
     var xhr = new XMLHttpRequest();
     xhr.open("GET", repoUrl, true);
@@ -154,11 +254,23 @@ function loadPlaylists() {
                 fetchM3u(f.download_url);
               }
             });
-          } catch(e){}
+          } catch(e){
+            console.error("Erro ao processar repositório:", e);
+          }
+        } else {
+          statusDiv.textContent = "Erro ao carregar: " + repoUrl;
         }
         pending--;
-        if (pending===0) renderPlaylist();
+        if (pending===0) {
+          statusDiv.textContent = "Playlists carregadas. " + library.length + " itens encontrados.";
+          renderPlaylist();
+        }
       }
+    };
+    xhr.onerror = function() {
+      pending--;
+      statusDiv.textContent = "Falha na conexão ao carregar: " + repoUrl;
+      if (pending===0) renderPlaylist();
     };
     xhr.send();
   });
@@ -168,10 +280,16 @@ function fetchM3u(url) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.onreadystatechange = function(){
-    if (xhr.readyState === 4 && xhr.status>=200 && xhr.status<300){
-      parseM3u(xhr.responseText);
-      renderPlaylist();
+    if (xhr.readyState === 4){
+      if (xhr.status>=200 && xhr.status<300){
+        parseM3u(xhr.responseText);
+      } else {
+        console.error("Erro ao carregar M3U:", url);
+      }
     }
+  };
+  xhr.onerror = function() {
+    console.error("Erro de conexão ao carregar M3U:", url);
   };
   xhr.send();
 }
@@ -189,7 +307,7 @@ function parseM3u(text) {
       title = parts[1] || info;
     } else if (!line.startsWith("#")) {
       var url = line;
-      var ext = url.split("?")[0].split(".").pop().toLowerCase(); // pega extensão antes do ?
+      var ext = url.split("?")[0].split(".").pop().toLowerCase();
       library.push({artist:artist, title:title, url:url, type:ext});
       artist=""; title="";
     }
@@ -199,70 +317,236 @@ function parseM3u(text) {
 function renderPlaylist() {
   playlistDiv.innerHTML = "";
   var search = document.getElementById("search").value.toLowerCase();
-  library.forEach(function(track, index){
-    if (filterType!=="all" && track.type!==filterType) return;
-    if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return;
+  
+  if (library.length === 0) {
+    playlistDiv.innerHTML = "<div class='track'>Nenhuma música encontrada</div>";
+    return;
+  }
+  
+  var filteredTracks = library.filter(function(track) {
+    if (filterType!=="all" && track.type!==filterType) return false;
+    if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
+    return true;
+  });
+  
+  if (filteredTracks.length === 0) {
+    playlistDiv.innerHTML = "<div class='track'>Nenhum resultado encontrado</div>";
+    return;
+  }
+  
+  filteredTracks.forEach(function(track, index){
+    var originalIndex = library.indexOf(track);
     var div = document.createElement("div");
-    div.className = "track" + (index===currentTrack?" playing":"");
+    div.className = "track" + (originalIndex===currentTrack?" playing":"");
     div.textContent = (index+1)+". "+track.artist+" - "+track.title;
-    div.onclick = function(){ playTrack(index); };
+    div.onclick = function(){ playTrack(originalIndex); };
     playlistDiv.appendChild(div);
   });
 }
 
+// Debounce para evitar múltiplas renderizações durante a digitação
+function debouncedRenderPlaylist() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderPlaylist, 300);
+}
+
 function playTrack(index) {
+  if (index < 0 || index >= library.length) return;
+  
   currentTrack = index;
   var track = library[index];
   nowPlaying.textContent = "Tocando: "+track.artist+" - "+track.title;
+  statusDiv.textContent = "Carregando...";
 
+  // Pausar e resetar players
   audioPlayer.pause();
   videoPlayer.pause();
-  videoPlayer.style.display="none";
-  audioPlayer.style.display="none";
-  closeBtn.style.display="none";
+  
+  // Limpar src anteriores para evitar conflitos
+  audioPlayer.src = "";
+  videoSource.src = "";
 
-  if (track.type==="mp4") {
-    videoSource.src = track.url;
-    videoPlayer.load();
-    videoPlayer.style.display="block";
-    videoPlayer.play();
-    if (videoPlayer.requestFullscreen) videoPlayer.requestFullscreen();
-    closeBtn.style.display="block";
-  } else {
-    audioPlayer.src = track.url;
-    audioPlayer.style.display="block";
-    audioPlayer.play();
+  try {
+    if (track.type==="mp4") {
+      // Esconder áudio e mostrar vídeo
+      audioPlayer.style.display = "none";
+      videoPlayer.style.display = "block";
+      
+      videoSource.src = track.url;
+      videoPlayer.load();
+      
+      videoPlayer.oncanplay = function() {
+        statusDiv.textContent = "Reproduzindo vídeo";
+        videoPlayer.play();
+        playerState = 'playing';
+        updatePlayButton();
+        
+        // Entrar em tela cheia automaticamente para vídeos
+        if (videoPlayer.requestFullscreen) {
+          videoPlayer.requestFullscreen().catch(function(err) {
+            console.error("Erro ao entrar em tela cheia:", err);
+          });
+          closeBtn.style.display="block";
+        }
+      };
+      
+    } else {
+      // Esconder vídeo e mostrar áudio
+      videoPlayer.style.display = "none";
+      audioPlayer.style.display = "block";
+      
+      audioPlayer.src = track.url;
+      
+      audioPlayer.oncanplay = function() {
+        statusDiv.textContent = "Reproduzindo áudio";
+        audioPlayer.play();
+        playerState = 'playing';
+        updatePlayButton();
+      };
+    }
+    
+    renderPlaylist();
+    
+  } catch (error) {
+    statusDiv.textContent = "Erro ao reproduzir: " + error.message;
+    playerState = 'stopped';
+    updatePlayButton();
   }
-  renderPlaylist();
 }
 
 function togglePlay() {
-  if (audioPlayer.style.display==="block") {
-    if (audioPlayer.paused) audioPlayer.play(); else audioPlayer.pause();
-  } else if (videoPlayer.style.display==="block") {
-    if (videoPlayer.paused) videoPlayer.play(); else videoPlayer.pause();
+  if (currentTrack === -1) {
+    // Se nada estiver selecionado, começar do primeiro item
+    if (library.length > 0) playTrack(0);
+    return;
+  }
+  
+  if (playerState === 'playing') {
+    if (audioPlayer.style.display==="block") {
+      audioPlayer.pause();
+    } else if (videoPlayer.style.display==="block") {
+      videoPlayer.pause();
+    }
+    playerState = 'paused';
+    statusDiv.textContent = "Pausado";
+  } else {
+    if (audioPlayer.style.display==="block") {
+      audioPlayer.play();
+    } else if (videoPlayer.style.display==="block") {
+      videoPlayer.play();
+    }
+    playerState = 'playing';
+    statusDiv.textContent = "Reproduzindo";
+  }
+  updatePlayButton();
+}
+
+function updatePlayButton() {
+  playPauseBtn.textContent = playerState === 'playing' ? '⏸' : '▶️';
+}
+
+function stopTrack() {
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
+  videoPlayer.pause();
+  videoPlayer.currentTime = 0;
+  playerState = 'stopped';
+  statusDiv.textContent = "Parado";
+  updatePlayButton();
+}
+
+function prevTrack() {
+  if (library.length === 0) return;
+  
+  if (randomMode) {
+    playRandomTrack();
+    return;
+  }
+  
+  var newIndex = currentTrack > 0 ? currentTrack - 1 : library.length - 1;
+  playTrack(newIndex);
+}
+
+function nextTrack() {
+  if (library.length === 0) return;
+  
+  if (randomMode) {
+    playRandomTrack();
+    return;
+  }
+  
+  var newIndex = currentTrack < library.length - 1 ? currentTrack + 1 : 0;
+  playTrack(newIndex);
+}
+
+function handleMediaEnded() {
+  if (randomMode) {
+    playRandomTrack();
+  } else {
+    nextTrack();
   }
 }
-function stopTrack() {
-  audioPlayer.pause(); audioPlayer.currentTime=0;
-  videoPlayer.pause(); videoPlayer.currentTime=0;
+
+function playRandomTrack() {
+  if (library.length === 0) return;
+  
+  // Obter faixas filtradas
+  var search = document.getElementById("search").value.toLowerCase();
+  var filteredTracks = library.filter(function(track) {
+    if (filterType!=="all" && track.type!==filterType) return false;
+    if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
+    return true;
+  });
+  
+  if (filteredTracks.length === 0) return;
+  
+  // Se só há uma faixa, reproduzir ela
+  if (filteredTracks.length === 1) {
+    var trackIndex = library.indexOf(filteredTracks[0]);
+    playTrack(trackIndex);
+    return;
+  }
+  
+  // Garantir que não repita a mesma faixa
+  var currentFilteredIndex = filteredTracks.findIndex(track => library.indexOf(track) === currentTrack);
+  var randomIndex;
+  do {
+    randomIndex = Math.floor(Math.random() * filteredTracks.length);
+  } while (randomIndex === currentFilteredIndex && filteredTracks.length > 1);
+  
+  var trackIndex = library.indexOf(filteredTracks[randomIndex]);
+  playTrack(trackIndex);
 }
-function prevTrack() { if (currentTrack>0) playTrack(currentTrack-1); }
-function nextTrack() { if (currentTrack<library.length-1) playTrack(currentTrack+1); }
+
+function toggleRandom() {
+  randomMode = !randomMode;
+  randomBtn.classList.toggle('active', randomMode);
+  statusDiv.textContent = randomMode ? "Modo aleatório ativado" : "Modo aleatório desativado";
+}
 
 function setFilter(type) {
   filterType = type;
   document.querySelectorAll("#filters button").forEach(btn=>btn.classList.remove("active"));
-  var map = {all:0, mp3:1, wav:2, flac:3, mp4:4};
-  document.querySelectorAll("#filters button")[map[type]].classList.add("active");
+  var buttons = document.querySelectorAll("#filters button");
+  for (var i = 0; i < buttons.length; i++) {
+    if (buttons[i].textContent.toLowerCase().includes(type)) {
+      buttons[i].classList.add("active");
+      break;
+    }
+  }
   renderPlaylist();
 }
 
 function exitFullscreen() {
-  if (document.fullscreenElement) document.exitFullscreen();
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(function(err) {
+      console.error("Erro ao sair da tela cheia:", err);
+    });
+  }
   closeBtn.style.display="none";
 }
 
+// Inicializar o player
 loadPlaylists();
 </script>
 </body>
