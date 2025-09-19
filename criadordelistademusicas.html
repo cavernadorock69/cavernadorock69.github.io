@@ -4,8 +4,18 @@
   <meta charset="UTF-8">
   <title>Gerador de M3U do Archive.org</title>
   <style>
-    body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
-    input, button { width: 100%; margin-top: 10px; padding: 10px; font-size: 1em; }
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+    }
   </style>
 </head>
 <body>
@@ -35,9 +45,16 @@
       if (cover) m3u += `#EXTIMG:${cover}\n\n`;
 
       files.forEach(f => {
-        const title = f.title || f.name.replace(/\.(mp3|flac|mp4|wav)/, '');
-        const length = f.length ? Math.round(f.length) : -1;
-        m3u += `#EXTINF:${length},${artist} - ${title}\n`;
+        const title = f.name.split('/').pop().replace(/\.(mp3|flac|mp4|wav)/, '');
+        let lengthFormatted = '';
+        if (f.length) {
+          const min = Math.floor(f.length / 60);
+          const sec = Math.round(f.length % 60).toString().padStart(2, '0');
+          lengthFormatted = `${min}:${sec}`;
+        } else {
+          lengthFormatted = '??:??';
+        }
+        m3u += `#EXTINF:-1,${title} (${lengthFormatted})\n`;
         m3u += base + encodeURIComponent(f.name) + '\n\n';
       });
 
