@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAVERNA DO ROCK 569/title>
+<title>Player Retrô Winamp Style</title>
 <style>
   body {
     background-color: #111;
@@ -167,8 +167,6 @@
   <div id="filters">
     <button onclick="setFilter('all')" class="active">Todos</button>
     <button onclick="setFilter('mp3')">MP3</button>
-    <button onclick="setFilter('wav')">WAV</button>
-    <button onclick="setFilter('flac')">FLAC</button>
     <button onclick="setFilter('mp4')">Clips</button>
   </div>
 
@@ -384,17 +382,13 @@ function playTrack(index) {
       videoPlayer.oncanplay = function() {
         statusDiv.textContent = "Reproduzindo vídeo";
         
-        // Tentar reproduzir automaticamente se o usuário já interagiu com a página
         if (userInteracted) {
           var playPromise = videoPlayer.play();
           
           if (playPromise !== undefined) {
             playPromise.then(function() {
-              // Reprodução iniciada com sucesso
               playerState = 'playing';
               updatePlayButton();
-              
-              // Entrar em tela cheia automaticamente para vídeos
               if (videoPlayer.requestFullscreen) {
                 videoPlayer.requestFullscreen().catch(function(err) {
                   console.error("Erro ao entrar em tela cheia:", err);
@@ -402,7 +396,6 @@ function playTrack(index) {
                 closeBtn.style.display="block";
               }
             }).catch(function(error) {
-              // Autoplay foi prevenido, mostrar botão de play
               statusDiv.textContent = "Clique no player para reproduzir";
               playerState = 'paused';
               updatePlayButton();
@@ -425,7 +418,6 @@ function playTrack(index) {
       audioPlayer.oncanplay = function() {
         statusDiv.textContent = "Reproduzindo áudio";
         
-        // Para áudio, tentar reproduzir automaticamente
         if (userInteracted) {
           var playPromise = audioPlayer.play();
           
@@ -458,7 +450,6 @@ function playTrack(index) {
 
 function togglePlay() {
   if (currentTrack === -1) {
-    // Se nada estiver selecionado, começar do primeiro item
     if (library.length > 0) playTrack(0);
     return;
   }
@@ -542,7 +533,6 @@ function handleMediaEnded() {
 function playRandomTrack() {
   if (library.length === 0) return;
   
-  // Obter faixas filtradas
   var search = document.getElementById("search").value.toLowerCase();
   var filteredTracks = library.filter(function(track) {
     if (filterType!=="all" && track.type!==filterType) return false;
@@ -552,14 +542,12 @@ function playRandomTrack() {
   
   if (filteredTracks.length === 0) return;
   
-  // Se só há uma faixa, reproduzir ela
   if (filteredTracks.length === 1) {
     var trackIndex = library.indexOf(filteredTracks[0]);
     playTrack(trackIndex);
     return;
   }
   
-  // Garantir que não repita a mesma faixa
   var currentFilteredIndex = filteredTracks.findIndex(track => library.indexOf(track) === currentTrack);
   var randomIndex;
   do {
@@ -598,7 +586,6 @@ function exitFullscreen() {
   closeBtn.style.display="none";
 }
 
-// Inicializar o player
 loadPlaylists();
 </script>
 </body>
