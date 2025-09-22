@@ -1,791 +1,348 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Player Retrô Winamp Style</title>
-<style>
-  body {
-    background-color: #111;
-    color: #0f0;
-    font-family: monospace;
-    margin: 0;
-    padding: 20px;
-  }
-  #player-container {
-    background: #222;
-    border: 2px solid #0f0;
-    padding: 10px;
-    max-width: 1000px;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-  }
-  #main-content {
-    display: flex;
-    gap: 15px;
-  }
-  #left-panel {
-    flex: 1;
-  }
-  #right-panel {
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-  }
-  #controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-  #controls button {
-    background: #333;
-    border: 1px solid #0f0;
-    color: #0f0;
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-  #controls button:hover {
-    background: #0f0;
-    color: #000;
-  }
-  #filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-  #filters button {
-    background: #111;
-    border: 1px solid #0f0;
-    color: #0f0;
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-  #filters button.active {
-    background: #0f0;
-    color: #000;
-  }
-  #search {
-    width: 100%;
-    padding: 5px;
-    background: #111;
-    border: 1px solid #0f0;
-    color: #0f0;
-    margin-bottom: 10px;
-  }
-  #playlist {
-    max-height: 400px;
-    overflow-y: auto;
-    background: #000;
-    border: 1px solid #0f0;
-    padding: 5px;
-  }
-  .track {
-    padding: 4px;
-    cursor: pointer;
-  }
-  .track:hover {
-    background: #0f0;
-    color: #000;
-  }
-  .playing {
-    background: #060;
-  }
-  #video-container {
-    background: #000;
-    border: 1px solid #0f0;
-    margin-bottom: 10px;
-  }
-  #videoPlayer {
-    width: 100%;
-    max-height: 170px;
-    background: #000;
-    display: none; /* Inicialmente escondido */
-  }
-  #audioPlayer {
-    width: 100%;
-    display: none; /* Inicialmente escondido */
-  }
-  #closeFullscreen {
-    display: none;
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #f00;
-    color: #fff;
-    font-weight: bold;
-    padding: 5px 10px;
-    cursor: pointer;
-    z-index: 9999;
-  }
-  #status {
-    color: #ff0;
-    font-size: 12px;
-    margin-top: 5px;
-  }
-  #now-playing {
-    margin-bottom: 10px;
-    padding: 5px;
-    background: #000;
-    border: 1px solid #0f0;
-  }
-  #random-btn {
-    margin-left: auto;
-    background: #111 !important;
-  }
-  #random-btn.active {
-    background: #0f0 !important;
-    color: #000 !important;
-  }
-  .loading {
-    color: #ff0;
-    font-style: italic;
-  }
-  .player-active {
-    display: block !important; /* Classe para mostrar o player ativo */
-  }
-  @media (max-width: 768px) {
-    #main-content {
-      flex-direction: column;
-    }
-    #right-panel {
-      width: 100%;
-    }
-    #videoPlayer {
-      max-height: 200px;
-    }
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Player automático de músicas (.m3u) — estilo Qmmp</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#1a1a1a;color:#e8e8e8}
+    .app{max-width:980px;margin:12px auto;padding:12px;border-radius:6px}
+    .header{display:flex;align-items:center;gap:12px}
+    .logo{width:60px;height:60px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;font-weight:bold}
+    .title{font-size:18px}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+    button{background:#2b2b2b;border:1px solid #333;color:#e8e8e8;padding:6px 10px;border-radius:4px;cursor:pointer}
+    .toggle{padding:6px;border-radius:20px}
+    .main{display:flex;gap:12px;margin-top:12px}
+    .sidebar{width:320px;max-height:64vh;overflow:auto;background:#111;padding:8px;border-radius:6px}
+    .search{width:100%;padding:6px;border-radius:4px;border:1px solid #444;background:#222;color:#e8e8e8}
+    .content{flex:1;max-height:64vh;overflow:auto;background:#0f0f0f;padding:8px;border-radius:6px}
+    .artist{font-weight:bold;margin-top:8px}
+    .album{margin-left:8px;font-style:italic}
+    .track{margin-left:20px;cursor:pointer}
+    .track.playing{color:#9fe88f}
+    .status{margin-top:8px;font-size:13px;color:#bdbdbd}
+    .footer{margin-top:8px;font-size:13px;color:#bdbdbd}
+    .hidden{display:none}
+    @media (max-width:700px){.main{flex-direction:column}.sidebar{width:100%;max-height:30vh}.content{max-height:40vh}}
+  </style>
 </head>
 <body>
-<div id="player-container">
-  <div id="now-playing">Carregando biblioteca...</div>
-  <div id="status"></div>
-
-  <div id="controls">
-    <button onclick="prevTrack()">⏮</button>
-    <button id="playPauseBtn" onclick="togglePlay()">▶️</button>
-    <button onclick="stopTrack()">⏹</button>
-    <button onclick="nextTrack()">⏭</button>
-    <button id="random-btn" onclick="toggleRandom()">🔀 Aleatório</button>
-  </div>
-
-  <div id="filters">
-    <button onclick="setFilter('all')" class="active">Todos</button>
-    <button onclick="setFilter('mp3')">MP3</button>
-    <button onclick="setFilter('mp4')">Clips</button>
-  </div>
-
-  <div id="main-content">
-    <div id="left-panel">
-      <input type="text" id="search" placeholder="🔍 Buscar música/clipe..." oninput="debouncedRenderPlaylist()">
-      <div id="playlist"></div>
-    </div>
-    
-    <div id="right-panel">
-      <div id="video-container">
-        <video id="videoPlayer" controls preload="metadata">
-          Seu navegador não suporta vídeo HTML5.
-        </video>
+  <div class="app">
+    <div class="header">
+      <div class="logo">qmmp</div>
+      <div>
+        <div class="title">Player automático — estilo Qmmp</div>
+        <div class="status" id="status">Pronto.</div>
       </div>
-      <audio id="audioPlayer" controls preload="metadata">
-        Seu navegador não suporta áudio HTML5.
-      </audio>
+    </div>
+
+    <div class="controls" role="toolbar">
+      <button id="prev">⏮️ Anterior</button>
+      <button id="play">▶️ Play</button>
+      <button id="next">⏭️ Próxima</button>
+      <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
+      <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
+      <button id="reload">⤻ Recarregar listas</button>
+    </div>
+
+    <div class="main">
+      <div class="sidebar">
+        <input id="search" class="search" type="text" placeholder="Buscar músicas, artistas ou álbuns...">
+      </div>
+
+      <div class="content">
+        <div><strong>Biblioteca — por artista & álbum</strong></div>
+        <div id="library"></div>
+
+        <div class="footer">
+          <div><strong>Tocando:</strong> <span id="now">—</span></div>
+          <audio id="audio" preload="none" controls class="hidden"></audio>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<button id="closeFullscreen" onclick="exitFullscreen()">[X] Fechar</button>
+  <script>
+  (function(){
+    var audio = document.getElementById('audio');
+    var libraryEl = document.getElementById('library');
+    var statusEl = document.getElementById('status');
+    var nowEl = document.getElementById('now');
+    var playBtn = document.getElementById('play');
+    var nextBtn = document.getElementById('next');
+    var prevBtn = document.getElementById('prev');
+    var shuffleCb = document.getElementById('shuffle');
+    var repeatCb = document.getElementById('repeat');
+    var reloadBtn = document.getElementById('reload');
+    var searchEl = document.getElementById('search');
 
-<script>
-// Configurações para compatibilidade
-var COMPATIBILITY = {
-  USE_LEGACY_VIDEO: true,
-  FORCE_SIMPLE_AUDIO: false,
-  TIMEOUT_LOAD: 30000,
-  RETRY_ATTEMPTS: 2
-};
+    var tracks = [];
+    var current = 0;
+    var playing = false;
+    var allTracks = []; // mantém todas as faixas para pesquisa
 
-var repositories = [
-  "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/minhas_cole%C3%A7%C3%B5es",
-  "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/outras_cole%C3%A7%C3%B5es",
-  "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/clips_e_shows"
-];
+    // Configurações do GitHub
+    var owner = 'cavernadorock69';
+    var repo = 'cavernadorock69.github.io';
+    var branch = 'main';
+    var directories = ['minhas_coleções', 'outras_coleções'];
 
-var library = [];
-var currentTrack = -1;
-var filterType = "all";
-var playerState = 'stopped';
-var debounceTimer;
-var randomMode = false;
-var userInteracted = false;
-var currentRetryCount = 0;
-var currentMediaType = null; // 'audio' ou 'video'
+    function logStatus(t){ statusEl.textContent = t; }
 
-// Elementos DOM
-var audioPlayer = document.getElementById("audioPlayer");
-var videoPlayer = document.getElementById("videoPlayer");
-var closeBtn = document.getElementById("closeFullscreen");
-var nowPlaying = document.getElementById("now-playing");
-var statusDiv = document.getElementById("status");
-var playlistDiv = document.getElementById("playlist");
-var playPauseBtn = document.getElementById("playPauseBtn");
-var randomBtn = document.getElementById("random-btn");
-
-// Detectar capacidades do navegador
-var browserCapabilities = {
-  canPlayMP4: videoPlayer.canPlayType('video/mp4') !== '',
-  canPlayMP3: audioPlayer.canPlayType('audio/mpeg') !== '',
-  hasPromise: typeof Promise !== 'undefined',
-  hasFetch: typeof fetch !== 'undefined'
-};
-
-// Configurar players para máxima compatibilidade
-function setupPlayers() {
-  // Remover atributos problemáticos para navegadores antigos
-  audioPlayer.removeAttribute('crossorigin');
-  videoPlayer.removeAttribute('crossorigin');
-  
-  // Configurações conservadoras para performance
-  audioPlayer.preload = 'metadata';
-  videoPlayer.preload = 'metadata';
-  audioPlayer.volume = 0.7;
-  videoPlayer.volume = 0.7;
-  
-  // Event listeners simplificados
-  audioPlayer.addEventListener('ended', handleMediaEnded);
-  audioPlayer.addEventListener('error', handleAudioError);
-  audioPlayer.addEventListener('canplay', handleAudioReady);
-  
-  videoPlayer.addEventListener('ended', handleMediaEnded);
-  videoPlayer.addEventListener('error', handleVideoError);
-  videoPlayer.addEventListener('canplay', handleVideoReady);
-  videoPlayer.addEventListener('loadstart', handleVideoLoadStart);
-}
-
-// Verificar se é uma Smart TV ou navegador antigo
-function isLegacyBrowser() {
-  var ua = navigator.userAgent.toLowerCase();
-  return ua.includes('tv') || 
-         ua.includes('smart') || 
-         ua.includes('xbox') ||
-         ua.includes('playstation') ||
-         /msie|trident|edge\//.test(ua) ||
-         !browserCapabilities.hasPromise;
-}
-
-// Inicializar com configurações apropriadas
-if (isLegacyBrowser()) {
-  COMPATIBILITY.USE_LEGACY_VIDEO = true;
-  COMPATIBILITY.FORCE_SIMPLE_AUDIO = true;
-  statusDiv.innerHTML = '<span class="loading">Modo de compatibilidade ativado</span>';
-}
-
-setupPlayers();
-
-// Função para parar completamente a reprodução atual
-function stopCurrentPlayback() {
-  console.log('Parando reprodução atual. Tipo anterior:', currentMediaType);
-  
-  // Parar e resetar ambos os players
-  if (audioPlayer) {
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-    audioPlayer.src = '';
-    audioPlayer.load();
-    audioPlayer.style.display = 'none';
-    audioPlayer.classList.remove('player-active');
-  }
-  
-  if (videoPlayer) {
-    videoPlayer.pause();
-    videoPlayer.currentTime = 0;
-    
-    // Limpar sources de vídeo
-    while (videoPlayer.firstChild) {
-      videoPlayer.removeChild(videoPlayer.firstChild);
+    function guessMetaFromPath(path){
+      var name = path.split('/').pop();
+      name = decodeURIComponent(name);
+      var base = name.replace(/\.m3u$/i,'').replace(/\.mp3$/i,'').replace(/\.wav$/i,'');
+      var parts = base.split(' - ');
+      var meta = {title: base, artist: 'Desconhecido', album: 'Desconhecido'};
+      if(parts.length>=3){
+        meta.artist = parts[0];
+        meta.album = parts[1];
+        meta.title = parts.slice(2).join(' - ');
+      } else if(parts.length==2){
+        meta.artist = parts[0];
+        meta.title = parts[1];
+      }
+      return meta;
     }
-    
-    videoPlayer.load();
-    videoPlayer.style.display = 'none';
-    videoPlayer.classList.remove('player-active');
-    
-    // Sair da tela cheia se estiver
-    if (document.fullscreenElement) {
-      exitFullscreen();
-    }
-  }
-  
-  currentMediaType = null;
-}
 
-function loadPlaylists() {
-  statusDiv.innerHTML = '<span class="loading">Carregando playlists...</span>';
-  var pending = repositories.length;
-  
-  if (pending === 0) {
-    statusDiv.textContent = "Nenhum repositório configurado";
-    return;
-  }
-  
-  repositories.forEach(function(repoUrl){
-    var xhr = new XMLHttpRequest();
-    xhr.timeout = COMPATIBILITY.TIMEOUT_LOAD;
-    xhr.open("GET", repoUrl, true);
-    
-    xhr.onreadystatechange = function(){
-      if (xhr.readyState === 4) {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            var files = JSON.parse(xhr.responseText);
-            files.forEach(function(f){
-              if (f && f.name && f.name.toLowerCase().endsWith(".m3u") && f.download_url) {
-                fetchM3u(f.download_url);
+    function buildLibrary(list){
+      var byArtist = {};
+      for(var i=0;i<list.length;i++){
+        var t = list[i];
+        if(!byArtist[t.artist]) byArtist[t.artist] = {};
+        if(!byArtist[t.artist][t.album]) byArtist[t.artist][t.album] = [];
+        byArtist[t.artist][t.album].push(t);
+      }
+      libraryEl.innerHTML = '';
+      for(var artist in byArtist){
+        var artDiv = document.createElement('div'); artDiv.className='artist'; artDiv.textContent = artist; libraryEl.appendChild(artDiv);
+        var albums = byArtist[artist];
+        for(var album in albums){
+          var albDiv = document.createElement('div'); albDiv.className='album'; albDiv.textContent = album; libraryEl.appendChild(albDiv);
+          var list2 = albums[album];
+          for(var j=0;j<list2.length;j++){
+            var tr = list2[j];
+            var tdiv = document.createElement('div');
+            tdiv.className='track';
+            tdiv.textContent = tr.title;
+            tdiv.setAttribute('data-idx', tr.index);
+            tdiv.onclick = function(){
+              playIndex(parseInt(this.getAttribute('data-idx'),10));
+            };
+            libraryEl.appendChild(tdiv);
+          }
+        }
+      }
+      refreshPlayingClass();
+    }
+
+    function refreshPlayingClass(){
+      var elems = libraryEl.getElementsByClassName('track');
+      for(var i=0;i<elems.length;i++){
+        elems[i].className = 'track';
+      }
+      var curElems = libraryEl.querySelectorAll('.track[data-idx="'+current+'"]');
+      for(var k=0;k<curElems.length;k++){
+        curElems[k].className = 'track playing';
+      }
+    }
+
+    function setNowText(){
+      var t = tracks[current];
+      nowEl.textContent = t? (t.artist + ' — ' + t.title) : '—';
+    }
+
+    function playIndex(i){
+      if(i<0||i>=tracks.length) return;
+      current = i;
+      var t = tracks[current];
+      audio.src = t.src;
+      setNowText();
+      audio.play();
+      playing = true; playBtn.textContent='⏸️ Pausar';
+      refreshPlayingClass();
+    }
+
+    playBtn.onclick = function(){
+      if(!audio.src){
+        if(tracks.length>0) playIndex(0);
+        return;
+      }
+      if(audio.paused){
+        audio.play(); playing = true; playBtn.textContent='⏸️ Pausar';
+      } else {
+        audio.pause(); playing = false; playBtn.textContent='▶️ Play';
+      }
+    };
+    nextBtn.onclick = function(){ nextTrack(); };
+    prevBtn.onclick = function(){ prevTrack(); };
+
+    function nextTrack(){
+      if(shuffleCb.checked){
+        var rnd = Math.floor(Math.random()*tracks.length);
+        playIndex(rnd);
+        return;
+      }
+      var nx = current + 1;
+      if(nx >= tracks.length){
+        if(repeatCb.checked) nx = 0;
+        else { audio.pause(); playing = false; playBtn.textContent='▶️ Play'; return; }
+      }
+      playIndex(nx);
+    }
+    function prevTrack(){
+      var pr = current - 1;
+      if(pr < 0){
+        if(repeatCb.checked) pr = tracks.length - 1;
+        else pr = 0;
+      }
+      playIndex(pr);
+    }
+
+    audio.addEventListener('ended', function(){ nextTrack(); });
+
+    // GitHub API
+    function fetchM3UFilesInDir(dirPath, callback){
+      var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function(){
+        if(xhr.status === 200){
+          try{
+            var list = JSON.parse(xhr.responseText);
+            var m3uFiles = [];
+            for(var i=0; i<list.length; i++){
+              var item = list[i];
+              if(item.type === 'file' && item.name.toLowerCase().endsWith('.m3u')){
+                var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + dirPath + '/' + item.name;
+                m3uFiles.push(rawUrl);
               }
-            });
+            }
+            callback(null, m3uFiles);
           } catch(e){
-            console.error("Erro ao processar repositório:", e);
+            callback(e, null);
           }
         } else {
-          statusDiv.textContent = "Erro ao carregar: " + repoUrl;
+          callback(new Error('GitHub API status ' + xhr.status), null);
         }
-        pending--;
-        if (pending === 0) {
-          statusDiv.textContent = "Playlists carregadas. " + library.length + " itens encontrados.";
-          renderPlaylist();
+      };
+      xhr.onerror = function(){
+        callback(new Error('Erro de rede ao acessar GitHub API'), null);
+      };
+      xhr.send();
+    }
+
+    function loadAll(){
+      tracks = [];
+      allTracks = [];
+      logStatus('Buscando listas .m3u no GitHub...');
+      var pendingDirs = directories.length;
+      var allM3uUrls = [];
+
+      for(var d=0; d<directories.length; d++){
+        (function(dir){
+          fetchM3UFilesInDir(dir, function(err, urls){
+            if(!err && urls && urls.length){
+              allM3uUrls = allM3uUrls.concat(urls);
+            }
+            pendingDirs--;
+            if(pendingDirs === 0){
+              if(allM3uUrls.length === 0){
+                logStatus('Nenhuma playlist .m3u encontrada.');
+              } else {
+                logStatus('Encontradas ' + allM3uUrls.length + ' playlist(s). Carregando faixas...');
+                loadPlaylistsFromUrls(allM3uUrls);
+              }
+            }
+          });
+        })(directories[d]);
+      }
+    }
+
+    function loadPlaylistsFromUrls(urls){
+      var pending = urls.length;
+      if(pending === 0){
+        buildLibrary(tracks); logStatus('Carregado 0 faixas.'); return;
+      }
+      for(var i=0; i<urls.length; i++){
+        (function(u){
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', u, true);
+          xhr.onload = function(){
+            if(xhr.status === 200 || (xhr.status===0 && xhr.responseText)){
+              var found = parseM3UContent(xhr.responseText, u);
+              appendFound(found);
+            }
+            pending--;
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks); setNowText(); refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas no total.');
+            }
+          };
+          xhr.onerror = function(){
+            pending--;
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks); setNowText(); refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas no total.');
+            }
+          };
+          xhr.send();
+        })(urls[i]);
+      }
+    }
+
+    function appendFound(arr){
+      for(var i=0; i<arr.length; i++){
+        var s = arr[i];
+        var meta = guessMetaFromPath(s);
+        var idx = tracks.length;
+        tracks.push({src:s, title:meta.title, artist:meta.artist, album:meta.album, index:idx});
+      }
+    }
+
+    function parseM3UContent(text, baseUrl){
+      var lines = text.split(/\r?\n/);
+      var found = [];
+      for(var i=0;i<lines.length;i++){
+        var l = lines[i].trim();
+        if(!l) continue;
+        if(l.charAt(0)==='#') continue;
+        var src = l;
+        if(!/^https?:\/\//i.test(l) && baseUrl.indexOf('raw.githubusercontent')>-1){
+          var parts = baseUrl.split('/');
+          parts.pop();
+          src = parts.join('/') + '/' + l;
         }
+        found.push(src);
       }
-    };
-    
-    xhr.ontimeout = function() {
-      pending--;
-      statusDiv.textContent = "Timeout ao carregar: " + repoUrl;
-      if (pending === 0) renderPlaylist();
-    };
-    
-    xhr.onerror = function() {
-      pending--;
-      statusDiv.textContent = "Falha na conexão: " + repoUrl;
-      if (pending === 0) renderPlaylist();
-    };
-    
-    xhr.send();
-  });
-}
+      return found;
+    }
 
-function fetchM3u(url) {
-  var xhr = new XMLHttpRequest();
-  xhr.timeout = COMPATIBILITY.TIMEOUT_LOAD;
-  xhr.open("GET", url, true);
-  
-  xhr.onreadystatechange = function(){
-    if (xhr.readyState === 4){
-      if (xhr.status >= 200 && xhr.status < 300){
-        parseM3u(xhr.responseText);
-      } else {
-        console.error("Erro ao carregar M3U:", url);
+    // Busca
+    searchEl.addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      if(!q){
+        tracks = allTracks.slice();
+        buildLibrary(tracks);
+        return;
       }
-    }
-  };
-  
-  xhr.ontimeout = function() {
-    console.error("Timeout ao carregar M3U:", url);
-  };
-  
-  xhr.onerror = function() {
-    console.error("Erro de conexão ao carregar M3U:", url);
-  };
-  
-  xhr.send();
-}
-
-function parseM3u(text) {
-  var lines = text.split(/\r?\n/);
-  var artist = "", title = "", duration = "";
-  
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i].trim();
-    if (!line) continue;
-    
-    if (line.startsWith("#EXTINF:")) {
-      var info = line.substring(8).split(",");
-      duration = info[0] || "";
-      var name = info[1] || "";
-      var parts = name.split(" - ");
-      artist = parts[0] || "Desconhecido";
-      title = parts[1] || name;
-    } else if (!line.startsWith("#")) {
-      var url = line;
-      var ext = url.split("?")[0].split(".").pop().toLowerCase();
-      
-      if ((ext === "mp4" && browserCapabilities.canPlayMP4) || 
-          (ext === "mp3" && browserCapabilities.canPlayMP3) ||
-          (ext !== "mp4" && ext !== "mp3")) {
-        library.push({
-          artist: artist, 
-          title: title, 
-          url: url, 
-          type: ext,
-          duration: duration
-        });
-      }
-      artist = ""; title = ""; duration = "";
-    }
-  }
-}
-
-function renderPlaylist() {
-  playlistDiv.innerHTML = "";
-  var search = document.getElementById("search").value.toLowerCase();
-  
-  if (library.length === 0) {
-    playlistDiv.innerHTML = "<div class='track'>Nenhuma música encontrada</div>";
-    return;
-  }
-  
-  var filteredTracks = library.filter(function(track) {
-    if (filterType !== "all" && track.type !== filterType) return false;
-    if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
-    return true;
-  });
-  
-  if (filteredTracks.length === 0) {
-    playlistDiv.innerHTML = "<div class='track'>Nenhum resultado encontrado</div>";
-    return;
-  }
-  
-  filteredTracks.forEach(function(track, index) {
-    var originalIndex = library.indexOf(track);
-    var div = document.createElement("div");
-    div.className = "track" + (originalIndex === currentTrack ? " playing" : "");
-    
-    var trackText = (index + 1) + ". " + track.artist + " - " + track.title;
-    if (track.duration) {
-      trackText += " [" + track.duration + "]";
-    }
-    
-    div.textContent = trackText;
-    div.onclick = function(){ playTrack(originalIndex); };
-    playlistDiv.appendChild(div);
-  });
-}
-
-function debouncedRenderPlaylist() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(renderPlaylist, 300);
-}
-
-function playTrack(index) {
-  if (index < 0 || index >= library.length) return;
-  
-  console.log('Iniciando reprodução do track:', index);
-  
-  currentTrack = index;
-  var track = library[index];
-  nowPlaying.textContent = "Tocando: " + track.artist + " - " + track.title;
-  statusDiv.innerHTML = '<span class="loading">Carregando...</span>';
-  
-  currentRetryCount = 0;
-  
-  // Parar completamente qualquer reprodução anterior
-  stopCurrentPlayback();
-  
-  // Pequeno delay para garantir que o player anterior foi parado
-  setTimeout(function() {
-    executePlayback(track);
-  }, 200);
-}
-
-function executePlayback(track) {
-  try {
-    if (track.type === "mp4" && browserCapabilities.canPlayMP4) {
-      playVideo(track);
-    } else {
-      playAudio(track);
-    }
-  } catch (error) {
-    handlePlaybackError(error, track);
-  }
-}
-
-function playVideo(track) {
-  console.log('Preparando vídeo:', track.title);
-  currentMediaType = 'video';
-  
-  // Esconder áudio e mostrar vídeo
-  audioPlayer.style.display = "none";
-  videoPlayer.style.display = "block";
-  videoPlayer.classList.add('player-active');
-  
-  // Limpar sources anteriores
-  while (videoPlayer.firstChild) {
-    videoPlayer.removeChild(videoPlayer.firstChild);
-  }
-  
-  // Adicionar novo source
-  var source = document.createElement('source');
-  source.src = track.url;
-  source.type = 'video/mp4';
-  videoPlayer.appendChild(source);
-  
-  videoPlayer.load();
-}
-
-function playAudio(track) {
-  console.log('Preparando áudio:', track.title);
-  currentMediaType = 'audio';
-  
-  // Esconder vídeo e mostrar áudio
-  videoPlayer.style.display = "none";
-  audioPlayer.style.display = "block";
-  audioPlayer.classList.add('player-active');
-  
-  // Garantir que saímos da tela cheia para áudio
-  if (document.fullscreenElement) {
-    exitFullscreen();
-  }
-  
-  audioPlayer.src = track.url;
-  audioPlayer.load();
-}
-
-function handleVideoLoadStart() {
-  statusDiv.textContent = "Preparando vídeo...";
-}
-
-function handleVideoReady() {
-  statusDiv.textContent = "Vídeo pronto";
-  attemptPlayback(videoPlayer, 'video');
-}
-
-function handleAudioReady() {
-  statusDiv.textContent = "Áudio pronto";
-  attemptPlayback(audioPlayer, 'audio');
-}
-
-function attemptPlayback(mediaElement, mediaType) {
-  if (!userInteracted) {
-    statusDiv.textContent = "Clique para reproduzir";
-    playerState = 'paused';
-    updatePlayButton();
-    return;
-  }
-  
-  var playPromise = mediaElement.play();
-  
-  if (playPromise !== undefined) {
-    playPromise.then(function() {
-      playerState = 'playing';
-      statusDiv.textContent = "Reproduzindo";
-      updatePlayButton();
-      
-      // Apenas entrar em tela cheia para vídeo
-      if (mediaType === 'video' && mediaElement.requestFullscreen) {
-        mediaElement.requestFullscreen().catch(function(err) {
-          console.log("Tela cheia não disponível");
-        });
-        closeBtn.style.display = "block";
-      }
-    }).catch(function(error) {
-      statusDiv.textContent = "Clique no player para reproduzir";
-      playerState = 'paused';
-      updatePlayButton();
+      var filtered = allTracks.filter(function(t){
+        return t.title.toLowerCase().includes(q) ||
+               t.artist.toLowerCase().includes(q) ||
+               t.album.toLowerCase().includes(q);
+      });
+      tracks = filtered;
+      buildLibrary(tracks);
     });
-  } else {
-    // Fallback para navegadores sem Promise
-    try {
-      mediaElement.play();
-      playerState = 'playing';
-      statusDiv.textContent = "Reproduzindo";
-      updatePlayButton();
-    } catch (error) {
-      statusDiv.textContent = "Clique para reproduzir";
-      playerState = 'paused';
-      updatePlayButton();
-    }
-  }
-}
 
-function handleAudioError() {
-  console.error('Erro de áudio');
-  statusDiv.textContent = "Erro de áudio";
-  retryPlayback();
-}
+    reloadBtn.onclick = loadAll;
+    loadAll();
 
-function handleVideoError() {
-  console.error('Erro de vídeo');
-  statusDiv.textContent = "Erro de vídeo";
-  retryPlayback();
-}
-
-function handlePlaybackError(error, track) {
-  console.error("Erro na reprodução:", error);
-  statusDiv.textContent = "Erro: " + (error.message || "Falha na reprodução");
-  retryPlayback();
-}
-
-function retryPlayback() {
-  if (currentRetryCount < COMPATIBILITY.RETRY_ATTEMPTS && currentTrack >= 0) {
-    currentRetryCount++;
-    statusDiv.textContent = "Tentativa " + currentRetryCount + " de " + COMPATIBILITY.RETRY_ATTEMPTS;
-    
-    setTimeout(function() {
-      var track = library[currentTrack];
-      executePlayback(track);
-    }, 1000);
-  } else {
-    playerState = 'stopped';
-    updatePlayButton();
-  }
-}
-
-function stopTrack() {
-  stopCurrentPlayback();
-  playerState = 'stopped';
-  statusDiv.textContent = "Parado";
-  updatePlayButton();
-  currentTrack = -1;
-  renderPlaylist();
-}
-
-function togglePlay() {
-  if (currentTrack === -1) {
-    if (library.length > 0) {
-      playTrack(0);
-    }
-    return;
-  }
-  
-  if (playerState === 'playing') {
-    // Pausar o player ativo atual
-    if (currentMediaType === 'audio' && audioPlayer) {
-      audioPlayer.pause();
-    } else if (currentMediaType === 'video' && videoPlayer) {
-      videoPlayer.pause();
-    }
-    playerState = 'paused';
-    statusDiv.textContent = "Pausado";
-  } else {
-    // Retomar o player ativo atual
-    if (currentMediaType === 'audio' && audioPlayer) {
-      attemptPlayback(audioPlayer, 'audio');
-    } else if (currentMediaType === 'video' && videoPlayer) {
-      attemptPlayback(videoPlayer, 'video');
-    }
-  }
-  updatePlayButton();
-}
-
-function updatePlayButton() {
-  playPauseBtn.textContent = playerState === 'playing' ? '⏸' : '▶️';
-}
-
-function prevTrack() {
-  if (library.length === 0) return;
-  
-  if (randomMode) {
-    playRandomTrack();
-    return;
-  }
-  
-  var newIndex = currentTrack > 0 ? currentTrack - 1 : library.length - 1;
-  playTrack(newIndex);
-}
-
-function nextTrack() {
-  if (library.length === 0) return;
-  
-  if (randomMode) {
-    playRandomTrack();
-    return;
-  }
-  
-  var newIndex = currentTrack < library.length - 1 ? currentTrack + 1 : 0;
-  playTrack(newIndex);
-}
-
-function handleMediaEnded() {
-  console.log('Mídia terminou, tipo:', currentMediaType);
-  if (randomMode) {
-    playRandomTrack();
-  } else {
-    nextTrack();
-  }
-}
-
-function playRandomTrack() {
-  if (library.length === 0) return;
-  
-  var search = document.getElementById("search").value.toLowerCase();
-  var filteredTracks = library.filter(function(track) {
-    if (filterType !== "all" && track.type !== filterType) return false;
-    if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
-    return true;
-  });
-  
-  if (filteredTracks.length === 0) return;
-  
-  if (filteredTracks.length === 1) {
-    var trackIndex = library.indexOf(filteredTracks[0]);
-    playTrack(trackIndex);
-    return;
-  }
-  
-  var currentFilteredIndex = filteredTracks.findIndex(track => library.indexOf(track) === currentTrack);
-  var randomIndex;
-  do {
-    randomIndex = Math.floor(Math.random() * filteredTracks.length);
-  } while (randomIndex === currentFilteredIndex && filteredTracks.length > 1);
-  
-  var trackIndex = library.indexOf(filteredTracks[randomIndex]);
-  playTrack(trackIndex);
-}
-
-function toggleRandom() {
-  randomMode = !randomMode;
-  randomBtn.classList.toggle('active', randomMode);
-  statusDiv.textContent = randomMode ? "Modo aleatório ativado" : "Modo aleatório desativado";
-}
-
-function setFilter(type) {
-  filterType = type;
-  document.querySelectorAll("#filters button").forEach(btn => btn.classList.remove("active"));
-  var buttons = document.querySelectorAll("#filters button");
-  for (var i = 0; i < buttons.length; i++) {
-    if (buttons[i].textContent.toLowerCase().includes(type)) {
-      buttons[i].classList.add("active");
-      break;
-    }
-  }
-  renderPlaylist();
-}
-
-function exitFullscreen() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen().catch(function(err) {
-      console.log("Erro ao sair da tela cheia:", err);
-    });
-  }
-  closeBtn.style.display = "none";
-}
-
-// Inicializar quando o DOM estiver pronto
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadPlaylists);
-} else {
-  loadPlaylists();
-}
-
-// Marcar interação do usuário para autoplay
-document.addEventListener('click', function() {
-  if (!userInteracted) {
-    userInteracted = true;
-    console.log('Usuário interagiu com a página');
-  }
-}, { once: true });
-</script>
+  })();
+  </script>
 </body>
 </html>
