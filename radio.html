@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Caveira do Rock 69</title>
+  <style>
+    html,body {
+      height:100%;margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:#1a1a1a;
+      color:#e8e8e8;
+    }
+    .app{max-width:900px;margin:12px auto;padding:12px}
+
+    .header{display:flex;align-items:center;gap:12px}
+    .logo{width:60px;height:60px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;font-weight:bold}
+    .title{font-size:18px}
+    .status{margin-top:4px;font-size:14px;color:#bdbdbd}
+
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    button{
+      background:#2b2b2b;
+      border:1px solid #333;
+      color:#e8e8e8;
+      padding:12px 18px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:18px;
+    }
+    .toggle{padding:6px;border-radius:20px;font-size:16px}
+
+    .playerTop {
+      position:sticky;
+      top:0;
+      background:#111;
+      padding:10px;
+      border-radius:6px;
+      z-index:100;
+      margin-top:10px;
+    }
+    .playerTop audio {
+      width:100%;
+      height:50px;
+      margin-top:6px;
+    }
+
+    .content{margin-top:12px;background:#0f0f0f;padding:8px;border-radius:6px;max-height:65vh;overflow:auto}
+    .search{width:100%;padding:10px;margin-bottom:8px;border-radius:4px;border:1px solid #444;background:#222;color:#e8e8e8;font-size:16px}
+
+    .artist{font-weight:bold;margin-top:8px;font-size:18px}
+    .album{margin-left:8px;font-style:italic;font-size:16px}
+    .track{margin-left:20px;cursor:pointer;font-size:15px;padding:2px}
+    .track.playing{color:#9fe88f}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="logo">RÁDIO</div>
+      <div>
+        <div class="title">CAVEIRA DO ROCK 69</div>
+        <div class="status" id="status">Pronto.</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="prev">⏮️ Anterior</button>
+      <button id="play">▶️ Play</button>
+      <button id="next">⏭️ Próxima</button>
+      <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
+      <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
+      <button id="reload">⤻ Recarregar listas</button>
+    </div>
+
+    <!-- player fixo no topo -->
+    <div class="playerTop">
+      <div><strong>Tocando:</strong> <span id="now">—</span></div>
+      <audio id="audio" preload="none" controls></audio>
+    </div>
+
+    <div class="content">
+      <input id="search" class="search" type="text" placeholder="Buscar músicas, artistas ou álbuns...">
+      <div id="library"></div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var audio = document.getElementById('audio');
+    var libraryEl = document.getElementById('library');
+    var statusEl = document.getElementById('status');
+    var nowEl = document.getElementById('now');
+    var playBtn = document.getElementById('play');
+    var nextBtn = document.getElementById('next');
+    var prevBtn = document.getElementById('prev');
+    var shuffleCb = document.getElementById('shuffle');
+    var repeatCb = document.getElementById('repeat');
+    var reloadBtn = document.getElementById('reload');
+    var searchEl = document.getElementById('search');
+
+    var tracks = [];
+    var current = 0;
+    var playing = false;
+    var allTracks = [];
+
+    // Configurações do GitHub
+    var owner = 'cavernadorock69';
+    var repo = 'cavernadorock69.github.io';
+    var branch = 'main';
+    var directories = ['minhas_coleções', 'outras_coleções'];
+
+    function logStatus(t){ statusEl.textContent = t; }
+
+    function guessMetaFromPath(path){
+      var name = path.split('/').pop();
+      name = decodeURIComponent(name);
+      var base = name.replace(/\.m3u$/i,'').replace(/\.mp3$/i,'');
+      var parts = base.split(' - ');
+      var meta = {title: base, artist: 'Desconhecido', album: 'Desconhecido'};
+      if(parts.length>=3){
+        meta.artist = parts[0];
+        meta.album = parts[1];
+        meta.title = parts.slice(2).join(' - ');
+      } else if(parts.length==2){
+        meta.artist = parts[0];
+        meta.title = parts[1];
+      }
+      return meta;
+    }
+
+    function buildLibrary(list){
+      var byArtist = {};
+      for(var i=0;i<list.length;i++){
+        var t = list[i];
+        if(!byArtist[t.artist]) byArtist[t.artist] = {};
+        if(!byArtist[t.artist][t.album]) byArtist[t.artist][t.album] = [];
+        byArtist[t.artist][t.album].push(t);
+      }
+      libraryEl.innerHTML = '';
+      for(var artist in byArtist){
+        var artDiv = document.createElement('div'); artDiv.className='artist'; artDiv.textContent = artist; libraryEl.appendChild(artDiv);
+        var albums = byArtist[artist];
+        for(var album in albums){
+          var albDiv = document.createElement('div'); albDiv.className='album'; albDiv.textContent = album; libraryEl.appendChild(albDiv);
+          var list2 = albums[album];
+          for(var j=0;j<list2.length;j++){
+            var tr = list2[j];
+            var tdiv = document.createElement('div');
+            tdiv.className='track';
+            tdiv.textContent = tr.title;
+            tdiv.setAttribute('data-idx', tr.index);
+            tdiv.onclick = function(){
+              playIndex(parseInt(this.getAttribute('data-idx'),10));
+            };
+            libraryEl.appendChild(tdiv);
+          }
+        }
+      }
+      refreshPlayingClass();
+    }
+
+    function refreshPlayingClass(){
+      var elems = libraryEl.getElementsByClassName('track');
+      for(var i=0;i<elems.length;i++){ elems[i].className = 'track'; }
+      var curElems = libraryEl.querySelectorAll('.track[data-idx="'+current+'"]');
+      for(var k=0;k<curElems.length;k++){ curElems[k].className = 'track playing'; }
+    }
+
+    function setNowText(){
+      var t = tracks[current];
+      nowEl.textContent = t? (t.artist + ' — ' + t.title) : '—';
+    }
+
+    function playIndex(i){
+      if(i<0||i>=tracks.length) return;
+      current = i;
+      var t = tracks[current];
+      audio.src = t.src;
+      setNowText();
+      audio.play();
+      playing = true; playBtn.textContent='⏸️ Pausar';
+      refreshPlayingClass();
+    }
+
+    playBtn.onclick = function(){
+      if(!audio.src){
+        if(tracks.length>0) playIndex(0);
+        return;
+      }
+      if(audio.paused){
+        audio.play(); playing = true; playBtn.textContent='⏸️ Pausar';
+      } else {
+        audio.pause(); playing = false; playBtn.textContent='▶️ Play';
+      }
+    };
+    nextBtn.onclick = function(){ nextTrack(); };
+    prevBtn.onclick = function(){ prevTrack(); };
+
+    function nextTrack(){
+      if(shuffleCb.checked){
+        var rnd = Math.floor(Math.random()*tracks.length);
+        playIndex(rnd); return;
+      }
+      var nx = current + 1;
+      if(nx >= tracks.length){
+        if(repeatCb.checked) nx = 0;
+        else { audio.pause(); playing = false; playBtn.textContent='▶️ Play'; return; }
+      }
+      playIndex(nx);
+    }
+    function prevTrack(){
+      var pr = current - 1;
+      if(pr < 0){
+        if(repeatCb.checked) pr = tracks.length - 1;
+        else pr = 0;
+      }
+      playIndex(pr);
+    }
+
+    audio.addEventListener('ended', function(){ nextTrack(); });
+
+    // >>> autoplay após carregar playlists
+    function autoStart() {
+      if (tracks.length > 0) {
+        playIndex(0);
+      }
+    }
+
+    // GitHub API
+    function fetchM3UFilesInDir(dirPath, callback){
+      var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function(){
+        if(xhr.status === 200){
+          try{
+            var list = JSON.parse(xhr.responseText);
+            var m3uFiles = [];
+            for(var i=0; i<list.length; i++){
+              var item = list[i];
+              if(item.type === 'file' && item.name.toLowerCase().endsWith('.m3u')){
+                var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + dirPath + '/' + item.name;
+                m3uFiles.push(rawUrl);
+              }
+            }
+            callback(null, m3uFiles);
+          } catch(e){ callback(e, null); }
+        } else { callback(new Error('GitHub API status ' + xhr.status), null); }
+      };
+      xhr.onerror = function(){ callback(new Error('Erro de rede ao acessar GitHub API'), null); };
+      xhr.send();
+    }
+
+    function loadAll(){
+      tracks = [];
+      allTracks = [];
+      logStatus('Buscando listas .m3u no GitHub...');
+      var pendingDirs = directories.length;
+      var allM3uUrls = [];
+
+      for(var d=0; d<directories.length; d++){
+        (function(dir){
+          fetchM3UFilesInDir(dir, function(err, urls){
+            if(!err && urls && urls.length){ allM3uUrls = allM3uUrls.concat(urls); }
+            pendingDirs--;
+            if(pendingDirs === 0){
+              if(allM3uUrls.length === 0){ logStatus('Nenhuma playlist .m3u encontrada.'); }
+              else { logStatus('Encontradas ' + allM3uUrls.length + ' playlist(s). Carregando...'); loadPlaylistsFromUrls(allM3uUrls); }
+            }
+          });
+        })(directories[d]);
+      }
+    }
+
+    function loadPlaylistsFromUrls(urls){
+      var pending = urls.length;
+      if(pending === 0){ buildLibrary(tracks); logStatus('0 faixas.'); return; }
+      for(var i=0; i<urls.length; i++){
+        (function(u){
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', u, true);
+          xhr.onload = function(){
+            if(xhr.status === 200 || (xhr.status===0 && xhr.responseText)){
+              var found = parseM3UContent(xhr.responseText, u);
+              appendFound(found);
+            }
+            pending--;
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks);
+              setNowText();
+              refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas.');
+              autoStart(); // inicia automaticamente
+            }
+          };
+          xhr.onerror = function(){
+            pending--;
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks);
+              setNowText();
+              refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas.');
+              autoStart(); // inicia automaticamente
+            }
+          };
+          xhr.send();
+        })(urls[i]);
+      }
+    }
+
+    function appendFound(arr){
+      for(var i=0; i<arr.length; i++){
+        var s = arr[i];
+        var meta = guessMetaFromPath(s);
+        var idx = tracks.length;
+        tracks.push({src:s, title:meta.title, artist:meta.artist, album:meta.album, index:idx});
+      }
+    }
+
+    function parseM3UContent(text, baseUrl){
+      var lines = text.split(/\r?\n/);
+      var found = [];
+      for(var i=0;i<lines.length;i++){
+        var l = lines[i].trim();
+        if(!l) continue;
+        if(l.charAt(0)==='#') continue;
+        var src = l;
+        if(!/^https?:\/\//i.test(l) && baseUrl.indexOf('raw.githubusercontent')>-1){
+          var parts = baseUrl.split('/'); parts.pop(); src = parts.join('/') + '/' + l;
+        }
+        found.push(src);
+      }
+      return found;
+    }
+
+    // Busca
+    searchEl.addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      if(!q){ tracks = allTracks.slice(); buildLibrary(tracks); return; }
+      var filtered = allTracks.filter(function(t){
+        return t.title.toLowerCase().includes(q) ||
+               t.artist.toLowerCase().includes(q) ||
+               t.album.toLowerCase().includes(q);
+      });
+      tracks = filtered;
+      buildLibrary(tracks);
+    });
+
+    reloadBtn.onclick = loadAll;
+    loadAll();
+
+    // reforço para não parar em segundo plano
+    setInterval(function(){
+      if (playing && audio.paused && !audio.ended) {
+        audio.play().catch(()=>{});
+      }
+    }, 2000);
+
+  })();
+  </script>
+</body>
+</html>
