@@ -32,10 +32,18 @@
       .left, .right {max-width: 100%;}
       .right {max-height:none;}
     }
+    
+    /* Melhorias para TVs */
+    @media (max-width: 1920px) and (min-width: 1200px) {
+      .app { max-width: 90%; }
+      .track { padding: 12px; font-size: 18px; }
+      button { padding: 12px 16px; font-size: 16px; }
+    }
 
     .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
     button{background:#222;border:1px solid #333;color:#fff;
       padding:8px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+    button:disabled{background:#111;color:#666;cursor:not-allowed}
     .toggle{padding:6px;border-radius:20px;font-size:13px}
 
     .playerTop{background:#111;padding:10px;border-radius:6px}
@@ -44,7 +52,10 @@
     .track{cursor:pointer;padding:6px;font-size:15px;
       border-bottom:1px solid #222;display:flex;align-items:center;gap:8px}
     .track img{width:60px;height:40px;object-fit:cover;border-radius:4px}
-    .track.playing{color:#9fe88f}
+    .track.playing{color:#9fe88f;background:#1a1a1a}
+    
+    .loading{text-align:center;padding:20px;color:#ccc}
+    .error{color:#ff6b6b;background:#2a0f0f;padding:8px;border-radius:4px;margin:5px 0}
   </style>
 </head>
 <body>
@@ -53,7 +64,7 @@
     <div class="logo">VÍDEO</div>
     <div>
       <div class="title">CAVEIRA DO ROCK 69 - CLIPES</div>
-      <div class="status" id="status">Pronto.</div>
+      <div class="status" id="status">Carregando...</div>
     </div>
   </div>
 
@@ -61,9 +72,9 @@
     <!-- PLAYER -->
     <div class="left">
       <div class="controls">
-        <button id="prev">⏮️ Anterior</button>
-        <button id="play">▶️ Play</button>
-        <button id="next">⏭️ Próxima</button>
+        <button id="prev" disabled>⏮️ Anterior</button>
+        <button id="play" disabled>▶️ Play</button>
+        <button id="next" disabled>⏭️ Próxima</button>
         <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
         <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
         <button id="reload">⤻ Recarregar</button>
@@ -71,185 +82,501 @@
 
       <div class="playerTop">
         <div><strong>Tocando:</strong> <span id="now">—</span></div>
-        <video id="video" preload="none" controls></video>
+        <video id="video" preload="metadata" controls playsinline>
+          Seu navegador não suporta vídeo HTML5.
+        </video>
       </div>
     </div>
 
     <!-- LISTA -->
-    <div class="right" id="library"></div>
+    <div class="right" id="library">
+      <div class="loading">Carregando lista de vídeos...</div>
+    </div>
   </div>
 </div>
 
 <script>
 (function(){
-  var video=document.getElementById('video');
-  var libraryEl=document.getElementById('library');
-  var statusEl=document.getElementById('status');
-  var nowEl=document.getElementById('now');
-  var playBtn=document.getElementById('play');
-  var nextBtn=document.getElementById('next');
-  var prevBtn=document.getElementById('prev');
-  var shuffleCb=document.getElementById('shuffle');
-  var repeatCb=document.getElementById('repeat');
-  var reloadBtn=document.getElementById('reload');
+  var video = document.getElementById('video');
+  var libraryEl = document.getElementById('library');
+  var statusEl = document.getElementById('status');
+  var nowEl = document.getElementById('now');
+  var playBtn = document.getElementById('play');
+  var nextBtn = document.getElementById('next');
+  var prevBtn = document.getElementById('prev');
+  var shuffleCb = document.getElementById('shuffle');
+  var repeatCb = document.getElementById('repeat');
+  var reloadBtn = document.getElementById('reload');
 
-  var tracks=[]; var current=0; var playing=false;
-  var owner='cavernadorock69';
-  var repo='cavernadorock69.github.io';
-  var branch='main';
-  var directories=['clips_e_shows'];
+  var tracks = []; 
+  var current = 0; 
+  var playing = false;
+  var isLoading = false;
+  var hasVideoError = false;
+  
+  var owner = 'cavernadorock69';
+  var repo = 'cavernadorock69.github.io';
+  var branch = 'main';
+  var directories = ['clips_e_shows'];
 
-  function logStatus(t){ statusEl.textContent=t; }
+  function logStatus(t) { 
+    statusEl.textContent = t; 
+    console.log('Status:', t);
+  }
+
+  function enableControls() {
+    playBtn.disabled = tracks.length === 0;
+    nextBtn.disabled = tracks.length === 0;
+    prevBtn.disabled = tracks.length === 0;
+  }
 
   function buildLibrary(list){
-    libraryEl.innerHTML='';
+    if (list.length === 0) {
+      libraryEl.innerHTML = '<div class="error">Nenhum vídeo encontrado.</div>';
+      return;
+    }
+    
+    libraryEl.innerHTML = '';
     list.forEach(function(t){
-      var div=document.createElement('div');
-      div.className='track';
-      div.dataset.idx=t.index;
+      var div = document.createElement('div');
+      div.className = 'track';
+      div.dataset.idx = t.index;
+      
       if(t.img){
-        var thumb=document.createElement('img');
-        thumb.src=t.img;
+        var thumb = document.createElement('img');
+        thumb.src = t.img;
+        thumb.alt = 'Thumbnail';
         div.appendChild(thumb);
       }
-      var span=document.createElement('span');
-      span.textContent=t.title;
+      
+      var span = document.createElement('span');
+      span.textContent = t.title;
       div.appendChild(span);
 
-      div.onclick=function(){playIndex(parseInt(this.dataset.idx,10));};
+      div.onclick = function(){ 
+        playIndex(parseInt(this.dataset.idx, 10)); 
+      };
       libraryEl.appendChild(div);
     });
     refreshPlayingClass();
   }
 
   function refreshPlayingClass(){
-    var elems=libraryEl.getElementsByClassName('track');
-    for(var i=0;i<elems.length;i++) elems[i].className='track';
-    var cur=libraryEl.querySelector('.track[data-idx="'+current+'"]');
-    if(cur) cur.className='track playing';
+    var elems = libraryEl.getElementsByClassName('track');
+    for(var i = 0; i < elems.length; i++) {
+      elems[i].className = 'track';
+    }
+    
+    var cur = libraryEl.querySelector('.track[data-idx="' + current + '"]');
+    if(cur) {
+      cur.className = 'track playing';
+      // Scroll para o item atual
+      cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
-  function setNowText(){ nowEl.textContent=tracks[current]?tracks[current].title:'—'; }
-
-  function requestFs(el){
-    if(el.requestFullscreen) el.requestFullscreen();
-    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
-    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  function setNowText(){ 
+    nowEl.textContent = tracks[current] ? tracks[current].title : '—'; 
   }
 
   function playIndex(i){
-    if(i<0||i>=tracks.length)return;
-    current=i; var t=tracks[current];
-    // força type video/mp4
-    video.src=''; // limpa antes
-    video.src=t.src;
-    video.setAttribute('type','video/mp4');
+    if(i < 0 || i >= tracks.length) return;
+    
+    // Reseta flags de erro
+    hasVideoError = false;
+    
+    current = i; 
+    var t = tracks[current];
+    
+    // Limpa eventos anteriores para evitar duplicação
+    video.onerror = null;
+    video.onended = null;
+    
+    // Limpa e prepara o vídeo
+    video.pause();
+    video.src = '';
+    video.load(); // Força recarregar
+    
     setNowText();
-    video.play().then(()=>{requestFs(video);}).catch(()=>{});
-    playing=true; playBtn.textContent='⏸️ Pausar'; refreshPlayingClass();
+    refreshPlayingClass();
+    
+    // Pequeno delay para garantir que o vídeo foi resetado
+    setTimeout(function(){
+      video.src = t.src;
+      logStatus('Carregando: ' + t.title);
+      
+      // Configura eventos DEPOIS de definir o src
+      video.onerror = function(e) {
+        if (!hasVideoError) {
+          hasVideoError = true;
+          logStatus('Erro ao carregar o vídeo');
+          console.error('Erro de vídeo:', e);
+          
+          // Tentar próximo vídeo após 3 segundos
+          setTimeout(function() {
+            if (hasVideoError) { // Só avança se ainda houver erro
+              logStatus('Tentando próximo vídeo...');
+              nextTrack();
+            }
+          }, 3000);
+        }
+      };
+      
+      video.onended = function() {
+        logStatus('Vídeo finalizado');
+        nextTrack();
+      };
+      
+      // Tenta reproduzir automaticamente
+      var playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(function(){
+          hasVideoError = false;
+          playing = true; 
+          playBtn.textContent = '⏸️ Pausar'; 
+          logStatus('Reproduzindo: ' + t.title);
+          
+        }).catch(function(error){
+          // Não é um erro grave - apenas requer interação do usuário
+          hasVideoError = false;
+          playing = false;
+          playBtn.textContent = '▶️ Play';
+          logStatus('Clique em Play para iniciar');
+          console.log('Autoplay bloqueado, aguardando interação:', error);
+        });
+      }
+      
+      enableControls();
+      
+    }, 100);
   }
 
-  playBtn.onclick=function(){
-    if(!video.src){if(tracks.length>0)playIndex(0);return;}
-    if(video.paused){video.play();playing=true;playBtn.textContent='⏸️ Pausar';}
-    else{video.pause();playing=false;playBtn.textContent='▶️ Play';}
+  playBtn.onclick = function(){
+    if(!video.src || tracks.length === 0){
+      if(tracks.length > 0) {
+        playIndex(0);
+      }
+      return;
+    }
+    
+    if(video.paused){
+      var playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(function() {
+          playing = true;
+          playBtn.textContent = '⏸️ Pausar';
+          logStatus('Reproduzindo');
+        }).catch(function(error) {
+          logStatus('Erro ao reproduzir: ' + error.message);
+          console.error('Erro no play:', error);
+        });
+      }
+    } else {
+      video.pause();
+      playing = false;
+      playBtn.textContent = '▶️ Play';
+      logStatus('Pausado');
+    }
   };
-  nextBtn.onclick=function(){nextTrack();};
-  prevBtn.onclick=function(){prevTrack();};
+  
+  nextBtn.onclick = function(){ nextTrack(); };
+  prevBtn.onclick = function(){ prevTrack(); };
 
   function nextTrack(){
-    if(shuffleCb.checked){playIndex(Math.floor(Math.random()*tracks.length));return;}
-    var nx=current+1;
-    if(nx>=tracks.length){if(repeatCb.checked)nx=0;else{video.pause();playing=false;playBtn.textContent='▶️ Play';return;}}
+    if(shuffleCb.checked){
+      var newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * tracks.length);
+      } while (newIndex === current && tracks.length > 1);
+      
+      playIndex(newIndex);
+      return;
+    }
+    
+    var nx = current + 1;
+    if(nx >= tracks.length){
+      if(repeatCb.checked) {
+        nx = 0;
+      } else {
+        video.pause();
+        playing = false;
+        playBtn.textContent = '▶️ Play';
+        logStatus('Fim da lista');
+        return;
+      }
+    }
     playIndex(nx);
   }
+  
   function prevTrack(){
-    var pr=current-1;
-    if(pr<0){if(repeatCb.checked)pr=tracks.length-1;else pr=0;}
+    if(shuffleCb.checked){
+      var newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * tracks.length);
+      } while (newIndex === current && tracks.length > 1);
+      
+      playIndex(newIndex);
+      return;
+    }
+    
+    var pr = current - 1;
+    if(pr < 0){
+      if(repeatCb.checked) {
+        pr = tracks.length - 1;
+      } else {
+        pr = 0;
+      }
+    }
     playIndex(pr);
   }
 
-  video.addEventListener('ended',function(){nextTrack();});
+  // Eventos de vídeo para feedback
+  video.addEventListener('canplay', function() {
+    logStatus('Pronto para reproduzir: ' + (tracks[current] ? tracks[current].title : ''));
+  });
+
+  video.addEventListener('waiting', function() {
+    logStatus('Buffering...');
+  });
+
+  video.addEventListener('playing', function() {
+    logStatus('Reproduzindo: ' + (tracks[current] ? tracks[current].title : ''));
+    hasVideoError = false;
+  });
 
   // BUSCA LISTAS NO GITHUB
-  function fetchM3UFilesInDir(dir,cb){
-    var url='https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+encodeURIComponent(dir)+'?ref='+branch;
-    var xhr=new XMLHttpRequest();xhr.open('GET',url,true);
-    xhr.onload=function(){
-      if(xhr.status===200){
+  function fetchM3UFilesInDir(dir, cb){
+    var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dir) + '?ref=' + branch;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 15000;
+    
+    xhr.onload = function(){
+      if(xhr.status === 200){
         try{
-          var list=JSON.parse(xhr.responseText);var m3us=[];
+          var list = JSON.parse(xhr.responseText);
+          var m3us = [];
           list.forEach(function(it){
-            if(it.type==='file'&&it.name.toLowerCase().endsWith('.m3u')){
-              m3us.push('https://raw.githubusercontent.com/'+owner+'/'+repo+'/'+branch+'/'+dir+'/'+it.name);
+            if(it.type === 'file' && it.name.toLowerCase().endsWith('.m3u')){
+              m3us.push('https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + dir + '/' + it.name);
             }
           });
-          cb(null,m3us);
-        }catch(e){cb(e,null);}
-      }else cb(new Error('GitHub status '+xhr.status),null);
+          cb(null, m3us);
+        } catch(e) {
+          cb(e, null);
+        }
+      } else {
+        cb(new Error('GitHub status ' + xhr.status), null);
+      }
     };
-    xhr.onerror=function(){cb(new Error('Erro rede'),null);};
+    
+    xhr.onerror = function(){ 
+      cb(new Error('Erro de rede ao acessar ' + dir), null); 
+    };
+    
+    xhr.ontimeout = function() {
+      cb(new Error('Timeout ao acessar ' + dir), null);
+    };
+    
     xhr.send();
   }
 
   function loadAll(){
-    tracks=[];logStatus('Buscando playlists...');var pending=directories.length;var urls=[];
+    if (isLoading) return;
+    
+    isLoading = true;
+    tracks = [];
+    current = 0;
+    playing = false;
+    hasVideoError = false;
+    
+    logStatus('Buscando playlists...');
+    libraryEl.innerHTML = '<div class="loading">Buscando playlists...</div>';
+    
+    var pending = directories.length;
+    var urls = [];
+    var errors = [];
+    
+    if (pending === 0) {
+      logStatus('Nenhum diretório configurado');
+      isLoading = false;
+      return;
+    }
+    
     directories.forEach(function(dir){
-      fetchM3UFilesInDir(dir,function(err,u){
-        if(!err&&u)urls=urls.concat(u);
-        if(--pending===0){
-          if(!urls.length)logStatus('Nenhuma playlist.');else{logStatus('Carregando...');loadPlaylistsFromUrls(urls);}
+      fetchM3UFilesInDir(dir, function(err, u){
+        if (err) {
+          errors.push(err.message);
+          console.error('Erro ao buscar em ' + dir + ':', err);
+        }
+        
+        if (u && u.length > 0) {
+          urls = urls.concat(u);
+        }
+        
+        pending--;
+        if (pending === 0) {
+          if (urls.length === 0) {
+            var errorMsg = errors.length > 0 ? 'Erros: ' + errors.join(', ') : 'Nenhuma playlist encontrada.';
+            logStatus(errorMsg);
+            libraryEl.innerHTML = '<div class="error">' + errorMsg + '</div>';
+            isLoading = false;
+          } else {
+            logStatus('Carregando ' + urls.length + ' playlist(s)...');
+            loadPlaylistsFromUrls(urls);
+          }
         }
       });
     });
   }
 
   function loadPlaylistsFromUrls(urls){
-    var pending=urls.length;
-    urls.forEach(function(u){
-      var xhr=new XMLHttpRequest();xhr.open('GET',u,true);
-      xhr.onload=function(){
-        if(xhr.status===200||xhr.responseText){
-          var found=parseM3UContent(xhr.responseText,u);appendFound(found);
-        }
-        if(--pending===0){buildLibrary(tracks);setNowText();logStatus('Carregado '+tracks.length+' vídeos.');}
-      };xhr.send();
-    });
-  }
-
-  function appendFound(arr){
-    arr.forEach(function(obj){
-      var idx=tracks.length;
-      tracks.push({src:obj.src,title:obj.title||'Sem título',img:obj.img||null,index:idx});
+    var pending = urls.length;
+    var loaded = 0;
+    var errors = [];
+    
+    if (pending === 0) {
+      buildLibrary(tracks);
+      setNowText();
+      logStatus('Carregado ' + tracks.length + ' vídeo(s).');
+      enableControls();
+      isLoading = false;
+      return;
+    }
+    
+    urls.forEach(function(u, index){
+      setTimeout(function(){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', u, true);
+        xhr.timeout = 20000;
+        
+        xhr.onload = function(){
+          if (xhr.status === 200 && xhr.responseText) {
+            try {
+              var found = parseM3UContent(xhr.responseText, u);
+              appendFound(found);
+            } catch (e) {
+              errors.push('Erro ao processar ' + u);
+              console.error('Erro ao processar playlist:', e);
+            }
+          } else {
+            errors.push('Falha ao carregar ' + u);
+          }
+          
+          loaded++;
+          if (loaded >= pending) {
+            buildLibrary(tracks);
+            setNowText();
+            
+            var statusMsg = 'Carregado ' + tracks.length + ' vídeo(s).';
+            if (errors.length > 0) {
+              statusMsg += ' Com ' + errors.length + ' erro(s).';
+            }
+            
+            logStatus(statusMsg);
+            enableControls();
+            isLoading = false;
+          }
+        };
+        
+        xhr.onerror = function() {
+          errors.push('Erro de rede em ' + u);
+          loaded++;
+          if (loaded >= pending) {
+            buildLibrary(tracks);
+            setNowText();
+            logStatus('Carregado ' + tracks.length + ' vídeo(s). Com ' + errors.length + ' erro(s).');
+            enableControls();
+            isLoading = false;
+          }
+        };
+        
+        xhr.ontimeout = function() {
+          errors.push('Timeout em ' + u);
+          loaded++;
+          if (loaded >= pending) {
+            buildLibrary(tracks);
+            setNowText();
+            logStatus('Carregado ' + tracks.length + ' vídeo(s). Com ' + errors.length + ' erro(s).');
+            enableControls();
+            isLoading = false;
+          }
+        };
+        
+        xhr.send();
+      }, index * 1000);
     });
   }
 
   // parser M3U com #EXTINF e #EXTIMG
-  function parseM3UContent(txt,base){
-    var lines=txt.split(/\r?\n/),found=[];
-    var title=null,img=null;
+  function parseM3UContent(txt, base){
+    var lines = txt.split(/\r?\n/);
+    var found = [];
+    var title = null;
+    var img = null;
+    
     lines.forEach(function(l){
-      l=l.trim();if(!l)return;
-      if(l.startsWith('#EXTINF')){
-        var parts=l.split(',');
-        title=parts.length>1?parts[1].trim():null;
-      }else if(l.startsWith('#EXTIMG')){
-        img=l.replace('#EXTIMG:','').trim();
-      }else if(!l.startsWith('#')){
-        var src=l;
-        if(!/^https?:\/\//i.test(l)&&base.includes('raw.githubusercontent')){
-          var parts=base.split('/');parts.pop();src=parts.join('/')+'/'+l;
+      l = l.trim();
+      if (!l) return;
+      
+      if (l.startsWith('#EXTINF')) {
+        var parts = l.split(',');
+        title = parts.length > 1 ? parts[1].trim() : null;
+      } else if (l.startsWith('#EXTIMG')) {
+        img = l.replace('#EXTIMG:', '').trim();
+      } else if (!l.startsWith('#')) {
+        var src = l;
+        
+        // Converte URLs relativas para absolutas
+        if (!/^https?:\/\//i.test(l) && base.includes('raw.githubusercontent')) {
+          var parts = base.split('/');
+          parts.pop();
+          src = parts.join('/') + '/' + l;
         }
-        found.push({src:src,title:title||src.split('/').pop(),img:img});
-        title=null;img=null;
+        
+        // Valida se é um arquivo de vídeo
+        if (/\.(mp4|m4v|mov|avi|mkv|webm|ogv)$/i.test(src)) {
+          found.push({
+            src: src,
+            title: title || src.split('/').pop(),
+            img: img
+          });
+        }
+        
+        title = null;
+        img = null;
       }
     });
+    
     return found;
   }
 
-  reloadBtn.onclick=loadAll;
-  loadAll();
+  function appendFound(arr){
+    arr.forEach(function(obj){
+      var exists = tracks.some(function(track) {
+        return track.src === obj.src;
+      });
+      
+      if (!exists) {
+        var idx = tracks.length;
+        tracks.push({
+          src: obj.src,
+          title: obj.title || 'Sem título',
+          img: obj.img || null,
+          index: idx
+        });
+      }
+    });
+  }
+
+  reloadBtn.onclick = loadAll;
+  
+  // Inicialização
+  document.addEventListener('DOMContentLoaded', function() {
+    logStatus('Iniciando carregamento...');
+    loadAll();
+  });
 })();
 </script>
 </body>
