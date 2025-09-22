@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Caveira do Rock 69 - CLIPES</title>
+  <style>
+    html,body {
+      margin:0;height:100%;
+      font-family:Arial,Helvetica,sans-serif;
+      background:#000;color:#fff;
+    }
+    .app{max-width:1200px;margin:0 auto;padding:12px}
+
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .logo{width:60px;height:60px;border-radius:6px;background:#111;
+      display:flex;align-items:center;justify-content:center;font-weight:bold}
+    .title{font-size:20px}
+    .status{margin-top:4px;font-size:14px;color:#ccc}
+
+    .layout{
+      display:flex;
+      gap:12px;
+    }
+    .left{
+      flex:1;
+      max-width:60%;
+    }
+    .right{
+      flex:1;
+      max-width:40%;
+      background:#0f0f0f;
+      border-radius:6px;
+      padding:8px;
+      overflow-y:auto;
+      max-height:80vh;
+    }
+
+    /* RESPONSIVO: em telas menores empilha */
+    @media (max-width: 768px) {
+      .layout {
+        flex-direction: column;
+      }
+      .left, .right {
+        max-width: 100%;
+      }
+      .right {
+        max-height: none;
+      }
+    }
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    button{background:#222;border:1px solid #333;color:#fff;
+      padding:8px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+    .toggle{padding:6px;border-radius:20px;font-size:13px}
+
+    .playerTop{background:#111;padding:10px;border-radius:6px}
+    .playerTop video{width:100%;max-height:70vh;background:#000}
+
+    .track{cursor:pointer;padding:6px;font-size:15px;border-bottom:1px solid #222}
+    .track.playing{color:#9fe88f}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">VÍDEO</div>
+    <div>
+      <div class="title">CAVEIRA DO ROCK 69 - CLIPES</div>
+      <div class="status" id="status">Pronto.</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- lado esquerdo = player -->
+    <div class="left">
+      <div class="controls">
+        <button id="prev">⏮️ Anterior</button>
+        <button id="play">▶️ Play</button>
+        <button id="next">⏭️ Próxima</button>
+        <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
+        <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
+        <button id="reload">⤻ Recarregar</button>
+      </div>
+
+      <div class="playerTop">
+        <div><strong>Tocando:</strong> <span id="now">—</span></div>
+        <video id="video" preload="none" controls></video>
+      </div>
+    </div>
+
+    <!-- lado direito = lista -->
+    <div class="right" id="library"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var video=document.getElementById('video');
+  var libraryEl=document.getElementById('library');
+  var statusEl=document.getElementById('status');
+  var nowEl=document.getElementById('now');
+  var playBtn=document.getElementById('play');
+  var nextBtn=document.getElementById('next');
+  var prevBtn=document.getElementById('prev');
+  var shuffleCb=document.getElementById('shuffle');
+  var repeatCb=document.getElementById('repeat');
+  var reloadBtn=document.getElementById('reload');
+
+  var tracks=[]; var current=0; var playing=false;
+  var owner='cavernadorock69';
+  var repo='cavernadorock69.github.io';
+  var branch='main';
+  var directories=['clips_e_shows'];
+
+  function logStatus(t){ statusEl.textContent=t; }
+  function buildLibrary(list){
+    libraryEl.innerHTML='';
+    list.forEach(function(t){
+      var div=document.createElement('div');
+      div.className='track';
+      div.textContent=t.title;
+      div.dataset.idx=t.index;
+      div.onclick=function(){playIndex(parseInt(this.dataset.idx,10));};
+      libraryEl.appendChild(div);
+    });
+    refreshPlayingClass();
+  }
+  function refreshPlayingClass(){
+    var elems=libraryEl.getElementsByClassName('track');
+    for(var i=0;i<elems.length;i++) elems[i].className='track';
+    var cur=libraryEl.querySelector('.track[data-idx="'+current+'"]');
+    if(cur) cur.className='track playing';
+  }
+  function setNowText(){nowEl.textContent=tracks[current]?tracks[current].title:'—';}
+  function requestFs(el){
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  }
+  function playIndex(i){
+    if(i<0||i>=tracks.length)return;
+    current=i; var t=tracks[current];
+    video.src=t.src; setNowText();
+    video.play().then(()=>{requestFs(video);}).catch(()=>{});
+    playing=true; playBtn.textContent='⏸️ Pausar'; refreshPlayingClass();
+  }
+  playBtn.onclick=function(){
+    if(!video.src){if(tracks.length>0)playIndex(0);return;}
+    if(video.paused){video.play();playing=true;playBtn.textContent='⏸️ Pausar';}
+    else{video.pause();playing=false;playBtn.textContent='▶️ Play';}
+  };
+  nextBtn.onclick=function(){nextTrack();};
+  prevBtn.onclick=function(){prevTrack();};
+  function nextTrack(){
+    if(shuffleCb.checked){playIndex(Math.floor(Math.random()*tracks.length));return;}
+    var nx=current+1;
+    if(nx>=tracks.length){if(repeatCb.checked)nx=0;else{video.pause();playing=false;playBtn.textContent='▶️ Play';return;}}
+    playIndex(nx);
+  }
+  function prevTrack(){
+    var pr=current-1;
+    if(pr<0){if(repeatCb.checked)pr=tracks.length-1;else pr=0;}
+    playIndex(pr);
+  }
+  video.addEventListener('ended',function(){nextTrack();});
+
+  function fetchM3UFilesInDir(dir,cb){
+    var url='https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+encodeURIComponent(dir)+'?ref='+branch;
+    var xhr=new XMLHttpRequest();xhr.open('GET',url,true);
+    xhr.onload=function(){
+      if(xhr.status===200){
+        try{var list=JSON.parse(xhr.responseText);var m3us=[];
+          list.forEach(function(it){
+            if(it.type==='file'&&it.name.toLowerCase().endsWith('.m3u')){
+              m3us.push('https://raw.githubusercontent.com/'+owner+'/'+repo+'/'+branch+'/'+dir+'/'+it.name);
+            }
+          });cb(null,m3us);}catch(e){cb(e,null);}
+      }else cb(new Error('GitHub status '+xhr.status),null);
+    };
+    xhr.onerror=function(){cb(new Error('Erro rede'),null);};
+    xhr.send();
+  }
+  function loadAll(){
+    tracks=[];logStatus('Buscando playlists...');var pending=directories.length;var urls=[];
+    directories.forEach(function(dir){
+      fetchM3UFilesInDir(dir,function(err,u){
+        if(!err&&u)urls=urls.concat(u);
+        if(--pending===0){
+          if(!urls.length)logStatus('Nenhuma playlist.');else{logStatus('Carregando...');loadPlaylistsFromUrls(urls);}
+        }
+      });
+    });
+  }
+  function loadPlaylistsFromUrls(urls){
+    var pending=urls.length;
+    urls.forEach(function(u){
+      var xhr=new XMLHttpRequest();xhr.open('GET',u,true);
+      xhr.onload=function(){
+        if(xhr.status===200||xhr.responseText){
+          var found=parseM3UContent(xhr.responseText,u);appendFound(found);
+        }
+        if(--pending===0){buildLibrary(tracks);setNowText();logStatus('Carregado '+tracks.length+' vídeos.');}
+      };xhr.send();
+    });
+  }
+  function appendFound(arr){
+    arr.forEach(function(s){
+      var name=decodeURIComponent(s.split('/').pop());
+      var base=name.replace(/\.[^.]+$/,'');
+      var idx=tracks.length;
+      tracks.push({src:s,title:base,index:idx});
+    });
+  }
+  function parseM3UContent(txt,base){
+    var lines=txt.split(/\r?\n/),found=[];
+    lines.forEach(function(l){
+      l=l.trim();if(!l||l[0]==='#')return;
+      var src=l;
+      if(!/^https?:\/\//i.test(l)&&base.includes('raw.githubusercontent')){
+        var parts=base.split('/');parts.pop();src=parts.join('/')+'/'+l;
+      }
+      found.push(src);
+    });
+    return found;
+  }
+  reloadBtn.onclick=loadAll;
+  loadAll();
+})();
+</script>
+</body>
+</html>
