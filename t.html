@@ -5,95 +5,89 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Player automático de músicas (.m3u) — estilo Qmmp</title>
   <style>
-    html,body{
+    html,body {
       height:100%;margin:0;
       font-family:Arial,Helvetica,sans-serif;
-      background:#1a1a1a;color:#e8e8e8;
+      background:#1a1a1a;
+      color:#e8e8e8;
     }
-    .app{max-width:900px;margin:0 auto;}
-
-    /* topo fixo */
-    .topbar{
-      position:sticky;
-      top:0;
-      background:#222;
-      z-index:100;
-      padding:12px;
-      border-bottom:1px solid #333;
-    }
+    .app{max-width:900px;margin:12px auto;padding:12px}
 
     .header{display:flex;align-items:center;gap:12px}
     .logo{width:60px;height:60px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;font-weight:bold}
     .title{font-size:18px}
     .status{margin-top:4px;font-size:14px;color:#bdbdbd}
 
-    .controls{display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap}
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
     button{
       background:#2b2b2b;
       border:1px solid #333;
       color:#e8e8e8;
       padding:12px 18px;
-      font-size:18px;
       border-radius:6px;
       cursor:pointer;
+      font-size:18px;
     }
     .toggle{padding:6px;border-radius:20px;font-size:16px}
-    .toggle input{transform:scale(1.5);margin-right:6px}
 
-    .search{
-      width:100%;padding:10px;margin-top:10px;
-      border-radius:4px;border:1px solid #444;
-      background:#222;color:#e8e8e8;font-size:16px;
-    }
-
-    .content{
-      margin-top:12px;
-      background:#0f0f0f;
-      padding:8px;
+    .playerTop {
+      position:sticky;
+      top:0;
+      background:#111;
+      padding:10px;
       border-radius:6px;
-      max-height:65vh;
-      overflow:auto;
+      z-index:100;
+      margin-top:10px;
+    }
+    .playerTop audio {
+      width:100%;
+      height:50px;
+      margin-top:6px;
     }
 
-    .artist{font-weight:bold;margin-top:8px;font-size:17px}
-    .album{margin-left:8px;font-style:italic;font-size:15px}
+    .content{margin-top:12px;background:#0f0f0f;padding:8px;border-radius:6px;max-height:65vh;overflow:auto}
+    .search{width:100%;padding:10px;margin-bottom:8px;border-radius:4px;border:1px solid #444;background:#222;color:#e8e8e8;font-size:16px}
+
+    .artist{font-weight:bold;margin-top:8px;font-size:18px}
+    .album{margin-left:8px;font-style:italic;font-size:16px}
     .track{margin-left:20px;cursor:pointer;font-size:15px;padding:2px}
     .track.playing{color:#9fe88f}
-    .footer{margin-top:8px;font-size:14px;color:#bdbdbd}
   </style>
 </head>
 <body>
   <div class="app">
-
-    <!-- TOPO FIXO -->
-    <div class="topbar">
-      <div class="header">
-        <div class="logo">qmmp</div>
-        <div>
-          <div class="title">Player automático — estilo Qmmp</div>
-          <div class="status" id="status">Pronto.</div>
-        </div>
+    <div class="header">
+      <div class="logo">qmmp</div>
+      <div>
+        <div class="title">Player automático — estilo Qmmp</div>
+        <div class="status" id="status">Pronto.</div>
       </div>
-
-      <div class="controls">
-        <button id="prev">⏮️ Anterior</button>
-        <button id="play">▶️ Play</button>
-        <button id="next">⏭️ Próxima</button>
-        <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
-        <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
-        <button id="reload">⤻ Recarregar</button>
-      </div>
-
-      <input id="search" class="search" type="text" placeholder="Buscar músicas, artistas ou álbuns...">
-      <div><strong>Tocando:</strong> <span id="now">—</span></div>
     </div>
 
-    <!-- LISTA ROLÁVEL -->
+    <div class="controls">
+      <button id="prev">⏮️ Anterior</button>
+      <button id="play">▶️ Play</button>
+      <button id="next">⏭️ Próxima</button>
+      <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
+      <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
+      <button id="reload">⤻ Recarregar listas</button>
+    </div>
+
+    <!-- player fixo no topo -->
+    <div class="playerTop">
+      <div><strong>Tocando:</strong> <span id="now">—</span></div>
+      <audio id="audio" preload="none" controls></audio>
+    </div>
+
     <div class="content">
+      <input id="search" class="search" type="text" placeholder="Buscar músicas, artistas ou álbuns...">
       <div id="library"></div>
-      <div class="footer">
-        <audio id="audio" preload="none" controls class="hidden"></audio>
-      </div>
     </div>
   </div>
 
@@ -116,6 +110,7 @@
     var playing = false;
     var allTracks = [];
 
+    // Configurações do GitHub
     var owner = 'cavernadorock69';
     var repo = 'cavernadorock69.github.io';
     var branch = 'main';
@@ -231,6 +226,7 @@
 
     audio.addEventListener('ended', function(){ nextTrack(); });
 
+    // GitHub API
     function fetchM3UFilesInDir(dirPath, callback){
       var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
       var xhr = new XMLHttpRequest();
@@ -325,6 +321,7 @@
       return found;
     }
 
+    // Busca
     searchEl.addEventListener('input', function(){
       var q = this.value.trim().toLowerCase();
       if(!q){ tracks = allTracks.slice(); buildLibrary(tracks); return; }
