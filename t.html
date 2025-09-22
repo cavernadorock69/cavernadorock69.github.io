@@ -1,304 +1,230 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Player automático de músicas (.m3u) — estilo Qmmp</title>
-  <style>
-    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#1a1a1a;color:#e8e8e8}
-    .app{max-width:900px;margin:12px auto;padding:12px}
-    .header{display:flex;align-items:center;gap:12px}
-    .logo{width:60px;height:60px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;font-weight:bold}
-    .title{font-size:18px}
-    .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-    button{background:#2b2b2b;border:1px solid #333;color:#e8e8e8;padding:6px 10px;border-radius:4px;cursor:pointer}
-    .toggle{padding:6px;border-radius:20px}
-    .content{margin-top:12px;background:#0f0f0f;padding:8px;border-radius:6px;max-height:65vh;overflow:auto}
-    .search{width:100%;padding:6px;margin-bottom:8px;border-radius:4px;border:1px solid #444;background:#222;color:#e8e8e8}
-    .artist{font-weight:bold;margin-top:8px}
-    .album{margin-left:8px;font-style:italic}
-    .track{margin-left:20px;cursor:pointer}
-    .track.playing{color:#9fe88f}
-    .status{margin-top:8px;font-size:13px;color:#bdbdbd}
-    .footer{margin-top:8px;font-size:13px;color:#bdbdbd}
-  </style>
+<meta charset="UTF-8">
+<title>Caverna do Rock 69</title>
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #111;
+  color: #eee;
+}
+
+#header {
+  background: #222;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#controls {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#controls button {
+  background: #333;
+  border: none;
+  color: #eee;
+  padding: 10px 18px;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#controls button:hover {
+  background: #555;
+}
+
+#controls label {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#controls input {
+  transform: scale(1.3);
+  margin-right: 5px;
+}
+
+#searchBox {
+  padding: 10px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#musicList {
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.track {
+  padding: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.track:hover {
+  background: #333;
+}
+.track.playing {
+  background: #555;
+}
+</style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="logo">qmmp</div>
-      <div>
-        <div class="title">Player automático — estilo Qmmp</div>
-        <div class="status" id="status">Pronto.</div>
-      </div>
-    </div>
 
-    <div class="controls">
-      <button id="prev">⏮️ Anterior</button>
-      <button id="play">▶️ Play</button>
-      <button id="next">⏭️ Próxima</button>
-      <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
-      <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
-      <button id="reload">⤻ Recarregar listas</button>
-    </div>
+<div id="header">
+  <div id="controls">
+    <button onclick="prev()">⏮</button>
+    <button onclick="togglePlay()">▶️/⏸</button>
+    <button onclick="next()">⏭</button>
 
-    <div class="content">
-      <input id="search" class="search" type="text" placeholder="Buscar músicas, artistas ou álbuns...">
-      <div id="library"></div>
-      <div class="footer">
-        <div><strong>Tocando:</strong> <span id="now">—</span></div>
-        <audio id="audio" preload="none" controls class="hidden"></audio>
-      </div>
-    </div>
+    <!-- botões simplificados -->
+    <label><input type="checkbox" id="chkShuffle"> Aleatório</label>
+    <label><input type="radio" name="repeatMode" value="none" checked> Sem repetir</label>
+    <label><input type="radio" name="repeatMode" value="one"> Repetir 1</label>
+    <label><input type="radio" name="repeatMode" value="all"> Repetir todos</label>
+
+    <span id="nowPlaying">Nenhuma música</span>
   </div>
+  <input type="text" id="searchBox" placeholder="Buscar músicas, artistas ou álbuns...">
+</div>
 
-  <script>
-  (function(){
-    var audio = document.getElementById('audio');
-    var libraryEl = document.getElementById('library');
-    var statusEl = document.getElementById('status');
-    var nowEl = document.getElementById('now');
-    var playBtn = document.getElementById('play');
-    var nextBtn = document.getElementById('next');
-    var prevBtn = document.getElementById('prev');
-    var shuffleCb = document.getElementById('shuffle');
-    var repeatCb = document.getElementById('repeat');
-    var reloadBtn = document.getElementById('reload');
-    var searchEl = document.getElementById('search');
+<div id="musicList"></div>
+<audio id="audio"></audio>
 
-    var tracks = [];
-    var current = 0;
-    var playing = false;
-    var allTracks = [];
+<script>
+var playlists = [
+  "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/minhas_cole%C3%A7%C3%B5es",
+  "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/outras_cole%C3%A7%C3%B5es"
+];
 
-    // Configurações do GitHub
-    var owner = 'cavernadorock69';
-    var repo = 'cavernadorock69.github.io';
-    var branch = 'main';
-    var directories = ['minhas_coleções', 'outras_coleções'];
+var tracks = [];
+var current = -1;
+var audio = document.getElementById("audio");
 
-    function logStatus(t){ statusEl.textContent = t; }
-
-    function guessMetaFromPath(path){
-      var name = path.split('/').pop();
-      name = decodeURIComponent(name);
-      var base = name.replace(/\.m3u$/i,'').replace(/\.mp3$/i,'');
-      var parts = base.split(' - ');
-      var meta = {title: base, artist: 'Desconhecido', album: 'Desconhecido'};
-      if(parts.length>=3){
-        meta.artist = parts[0];
-        meta.album = parts[1];
-        meta.title = parts.slice(2).join(' - ');
-      } else if(parts.length==2){
-        meta.artist = parts[0];
-        meta.title = parts[1];
-      }
-      return meta;
-    }
-
-    function buildLibrary(list){
-      var byArtist = {};
-      for(var i=0;i<list.length;i++){
-        var t = list[i];
-        if(!byArtist[t.artist]) byArtist[t.artist] = {};
-        if(!byArtist[t.artist][t.album]) byArtist[t.artist][t.album] = [];
-        byArtist[t.artist][t.album].push(t);
-      }
-      libraryEl.innerHTML = '';
-      for(var artist in byArtist){
-        var artDiv = document.createElement('div'); artDiv.className='artist'; artDiv.textContent = artist; libraryEl.appendChild(artDiv);
-        var albums = byArtist[artist];
-        for(var album in albums){
-          var albDiv = document.createElement('div'); albDiv.className='album'; albDiv.textContent = album; libraryEl.appendChild(albDiv);
-          var list2 = albums[album];
-          for(var j=0;j<list2.length;j++){
-            var tr = list2[j];
-            var tdiv = document.createElement('div');
-            tdiv.className='track';
-            tdiv.textContent = tr.title;
-            tdiv.setAttribute('data-idx', tr.index);
-            tdiv.onclick = function(){
-              playIndex(parseInt(this.getAttribute('data-idx'),10));
-            };
-            libraryEl.appendChild(tdiv);
-          }
+async function fetchPlaylists(){
+  for (let url of playlists) {
+    try {
+      let r = await fetch(url);
+      let data = await r.json();
+      for (let f of data) {
+        if (f.name.endsWith(".m3u")) {
+          let res = await fetch(f.download_url);
+          let txt = await res.text();
+          let found = parseM3UContent(txt, f.download_url);
+          found.forEach(src => addTrack(src));
         }
       }
-      refreshPlayingClass();
+    } catch(e){
+      console.error("Erro ao carregar playlist:", e);
     }
+  }
+  renderList();
+}
 
-    function refreshPlayingClass(){
-      var elems = libraryEl.getElementsByClassName('track');
-      for(var i=0;i<elems.length;i++){ elems[i].className = 'track'; }
-      var curElems = libraryEl.querySelectorAll('.track[data-idx="'+current+'"]');
-      for(var k=0;k<curElems.length;k++){ curElems[k].className = 'track playing'; }
+function parseM3UContent(text, baseUrl){
+  var lines = text.split(/\r?\n/);
+  var found = [];
+  for(var i=0;i<lines.length;i++){
+    var l = lines[i].trim();
+    if(!l) continue;
+    if(l.charAt(0)==='#') continue;
+    var src = l;
+    if(!/^https?:\/\//i.test(l) && baseUrl.indexOf('raw.githubusercontent')>-1){
+      var parts = baseUrl.split('/');
+      parts.pop();
+      src = parts.join('/') + '/' + l;
     }
+    found.push(src);
+  }
+  return found;
+}
 
-    function setNowText(){
-      var t = tracks[current];
-      nowEl.textContent = t? (t.artist + ' — ' + t.title) : '—';
+function addTrack(url){
+  var name = decodeURIComponent(url.split("/").pop());
+  var artist = "Desconhecido", album = "", title = name;
+  var parts = name.split(" - ");
+  if(parts.length==3){ artist=parts[0]; album=parts[1]; title=parts[2]; }
+  else if(parts.length==2){ artist=parts[0]; title=parts[1]; }
+  tracks.push({url:url, artist:artist, album:album, title:title});
+}
+
+function renderList(){
+  var list = document.getElementById("musicList");
+  list.innerHTML="";
+  tracks.forEach((t,i)=>{
+    var div=document.createElement("div");
+    div.className="track";
+    div.textContent = (t.artist? t.artist+" - ":"")+ (t.album? t.album+" - ":"")+ t.title;
+    div.onclick = ()=>playIndex(i);
+    list.appendChild(div);
+  });
+}
+
+function playIndex(i){
+  if(i<0||i>=tracks.length) return;
+  current=i;
+  audio.src=tracks[i].url;
+  audio.play();
+  document.getElementById("nowPlaying").textContent = "▶️ "+tracks[i].artist+" - "+(tracks[i].album? tracks[i].album+" - ":"")+tracks[i].title;
+  document.querySelectorAll(".track").forEach((el,idx)=>{
+    el.classList.toggle("playing", idx===i);
+  });
+}
+
+function togglePlay(){
+  if(audio.paused) audio.play(); else audio.pause();
+}
+function next(){
+  let shuffle = document.getElementById("chkShuffle").checked;
+  let repeatMode = document.querySelector("input[name='repeatMode']:checked").value;
+
+  if(shuffle){
+    playIndex(Math.floor(Math.random()*tracks.length));
+  } else {
+    var ni=current+1;
+    if(ni>=tracks.length){
+      if(repeatMode==="all"){ ni=0; } 
+      else { return; }
     }
+    playIndex(ni);
+  }
+}
+function prev(){
+  var pi=current-1;
+  if(pi<0){
+    let repeatMode = document.querySelector("input[name='repeatMode']:checked").value;
+    if(repeatMode==="all") pi=tracks.length-1; else return;
+  }
+  playIndex(pi);
+}
 
-    function playIndex(i){
-      if(i<0||i>=tracks.length) return;
-      current = i;
-      var t = tracks[current];
-      audio.src = t.src;
-      setNowText();
-      audio.play();
-      playing = true; playBtn.textContent='⏸️ Pausar';
-      refreshPlayingClass();
-    }
+audio.addEventListener("ended",()=>{
+  let repeatMode = document.querySelector("input[name='repeatMode']:checked").value;
+  if(repeatMode==="one"){
+    playIndex(current);
+  } else {
+    next();
+  }
+});
 
-    playBtn.onclick = function(){
-      if(!audio.src){
-        if(tracks.length>0) playIndex(0);
-        return;
-      }
-      if(audio.paused){
-        audio.play(); playing = true; playBtn.textContent='⏸️ Pausar';
-      } else {
-        audio.pause(); playing = false; playBtn.textContent='▶️ Play';
-      }
-    };
-    nextBtn.onclick = function(){ nextTrack(); };
-    prevBtn.onclick = function(){ prevTrack(); };
+document.getElementById("searchBox").addEventListener("input", function(){
+  var q = this.value.toLowerCase();
+  var items = document.querySelectorAll("#musicList .track");
+  items.forEach(function(it){
+    it.style.display = it.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+});
 
-    function nextTrack(){
-      if(shuffleCb.checked){
-        var rnd = Math.floor(Math.random()*tracks.length);
-        playIndex(rnd); return;
-      }
-      var nx = current + 1;
-      if(nx >= tracks.length){
-        if(repeatCb.checked) nx = 0;
-        else { audio.pause(); playing = false; playBtn.textContent='▶️ Play'; return; }
-      }
-      playIndex(nx);
-    }
-    function prevTrack(){
-      var pr = current - 1;
-      if(pr < 0){
-        if(repeatCb.checked) pr = tracks.length - 1;
-        else pr = 0;
-      }
-      playIndex(pr);
-    }
-
-    audio.addEventListener('ended', function(){ nextTrack(); });
-
-    // GitHub API
-    function fetchM3UFilesInDir(dirPath, callback){
-      var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.onload = function(){
-        if(xhr.status === 200){
-          try{
-            var list = JSON.parse(xhr.responseText);
-            var m3uFiles = [];
-            for(var i=0; i<list.length; i++){
-              var item = list[i];
-              if(item.type === 'file' && item.name.toLowerCase().endsWith('.m3u')){
-                var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + dirPath + '/' + item.name;
-                m3uFiles.push(rawUrl);
-              }
-            }
-            callback(null, m3uFiles);
-          } catch(e){ callback(e, null); }
-        } else { callback(new Error('GitHub API status ' + xhr.status), null); }
-      };
-      xhr.onerror = function(){ callback(new Error('Erro de rede ao acessar GitHub API'), null); };
-      xhr.send();
-    }
-
-    function loadAll(){
-      tracks = [];
-      allTracks = [];
-      logStatus('Buscando listas .m3u no GitHub...');
-      var pendingDirs = directories.length;
-      var allM3uUrls = [];
-
-      for(var d=0; d<directories.length; d++){
-        (function(dir){
-          fetchM3UFilesInDir(dir, function(err, urls){
-            if(!err && urls && urls.length){ allM3uUrls = allM3uUrls.concat(urls); }
-            pendingDirs--;
-            if(pendingDirs === 0){
-              if(allM3uUrls.length === 0){ logStatus('Nenhuma playlist .m3u encontrada.'); }
-              else { logStatus('Encontradas ' + allM3uUrls.length + ' playlist(s). Carregando...'); loadPlaylistsFromUrls(allM3uUrls); }
-            }
-          });
-        })(directories[d]);
-      }
-    }
-
-    function loadPlaylistsFromUrls(urls){
-      var pending = urls.length;
-      if(pending === 0){ buildLibrary(tracks); logStatus('0 faixas.'); return; }
-      for(var i=0; i<urls.length; i++){
-        (function(u){
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', u, true);
-          xhr.onload = function(){
-            if(xhr.status === 200 || (xhr.status===0 && xhr.responseText)){
-              var found = parseM3UContent(xhr.responseText, u);
-              appendFound(found);
-            }
-            pending--;
-            if(pending === 0){ allTracks = tracks.slice(); buildLibrary(tracks); setNowText(); refreshPlayingClass(); logStatus('Carregado ' + tracks.length + ' faixas.'); }
-          };
-          xhr.onerror = function(){
-            pending--;
-            if(pending === 0){ allTracks = tracks.slice(); buildLibrary(tracks); setNowText(); refreshPlayingClass(); logStatus('Carregado ' + tracks.length + ' faixas.'); }
-          };
-          xhr.send();
-        })(urls[i]);
-      }
-    }
-
-    function appendFound(arr){
-      for(var i=0; i<arr.length; i++){
-        var s = arr[i];
-        var meta = guessMetaFromPath(s);
-        var idx = tracks.length;
-        tracks.push({src:s, title:meta.title, artist:meta.artist, album:meta.album, index:idx});
-      }
-    }
-
-    function parseM3UContent(text, baseUrl){
-      var lines = text.split(/\r?\n/);
-      var found = [];
-      for(var i=0;i<lines.length;i++){
-        var l = lines[i].trim();
-        if(!l) continue;
-        if(l.charAt(0)==='#') continue;
-        var src = l;
-        if(!/^https?:\/\//i.test(l) && baseUrl.indexOf('raw.githubusercontent')>-1){
-          var parts = baseUrl.split('/'); parts.pop(); src = parts.join('/') + '/' + l;
-        }
-        found.push(src);
-      }
-      return found;
-    }
-
-    // Busca
-    searchEl.addEventListener('input', function(){
-      var q = this.value.trim().toLowerCase();
-      if(!q){ tracks = allTracks.slice(); buildLibrary(tracks); return; }
-      var filtered = allTracks.filter(function(t){
-        return t.title.toLowerCase().includes(q) ||
-               t.artist.toLowerCase().includes(q) ||
-               t.album.toLowerCase().includes(q);
-      });
-      tracks = filtered;
-      buildLibrary(tracks);
-    });
-
-    reloadBtn.onclick = loadAll;
-    loadAll();
-
-  })();
-  </script>
+fetchPlaylists();
+</script>
 </body>
 </html>
