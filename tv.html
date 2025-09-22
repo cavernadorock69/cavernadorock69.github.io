@@ -3,322 +3,254 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Caveira do Rock 69 - Clipes e Shows</title>
-
-  <!-- Video.js -->
-  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-
+  <title>Caveira do Rock 69 - CLIPES</title>
   <style>
     html,body {
-      height:100%;margin:0;
+      margin:0;height:100%;
       font-family:Arial,Helvetica,sans-serif;
-      background:#1a1a1a;
-      color:#e8e8e8;
+      background:#000;color:#fff;
     }
-    .app{max-width:1200px;margin:12px auto;padding:12px}
+    .app{max-width:1200px;margin:0 auto;padding:12px}
 
-    .header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .logo{width:60px;height:60px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;font-weight:bold}
-    .title{font-size:18px}
-    .status{margin-top:4px;font-size:14px;color:#bdbdbd}
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .logo{width:60px;height:60px;border-radius:6px;background:#111;
+      display:flex;align-items:center;justify-content:center;font-weight:bold}
+    .title{font-size:20px}
+    .status{margin-top:4px;font-size:14px;color:#ccc}
 
-    .layout {
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
+    .layout{display:flex;gap:12px;}
+    .left{flex:1;max-width:60%;}
+    .right{
+      flex:1;max-width:40%;
+      background:#0f0f0f;border-radius:6px;padding:8px;
+      overflow-y:auto;max-height:80vh;
     }
-    .playerLeft {
-      flex:1 1 55%;
-      min-width:280px;
-      background:#111;
-      padding:10px;
-      border-radius:6px;
-    }
-    .libraryRight {
-      flex:1 1 40%;
-      min-width:200px;
-      background:#0f0f0f;
-      padding:8px;
-      border-radius:6px;
-      max-height:75vh;
-      overflow:auto;
-    }
-    .search{width:100%;padding:10px;margin-bottom:8px;border-radius:4px;border:1px solid #444;background:#222;color:#e8e8e8;font-size:16px}
 
-    .artist{font-weight:bold;margin-top:8px;font-size:18px}
-    .album{margin-left:8px;font-style:italic;font-size:16px}
-    .track{margin-left:20px;cursor:pointer;font-size:15px;padding:2px}
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+      .layout {flex-direction: column;}
+      .left, .right {max-width: 100%;}
+      .right {max-height:none;}
+    }
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    button{background:#222;border:1px solid #333;color:#fff;
+      padding:8px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+    .toggle{padding:6px;border-radius:20px;font-size:13px}
+
+    .playerTop{background:#111;padding:10px;border-radius:6px}
+    .playerTop video{width:100%;max-height:70vh;background:#000}
+
+    .track{cursor:pointer;padding:6px;font-size:15px;
+      border-bottom:1px solid #222;display:flex;align-items:center;gap:8px}
+    .track img{width:60px;height:40px;object-fit:cover;border-radius:4px}
     .track.playing{color:#9fe88f}
-
-    /* Video.js ajuste */
-    .video-js {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="logo">RÁDIO</div>
-      <div>
-        <div class="title">CAVEIRA DO ROCK 69 — CLIPES & SHOWS</div>
-        <div class="status" id="status">Pronto.</div>
-      </div>
-    </div>
-
-    <div class="layout">
-      <!-- Player -->
-      <div class="playerLeft">
-        <div><strong>Tocando:</strong> <span id="now">—</span></div>
-        <video id="video" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" data-setup='{}'></video>
-      </div>
-
-      <!-- Biblioteca -->
-      <div class="libraryRight">
-        <input id="search" class="search" type="text" placeholder="Buscar vídeos, artistas ou álbuns...">
-        <div id="library"></div>
-      </div>
+<div class="app">
+  <div class="header">
+    <div class="logo">VÍDEO</div>
+    <div>
+      <div class="title">CAVEIRA DO ROCK 69 - CLIPES</div>
+      <div class="status" id="status">Pronto.</div>
     </div>
   </div>
 
-  <script>
-  (function(){
-    var libraryEl = document.getElementById('library');
-    var statusEl = document.getElementById('status');
-    var nowEl = document.getElementById('now');
-    var searchEl = document.getElementById('search');
+  <div class="layout">
+    <!-- PLAYER -->
+    <div class="left">
+      <div class="controls">
+        <button id="prev">⏮️ Anterior</button>
+        <button id="play">▶️ Play</button>
+        <button id="next">⏭️ Próxima</button>
+        <label class="toggle"><input type="checkbox" id="shuffle"> Aleatório</label>
+        <label class="toggle"><input type="checkbox" id="repeat"> Repetir</label>
+        <button id="reload">⤻ Recarregar</button>
+      </div>
 
-    var tracks = [];
-    var current = 0;
-    var allTracks = [];
+      <div class="playerTop">
+        <div><strong>Tocando:</strong> <span id="now">—</span></div>
+        <video id="video" preload="none" controls></video>
+      </div>
+    </div>
 
-    // Inicializa Video.js
-    var player = videojs('video');
+    <!-- LISTA -->
+    <div class="right" id="library"></div>
+  </div>
+</div>
 
-    // Configurações do GitHub
-    var owner = 'cavernadorock69';
-    var repo = 'cavernadorock69.github.io';
-    var branch = 'main';
-    var directories = ['clips_e_shows'];
+<script>
+(function(){
+  var video=document.getElementById('video');
+  var libraryEl=document.getElementById('library');
+  var statusEl=document.getElementById('status');
+  var nowEl=document.getElementById('now');
+  var playBtn=document.getElementById('play');
+  var nextBtn=document.getElementById('next');
+  var prevBtn=document.getElementById('prev');
+  var shuffleCb=document.getElementById('shuffle');
+  var repeatCb=document.getElementById('repeat');
+  var reloadBtn=document.getElementById('reload');
 
-    function logStatus(t){ statusEl.textContent = t; }
+  var tracks=[]; var current=0; var playing=false;
+  var owner='cavernadorock69';
+  var repo='cavernadorock69.github.io';
+  var branch='main';
+  var directories=['clips_e_shows'];
 
-    function guessMetaFromPath(path){
-      var name = path.split('/').pop();
-      name = decodeURIComponent(name);
-      var base = name.replace(/\.m3u$/i,'').replace(/\.mp4$/i,'');
-      var parts = base.split(' - ');
-      var meta = {title: base, artist: 'Desconhecido', album: 'Vídeos'};
-      if(parts.length>=3){
-        meta.artist = parts[0];
-        meta.album = parts[1];
-        meta.title = parts.slice(2).join(' - ');
-      } else if(parts.length==2){
-        meta.artist = parts[0];
-        meta.title = parts[1];
+  function logStatus(t){ statusEl.textContent=t; }
+
+  function buildLibrary(list){
+    libraryEl.innerHTML='';
+    list.forEach(function(t){
+      var div=document.createElement('div');
+      div.className='track';
+      div.dataset.idx=t.index;
+      if(t.img){
+        var thumb=document.createElement('img');
+        thumb.src=t.img;
+        div.appendChild(thumb);
       }
-      return meta;
-    }
+      var span=document.createElement('span');
+      span.textContent=t.title;
+      div.appendChild(span);
 
-    function buildLibrary(list){
-      var byArtist = {};
-      for(var i=0;i<list.length;i++){
-        var t = list[i];
-        if(!byArtist[t.artist]) byArtist[t.artist] = {};
-        if(!byArtist[t.artist][t.album]) byArtist[t.artist][t.album] = [];
-        byArtist[t.artist][t.album].push(t);
-      }
-      libraryEl.innerHTML = '';
-      for(var artist in byArtist){
-        var artDiv = document.createElement('div'); artDiv.className='artist'; artDiv.textContent = artist; libraryEl.appendChild(artDiv);
-        var albums = byArtist[artist];
-        for(var album in albums){
-          var albDiv = document.createElement('div'); albDiv.className='album'; albDiv.textContent = album; libraryEl.appendChild(albDiv);
-          var list2 = albums[album];
-          for(var j=0;j<list2.length;j++){
-            var tr = list2[j];
-            var tdiv = document.createElement('div');
-            tdiv.className='track';
-            tdiv.textContent = tr.title;
-            tdiv.setAttribute('data-idx', tr.index);
-            tdiv.onclick = function(){
-              playIndex(parseInt(this.getAttribute('data-idx'),10));
-            };
-            libraryEl.appendChild(tdiv);
-          }
-        }
-      }
-      refreshPlayingClass();
-    }
-
-    function refreshPlayingClass(){
-      var elems = libraryEl.getElementsByClassName('track');
-      for(var i=0;i<elems.length;i++){ elems[i].className = 'track'; }
-      var curElems = libraryEl.querySelectorAll('.track[data-idx="'+current+'"]');
-      for(var k=0;k<curElems.length;k++){ curElems[k].className = 'track playing'; }
-    }
-
-    function setNowText(){
-      var t = tracks[current];
-      nowEl.textContent = t? (t.artist + ' — ' + t.title) : '—';
-    }
-
-    function playIndex(i){
-      if(i<0||i>=tracks.length) return;
-      current = i;
-      var t = tracks[current];
-      player.src({ src: t.src, type: 'video/mp4' });
-      setNowText();
-      player.play();
-      refreshPlayingClass();
-
-      // tenta fullscreen automático
-      if (player.requestFullscreen) {
-        player.requestFullscreen();
-      }
-    }
-
-    player.on('ended', function(){
-      var nx = current + 1;
-      if(nx >= tracks.length){ nx = 0; }
-      playIndex(nx);
+      div.onclick=function(){playIndex(parseInt(this.dataset.idx,10));};
+      libraryEl.appendChild(div);
     });
+    refreshPlayingClass();
+  }
 
-    // >>> autoplay após carregar playlists
-    function autoStart() {
-      if (tracks.length > 0) {
-        playIndex(0);
-      }
-    }
+  function refreshPlayingClass(){
+    var elems=libraryEl.getElementsByClassName('track');
+    for(var i=0;i<elems.length;i++) elems[i].className='track';
+    var cur=libraryEl.querySelector('.track[data-idx="'+current+'"]');
+    if(cur) cur.className='track playing';
+  }
 
-    // GitHub API
-    function fetchM3UFilesInDir(dirPath, callback){
-      var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.onload = function(){
-        if(xhr.status === 200){
-          try{
-            var list = JSON.parse(xhr.responseText);
-            var m3uFiles = [];
-            for(var i=0; i<list.length; i++){
-              var item = list[i];
-              if(item.type === 'file' && item.name.toLowerCase().endsWith('.m3u')){
-                var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + dirPath + '/' + item.name;
-                m3uFiles.push(rawUrl);
-              }
-            }
-            callback(null, m3uFiles);
-          } catch(e){ callback(e, null); }
-        } else { callback(new Error('GitHub API status ' + xhr.status), null); }
-      };
-      xhr.onerror = function(){ callback(new Error('Erro de rede ao acessar GitHub API'), null); };
-      xhr.send();
-    }
+  function setNowText(){ nowEl.textContent=tracks[current]?tracks[current].title:'—'; }
 
-    function loadAll(){
-      tracks = [];
-      allTracks = [];
-      logStatus('Buscando listas .m3u no GitHub...');
-      var pendingDirs = directories.length;
-      var allM3uUrls = [];
+  function requestFs(el){
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  }
 
-      for(var d=0; d<directories.length; d++){
-        (function(dir){
-          fetchM3UFilesInDir(dir, function(err, urls){
-            if(!err && urls && urls.length){ allM3uUrls = allM3uUrls.concat(urls); }
-            pendingDirs--;
-            if(pendingDirs === 0){
-              if(allM3uUrls.length === 0){ logStatus('Nenhuma playlist .m3u encontrada.'); }
-              else { logStatus('Encontradas ' + allM3uUrls.length + ' playlist(s). Carregando...'); loadPlaylistsFromUrls(allM3uUrls); }
+  function playIndex(i){
+    if(i<0||i>=tracks.length)return;
+    current=i; var t=tracks[current];
+    // força type video/mp4
+    video.src=''; // limpa antes
+    video.src=t.src;
+    video.setAttribute('type','video/mp4');
+    setNowText();
+    video.play().then(()=>{requestFs(video);}).catch(()=>{});
+    playing=true; playBtn.textContent='⏸️ Pausar'; refreshPlayingClass();
+  }
+
+  playBtn.onclick=function(){
+    if(!video.src){if(tracks.length>0)playIndex(0);return;}
+    if(video.paused){video.play();playing=true;playBtn.textContent='⏸️ Pausar';}
+    else{video.pause();playing=false;playBtn.textContent='▶️ Play';}
+  };
+  nextBtn.onclick=function(){nextTrack();};
+  prevBtn.onclick=function(){prevTrack();};
+
+  function nextTrack(){
+    if(shuffleCb.checked){playIndex(Math.floor(Math.random()*tracks.length));return;}
+    var nx=current+1;
+    if(nx>=tracks.length){if(repeatCb.checked)nx=0;else{video.pause();playing=false;playBtn.textContent='▶️ Play';return;}}
+    playIndex(nx);
+  }
+  function prevTrack(){
+    var pr=current-1;
+    if(pr<0){if(repeatCb.checked)pr=tracks.length-1;else pr=0;}
+    playIndex(pr);
+  }
+
+  video.addEventListener('ended',function(){nextTrack();});
+
+  // BUSCA LISTAS NO GITHUB
+  function fetchM3UFilesInDir(dir,cb){
+    var url='https://api.github.com/repos/'+owner+'/'+repo+'/contents/'+encodeURIComponent(dir)+'?ref='+branch;
+    var xhr=new XMLHttpRequest();xhr.open('GET',url,true);
+    xhr.onload=function(){
+      if(xhr.status===200){
+        try{
+          var list=JSON.parse(xhr.responseText);var m3us=[];
+          list.forEach(function(it){
+            if(it.type==='file'&&it.name.toLowerCase().endsWith('.m3u')){
+              m3us.push('https://raw.githubusercontent.com/'+owner+'/'+repo+'/'+branch+'/'+dir+'/'+it.name);
             }
           });
-        })(directories[d]);
-      }
-    }
+          cb(null,m3us);
+        }catch(e){cb(e,null);}
+      }else cb(new Error('GitHub status '+xhr.status),null);
+    };
+    xhr.onerror=function(){cb(new Error('Erro rede'),null);};
+    xhr.send();
+  }
 
-    function loadPlaylistsFromUrls(urls){
-      var pending = urls.length;
-      if(pending === 0){ buildLibrary(tracks); logStatus('0 vídeos.'); return; }
-      for(var i=0; i<urls.length; i++){
-        (function(u){
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', u, true);
-          xhr.onload = function(){
-            if(xhr.status === 200 || (xhr.status===0 && xhr.responseText)){
-              var found = parseM3UContent(xhr.responseText, u);
-              appendFound(found);
-            }
-            pending--;
-            if(pending === 0){
-              allTracks = tracks.slice();
-              buildLibrary(tracks);
-              setNowText();
-              refreshPlayingClass();
-              logStatus('Carregado ' + tracks.length + ' vídeos.');
-              autoStart();
-            }
-          };
-          xhr.onerror = function(){
-            pending--;
-            if(pending === 0){
-              allTracks = tracks.slice();
-              buildLibrary(tracks);
-              setNowText();
-              refreshPlayingClass();
-              logStatus('Carregado ' + tracks.length + ' vídeos.');
-              autoStart();
-            }
-          };
-          xhr.send();
-        })(urls[i]);
-      }
-    }
-
-    function appendFound(arr){
-      for(var i=0; i<arr.length; i++){
-        var s = arr[i];
-        var meta = guessMetaFromPath(s);
-        var idx = tracks.length;
-        tracks.push({src:s, title:meta.title, artist:meta.artist, album:meta.album, index:idx});
-      }
-    }
-
-    function parseM3UContent(text, baseUrl){
-      var lines = text.split(/\r?\n/);
-      var found = [];
-      for(var i=0;i<lines.length;i++){
-        var l = lines[i].trim();
-        if(!l) continue;
-        if(l.charAt(0)==='#') continue;
-        var src = l;
-        if(!/^https?:\/\//i.test(l) && baseUrl.indexOf('raw.githubusercontent')>-1){
-          var parts = baseUrl.split('/'); parts.pop(); src = parts.join('/') + '/' + l;
+  function loadAll(){
+    tracks=[];logStatus('Buscando playlists...');var pending=directories.length;var urls=[];
+    directories.forEach(function(dir){
+      fetchM3UFilesInDir(dir,function(err,u){
+        if(!err&&u)urls=urls.concat(u);
+        if(--pending===0){
+          if(!urls.length)logStatus('Nenhuma playlist.');else{logStatus('Carregando...');loadPlaylistsFromUrls(urls);}
         }
-        found.push(src);
-      }
-      return found;
-    }
-
-    // Busca
-    searchEl.addEventListener('input', function(){
-      var q = this.value.trim().toLowerCase();
-      if(!q){ tracks = allTracks.slice(); buildLibrary(tracks); return; }
-      var filtered = allTracks.filter(function(t){
-        return t.title.toLowerCase().includes(q) ||
-               t.artist.toLowerCase().includes(q) ||
-               t.album.toLowerCase().includes(q);
       });
-      tracks = filtered;
-      buildLibrary(tracks);
     });
+  }
 
-    loadAll();
+  function loadPlaylistsFromUrls(urls){
+    var pending=urls.length;
+    urls.forEach(function(u){
+      var xhr=new XMLHttpRequest();xhr.open('GET',u,true);
+      xhr.onload=function(){
+        if(xhr.status===200||xhr.responseText){
+          var found=parseM3UContent(xhr.responseText,u);appendFound(found);
+        }
+        if(--pending===0){buildLibrary(tracks);setNowText();logStatus('Carregado '+tracks.length+' vídeos.');}
+      };xhr.send();
+    });
+  }
 
-  })();
-  </script>
+  function appendFound(arr){
+    arr.forEach(function(obj){
+      var idx=tracks.length;
+      tracks.push({src:obj.src,title:obj.title||'Sem título',img:obj.img||null,index:idx});
+    });
+  }
+
+  // parser M3U com #EXTINF e #EXTIMG
+  function parseM3UContent(txt,base){
+    var lines=txt.split(/\r?\n/),found=[];
+    var title=null,img=null;
+    lines.forEach(function(l){
+      l=l.trim();if(!l)return;
+      if(l.startsWith('#EXTINF')){
+        var parts=l.split(',');
+        title=parts.length>1?parts[1].trim():null;
+      }else if(l.startsWith('#EXTIMG')){
+        img=l.replace('#EXTIMG:','').trim();
+      }else if(!l.startsWith('#')){
+        var src=l;
+        if(!/^https?:\/\//i.test(l)&&base.includes('raw.githubusercontent')){
+          var parts=base.split('/');parts.pop();src=parts.join('/')+'/'+l;
+        }
+        found.push({src:src,title:title||src.split('/').pop(),img:img});
+        title=null;img=null;
+      }
+    });
+    return found;
+  }
+
+  reloadBtn.onclick=loadAll;
+  loadAll();
+})();
+</script>
 </body>
 </html>
