@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Player automático de músicas (.m3u) — estilo Qmmp</title>
+  <title>Caveira do Rock 69</title>
   <style>
     html,body {
       height:100%;margin:0;
@@ -63,9 +63,9 @@
 <body>
   <div class="app">
     <div class="header">
-      <div class="logo">qmmp</div>
+      <div class="logo">RÁDIO</div>
       <div>
-        <div class="title">Player automático — estilo Qmmp</div>
+        <div class="title">CAVEIRA DO ROCK 69</div>
         <div class="status" id="status">Pronto.</div>
       </div>
     </div>
@@ -226,6 +226,13 @@
 
     audio.addEventListener('ended', function(){ nextTrack(); });
 
+    // >>> autoplay após carregar playlists
+    function autoStart() {
+      if (tracks.length > 0) {
+        playIndex(0);
+      }
+    }
+
     // GitHub API
     function fetchM3UFilesInDir(dirPath, callback){
       var url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodeURIComponent(dirPath) + '?ref=' + branch;
@@ -285,11 +292,25 @@
               appendFound(found);
             }
             pending--;
-            if(pending === 0){ allTracks = tracks.slice(); buildLibrary(tracks); setNowText(); refreshPlayingClass(); logStatus('Carregado ' + tracks.length + ' faixas.'); }
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks);
+              setNowText();
+              refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas.');
+              autoStart(); // inicia automaticamente
+            }
           };
           xhr.onerror = function(){
             pending--;
-            if(pending === 0){ allTracks = tracks.slice(); buildLibrary(tracks); setNowText(); refreshPlayingClass(); logStatus('Carregado ' + tracks.length + ' faixas.'); }
+            if(pending === 0){
+              allTracks = tracks.slice();
+              buildLibrary(tracks);
+              setNowText();
+              refreshPlayingClass();
+              logStatus('Carregado ' + tracks.length + ' faixas.');
+              autoStart(); // inicia automaticamente
+            }
           };
           xhr.send();
         })(urls[i]);
@@ -336,6 +357,13 @@
 
     reloadBtn.onclick = loadAll;
     loadAll();
+
+    // reforço para não parar em segundo plano
+    setInterval(function(){
+      if (playing && audio.paused && !audio.ended) {
+        audio.play().catch(()=>{});
+      }
+    }, 2000);
 
   })();
   </script>
