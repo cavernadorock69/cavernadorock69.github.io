@@ -103,9 +103,11 @@
     width: 100%;
     max-height: 170px;
     background: #000;
+    display: none; /* Inicialmente escondido */
   }
   #audioPlayer {
     width: 100%;
+    display: none; /* Inicialmente escondido */
   }
   #closeFullscreen {
     display: none;
@@ -138,6 +140,13 @@
     background: #0f0 !important;
     color: #000 !important;
   }
+  .loading {
+    color: #ff0;
+    font-style: italic;
+  }
+  .player-active {
+    display: block !important; /* Classe para mostrar o player ativo */
+  }
   @media (max-width: 768px) {
     #main-content {
       flex-direction: column;
@@ -167,8 +176,6 @@
   <div id="filters">
     <button onclick="setFilter('all')" class="active">Todos</button>
     <button onclick="setFilter('mp3')">MP3</button>
-    <button onclick="setFilter('wav')">WAV</button>
-    <button onclick="setFilter('flac')">FLAC</button>
     <button onclick="setFilter('mp4')">Clips</button>
   </div>
 
@@ -180,11 +187,13 @@
     
     <div id="right-panel">
       <div id="video-container">
-        <video id="videoPlayer" controls>
-          <source id="videoSource" type="video/mp4">
+        <video id="videoPlayer" controls preload="metadata">
+          Seu navegador não suporta vídeo HTML5.
         </video>
       </div>
-      <audio id="audioPlayer" controls></audio>
+      <audio id="audioPlayer" controls preload="metadata">
+        Seu navegador não suporta áudio HTML5.
+      </audio>
     </div>
   </div>
 </div>
@@ -192,6 +201,14 @@
 <button id="closeFullscreen" onclick="exitFullscreen()">[X] Fechar</button>
 
 <script>
+// Configurações para compatibilidade
+var COMPATIBILITY = {
+  USE_LEGACY_VIDEO: true,
+  FORCE_SIMPLE_AUDIO: false,
+  TIMEOUT_LOAD: 30000,
+  RETRY_ATTEMPTS: 2
+};
+
 var repositories = [
   "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/minhas_cole%C3%A7%C3%B5es",
   "https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents/outras_cole%C3%A7%C3%B5es",
@@ -205,10 +222,12 @@ var playerState = 'stopped';
 var debounceTimer;
 var randomMode = false;
 var userInteracted = false;
+var currentRetryCount = 0;
+var currentMediaType = null; // 'audio' ou 'video'
 
+// Elementos DOM
 var audioPlayer = document.getElementById("audioPlayer");
 var videoPlayer = document.getElementById("videoPlayer");
-var videoSource = document.getElementById("videoSource");
 var closeBtn = document.getElementById("closeFullscreen");
 var nowPlaying = document.getElementById("now-playing");
 var statusDiv = document.getElementById("status");
@@ -216,30 +235,95 @@ var playlistDiv = document.getElementById("playlist");
 var playPauseBtn = document.getElementById("playPauseBtn");
 var randomBtn = document.getElementById("random-btn");
 
-// Adiciona event listeners para detectar o fim da reprodução
-audioPlayer.addEventListener('ended', handleMediaEnded);
-videoPlayer.addEventListener('ended', handleMediaEnded);
+// Detectar capacidades do navegador
+var browserCapabilities = {
+  canPlayMP4: videoPlayer.canPlayType('video/mp4') !== '',
+  canPlayMP3: audioPlayer.canPlayType('audio/mpeg') !== '',
+  hasPromise: typeof Promise !== 'undefined',
+  hasFetch: typeof fetch !== 'undefined'
+};
 
-// Adiciona tratamento de erros
-audioPlayer.addEventListener('error', function() {
-  statusDiv.textContent = "Erro ao reproduzir áudio";
-  playerState = 'stopped';
-  updatePlayButton();
-});
+// Configurar players para máxima compatibilidade
+function setupPlayers() {
+  // Remover atributos problemáticos para navegadores antigos
+  audioPlayer.removeAttribute('crossorigin');
+  videoPlayer.removeAttribute('crossorigin');
+  
+  // Configurações conservadoras para performance
+  audioPlayer.preload = 'metadata';
+  videoPlayer.preload = 'metadata';
+  audioPlayer.volume = 0.7;
+  videoPlayer.volume = 0.7;
+  
+  // Event listeners simplificados
+  audioPlayer.addEventListener('ended', handleMediaEnded);
+  audioPlayer.addEventListener('error', handleAudioError);
+  audioPlayer.addEventListener('canplay', handleAudioReady);
+  
+  videoPlayer.addEventListener('ended', handleMediaEnded);
+  videoPlayer.addEventListener('error', handleVideoError);
+  videoPlayer.addEventListener('canplay', handleVideoReady);
+  videoPlayer.addEventListener('loadstart', handleVideoLoadStart);
+}
 
-videoPlayer.addEventListener('error', function() {
-  statusDiv.textContent = "Erro ao reproduzir vídeo";
-  playerState = 'stopped';
-  updatePlayButton();
-});
+// Verificar se é uma Smart TV ou navegador antigo
+function isLegacyBrowser() {
+  var ua = navigator.userAgent.toLowerCase();
+  return ua.includes('tv') || 
+         ua.includes('smart') || 
+         ua.includes('xbox') ||
+         ua.includes('playstation') ||
+         /msie|trident|edge\//.test(ua) ||
+         !browserCapabilities.hasPromise;
+}
 
-// Marcar que o usuário interagiu com a página (necessário para autoplay)
-document.addEventListener('click', function() {
-  userInteracted = true;
-}, { once: true });
+// Inicializar com configurações apropriadas
+if (isLegacyBrowser()) {
+  COMPATIBILITY.USE_LEGACY_VIDEO = true;
+  COMPATIBILITY.FORCE_SIMPLE_AUDIO = true;
+  statusDiv.innerHTML = '<span class="loading">Modo de compatibilidade ativado</span>';
+}
+
+setupPlayers();
+
+// Função para parar completamente a reprodução atual
+function stopCurrentPlayback() {
+  console.log('Parando reprodução atual. Tipo anterior:', currentMediaType);
+  
+  // Parar e resetar ambos os players
+  if (audioPlayer) {
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    audioPlayer.src = '';
+    audioPlayer.load();
+    audioPlayer.style.display = 'none';
+    audioPlayer.classList.remove('player-active');
+  }
+  
+  if (videoPlayer) {
+    videoPlayer.pause();
+    videoPlayer.currentTime = 0;
+    
+    // Limpar sources de vídeo
+    while (videoPlayer.firstChild) {
+      videoPlayer.removeChild(videoPlayer.firstChild);
+    }
+    
+    videoPlayer.load();
+    videoPlayer.style.display = 'none';
+    videoPlayer.classList.remove('player-active');
+    
+    // Sair da tela cheia se estiver
+    if (document.fullscreenElement) {
+      exitFullscreen();
+    }
+  }
+  
+  currentMediaType = null;
+}
 
 function loadPlaylists() {
-  statusDiv.textContent = "Carregando playlists...";
+  statusDiv.innerHTML = '<span class="loading">Carregando playlists...</span>';
   var pending = repositories.length;
   
   if (pending === 0) {
@@ -249,10 +333,12 @@ function loadPlaylists() {
   
   repositories.forEach(function(repoUrl){
     var xhr = new XMLHttpRequest();
+    xhr.timeout = COMPATIBILITY.TIMEOUT_LOAD;
     xhr.open("GET", repoUrl, true);
+    
     xhr.onreadystatechange = function(){
       if (xhr.readyState === 4) {
-        if (xhr.status >=200 && xhr.status < 300) {
+        if (xhr.status >= 200 && xhr.status < 300) {
           try {
             var files = JSON.parse(xhr.responseText);
             files.forEach(function(f){
@@ -267,55 +353,86 @@ function loadPlaylists() {
           statusDiv.textContent = "Erro ao carregar: " + repoUrl;
         }
         pending--;
-        if (pending===0) {
+        if (pending === 0) {
           statusDiv.textContent = "Playlists carregadas. " + library.length + " itens encontrados.";
           renderPlaylist();
         }
       }
     };
+    
+    xhr.ontimeout = function() {
+      pending--;
+      statusDiv.textContent = "Timeout ao carregar: " + repoUrl;
+      if (pending === 0) renderPlaylist();
+    };
+    
     xhr.onerror = function() {
       pending--;
-      statusDiv.textContent = "Falha na conexão ao carregar: " + repoUrl;
-      if (pending===0) renderPlaylist();
+      statusDiv.textContent = "Falha na conexão: " + repoUrl;
+      if (pending === 0) renderPlaylist();
     };
+    
     xhr.send();
   });
 }
 
 function fetchM3u(url) {
   var xhr = new XMLHttpRequest();
+  xhr.timeout = COMPATIBILITY.TIMEOUT_LOAD;
   xhr.open("GET", url, true);
+  
   xhr.onreadystatechange = function(){
     if (xhr.readyState === 4){
-      if (xhr.status>=200 && xhr.status<300){
+      if (xhr.status >= 200 && xhr.status < 300){
         parseM3u(xhr.responseText);
       } else {
         console.error("Erro ao carregar M3U:", url);
       }
     }
   };
+  
+  xhr.ontimeout = function() {
+    console.error("Timeout ao carregar M3U:", url);
+  };
+  
   xhr.onerror = function() {
     console.error("Erro de conexão ao carregar M3U:", url);
   };
+  
   xhr.send();
 }
 
 function parseM3u(text) {
   var lines = text.split(/\r?\n/);
-  var artist="", title="";
-  for (var i=0;i<lines.length;i++) {
+  var artist = "", title = "", duration = "";
+  
+  for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
     if (!line) continue;
+    
     if (line.startsWith("#EXTINF:")) {
-      var info = line.split(",")[1] || "";
-      var parts = info.split(" - ");
+      var info = line.substring(8).split(",");
+      duration = info[0] || "";
+      var name = info[1] || "";
+      var parts = name.split(" - ");
       artist = parts[0] || "Desconhecido";
-      title = parts[1] || info;
+      title = parts[1] || name;
     } else if (!line.startsWith("#")) {
       var url = line;
       var ext = url.split("?")[0].split(".").pop().toLowerCase();
-      library.push({artist:artist, title:title, url:url, type:ext});
-      artist=""; title="";
+      
+      if ((ext === "mp4" && browserCapabilities.canPlayMP4) || 
+          (ext === "mp3" && browserCapabilities.canPlayMP3) ||
+          (ext !== "mp4" && ext !== "mp3")) {
+        library.push({
+          artist: artist, 
+          title: title, 
+          url: url, 
+          type: ext,
+          duration: duration
+        });
+      }
+      artist = ""; title = ""; duration = "";
     }
   }
 }
@@ -330,7 +447,7 @@ function renderPlaylist() {
   }
   
   var filteredTracks = library.filter(function(track) {
-    if (filterType!=="all" && track.type!==filterType) return false;
+    if (filterType !== "all" && track.type !== filterType) return false;
     if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
     return true;
   });
@@ -340,17 +457,22 @@ function renderPlaylist() {
     return;
   }
   
-  filteredTracks.forEach(function(track, index){
+  filteredTracks.forEach(function(track, index) {
     var originalIndex = library.indexOf(track);
     var div = document.createElement("div");
-    div.className = "track" + (originalIndex===currentTrack?" playing":"");
-    div.textContent = (index+1)+". "+track.artist+" - "+track.title;
+    div.className = "track" + (originalIndex === currentTrack ? " playing" : "");
+    
+    var trackText = (index + 1) + ". " + track.artist + " - " + track.title;
+    if (track.duration) {
+      trackText += " [" + track.duration + "]";
+    }
+    
+    div.textContent = trackText;
     div.onclick = function(){ playTrack(originalIndex); };
     playlistDiv.appendChild(div);
   });
 }
 
-// Debounce para evitar múltiplas renderizações durante a digitação
 function debouncedRenderPlaylist() {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(renderPlaylist, 300);
@@ -359,135 +481,199 @@ function debouncedRenderPlaylist() {
 function playTrack(index) {
   if (index < 0 || index >= library.length) return;
   
+  console.log('Iniciando reprodução do track:', index);
+  
   currentTrack = index;
   var track = library[index];
-  nowPlaying.textContent = "Tocando: "+track.artist+" - "+track.title;
-  statusDiv.textContent = "Carregando...";
-
-  // Pausar e resetar players
-  audioPlayer.pause();
-  videoPlayer.pause();
+  nowPlaying.textContent = "Tocando: " + track.artist + " - " + track.title;
+  statusDiv.innerHTML = '<span class="loading">Carregando...</span>';
   
-  // Limpar src anteriores para evitar conflitos
-  audioPlayer.src = "";
-  videoSource.src = "";
+  currentRetryCount = 0;
+  
+  // Parar completamente qualquer reprodução anterior
+  stopCurrentPlayback();
+  
+  // Pequeno delay para garantir que o player anterior foi parado
+  setTimeout(function() {
+    executePlayback(track);
+  }, 200);
+}
 
+function executePlayback(track) {
   try {
-    if (track.type==="mp4") {
-      // Esconder áudio e mostrar vídeo
-      audioPlayer.style.display = "none";
-      videoPlayer.style.display = "block";
-      
-      videoSource.src = track.url;
-      videoPlayer.load();
-      
-      videoPlayer.oncanplay = function() {
-        statusDiv.textContent = "Reproduzindo vídeo";
-        
-        // Tentar reproduzir automaticamente se o usuário já interagiu com a página
-        if (userInteracted) {
-          var playPromise = videoPlayer.play();
-          
-          if (playPromise !== undefined) {
-            playPromise.then(function() {
-              // Reprodução iniciada com sucesso
-              playerState = 'playing';
-              updatePlayButton();
-              
-              // Entrar em tela cheia automaticamente para vídeos
-              if (videoPlayer.requestFullscreen) {
-                videoPlayer.requestFullscreen().catch(function(err) {
-                  console.error("Erro ao entrar em tela cheia:", err);
-                });
-                closeBtn.style.display="block";
-              }
-            }).catch(function(error) {
-              // Autoplay foi prevenido, mostrar botão de play
-              statusDiv.textContent = "Clique no player para reproduzir";
-              playerState = 'paused';
-              updatePlayButton();
-            });
-          }
-        } else {
-          statusDiv.textContent = "Clique no player para reproduzir";
-          playerState = 'paused';
-          updatePlayButton();
-        }
-      };
-      
+    if (track.type === "mp4" && browserCapabilities.canPlayMP4) {
+      playVideo(track);
     } else {
-      // Esconder vídeo e mostrar áudio
-      videoPlayer.style.display = "none";
-      audioPlayer.style.display = "block";
-      
-      audioPlayer.src = track.url;
-      
-      audioPlayer.oncanplay = function() {
-        statusDiv.textContent = "Reproduzindo áudio";
-        
-        // Para áudio, tentar reproduzir automaticamente
-        if (userInteracted) {
-          var playPromise = audioPlayer.play();
-          
-          if (playPromise !== undefined) {
-            playPromise.then(function() {
-              playerState = 'playing';
-              updatePlayButton();
-            }).catch(function(error) {
-              statusDiv.textContent = "Clique para reproduzir";
-              playerState = 'paused';
-              updatePlayButton();
-            });
-          }
-        } else {
-          statusDiv.textContent = "Clique para reproduzir";
-          playerState = 'paused';
-          updatePlayButton();
-        }
-      };
+      playAudio(track);
     }
-    
-    renderPlaylist();
-    
   } catch (error) {
-    statusDiv.textContent = "Erro ao reproduzir: " + error.message;
+    handlePlaybackError(error, track);
+  }
+}
+
+function playVideo(track) {
+  console.log('Preparando vídeo:', track.title);
+  currentMediaType = 'video';
+  
+  // Esconder áudio e mostrar vídeo
+  audioPlayer.style.display = "none";
+  videoPlayer.style.display = "block";
+  videoPlayer.classList.add('player-active');
+  
+  // Limpar sources anteriores
+  while (videoPlayer.firstChild) {
+    videoPlayer.removeChild(videoPlayer.firstChild);
+  }
+  
+  // Adicionar novo source
+  var source = document.createElement('source');
+  source.src = track.url;
+  source.type = 'video/mp4';
+  videoPlayer.appendChild(source);
+  
+  videoPlayer.load();
+}
+
+function playAudio(track) {
+  console.log('Preparando áudio:', track.title);
+  currentMediaType = 'audio';
+  
+  // Esconder vídeo e mostrar áudio
+  videoPlayer.style.display = "none";
+  audioPlayer.style.display = "block";
+  audioPlayer.classList.add('player-active');
+  
+  // Garantir que saímos da tela cheia para áudio
+  if (document.fullscreenElement) {
+    exitFullscreen();
+  }
+  
+  audioPlayer.src = track.url;
+  audioPlayer.load();
+}
+
+function handleVideoLoadStart() {
+  statusDiv.textContent = "Preparando vídeo...";
+}
+
+function handleVideoReady() {
+  statusDiv.textContent = "Vídeo pronto";
+  attemptPlayback(videoPlayer, 'video');
+}
+
+function handleAudioReady() {
+  statusDiv.textContent = "Áudio pronto";
+  attemptPlayback(audioPlayer, 'audio');
+}
+
+function attemptPlayback(mediaElement, mediaType) {
+  if (!userInteracted) {
+    statusDiv.textContent = "Clique para reproduzir";
+    playerState = 'paused';
+    updatePlayButton();
+    return;
+  }
+  
+  var playPromise = mediaElement.play();
+  
+  if (playPromise !== undefined) {
+    playPromise.then(function() {
+      playerState = 'playing';
+      statusDiv.textContent = "Reproduzindo";
+      updatePlayButton();
+      
+      // Apenas entrar em tela cheia para vídeo
+      if (mediaType === 'video' && mediaElement.requestFullscreen) {
+        mediaElement.requestFullscreen().catch(function(err) {
+          console.log("Tela cheia não disponível");
+        });
+        closeBtn.style.display = "block";
+      }
+    }).catch(function(error) {
+      statusDiv.textContent = "Clique no player para reproduzir";
+      playerState = 'paused';
+      updatePlayButton();
+    });
+  } else {
+    // Fallback para navegadores sem Promise
+    try {
+      mediaElement.play();
+      playerState = 'playing';
+      statusDiv.textContent = "Reproduzindo";
+      updatePlayButton();
+    } catch (error) {
+      statusDiv.textContent = "Clique para reproduzir";
+      playerState = 'paused';
+      updatePlayButton();
+    }
+  }
+}
+
+function handleAudioError() {
+  console.error('Erro de áudio');
+  statusDiv.textContent = "Erro de áudio";
+  retryPlayback();
+}
+
+function handleVideoError() {
+  console.error('Erro de vídeo');
+  statusDiv.textContent = "Erro de vídeo";
+  retryPlayback();
+}
+
+function handlePlaybackError(error, track) {
+  console.error("Erro na reprodução:", error);
+  statusDiv.textContent = "Erro: " + (error.message || "Falha na reprodução");
+  retryPlayback();
+}
+
+function retryPlayback() {
+  if (currentRetryCount < COMPATIBILITY.RETRY_ATTEMPTS && currentTrack >= 0) {
+    currentRetryCount++;
+    statusDiv.textContent = "Tentativa " + currentRetryCount + " de " + COMPATIBILITY.RETRY_ATTEMPTS;
+    
+    setTimeout(function() {
+      var track = library[currentTrack];
+      executePlayback(track);
+    }, 1000);
+  } else {
     playerState = 'stopped';
     updatePlayButton();
   }
 }
 
+function stopTrack() {
+  stopCurrentPlayback();
+  playerState = 'stopped';
+  statusDiv.textContent = "Parado";
+  updatePlayButton();
+  currentTrack = -1;
+  renderPlaylist();
+}
+
 function togglePlay() {
   if (currentTrack === -1) {
-    // Se nada estiver selecionado, começar do primeiro item
-    if (library.length > 0) playTrack(0);
+    if (library.length > 0) {
+      playTrack(0);
+    }
     return;
   }
   
   if (playerState === 'playing') {
-    if (audioPlayer.style.display==="block") {
+    // Pausar o player ativo atual
+    if (currentMediaType === 'audio' && audioPlayer) {
       audioPlayer.pause();
-    } else if (videoPlayer.style.display==="block") {
+    } else if (currentMediaType === 'video' && videoPlayer) {
       videoPlayer.pause();
     }
     playerState = 'paused';
     statusDiv.textContent = "Pausado";
   } else {
-    if (audioPlayer.style.display==="block") {
-      audioPlayer.play().then(function() {
-        playerState = 'playing';
-        statusDiv.textContent = "Reproduzindo";
-        updatePlayButton();
-      }).catch(function(error) {
-        statusDiv.textContent = "Erro ao reproduzir: " + error.message;
-      });
-    } else if (videoPlayer.style.display==="block") {
-      videoPlayer.play().then(function() {
-        playerState = 'playing';
-        statusDiv.textContent = "Reproduzindo";
-        updatePlayButton();
-      }).catch(function(error) {
-        statusDiv.textContent = "Erro ao reproduzir: " + error.message;
-      });
+    // Retomar o player ativo atual
+    if (currentMediaType === 'audio' && audioPlayer) {
+      attemptPlayback(audioPlayer, 'audio');
+    } else if (currentMediaType === 'video' && videoPlayer) {
+      attemptPlayback(videoPlayer, 'video');
     }
   }
   updatePlayButton();
@@ -495,16 +681,6 @@ function togglePlay() {
 
 function updatePlayButton() {
   playPauseBtn.textContent = playerState === 'playing' ? '⏸' : '▶️';
-}
-
-function stopTrack() {
-  audioPlayer.pause();
-  audioPlayer.currentTime = 0;
-  videoPlayer.pause();
-  videoPlayer.currentTime = 0;
-  playerState = 'stopped';
-  statusDiv.textContent = "Parado";
-  updatePlayButton();
 }
 
 function prevTrack() {
@@ -532,6 +708,7 @@ function nextTrack() {
 }
 
 function handleMediaEnded() {
+  console.log('Mídia terminou, tipo:', currentMediaType);
   if (randomMode) {
     playRandomTrack();
   } else {
@@ -542,24 +719,21 @@ function handleMediaEnded() {
 function playRandomTrack() {
   if (library.length === 0) return;
   
-  // Obter faixas filtradas
   var search = document.getElementById("search").value.toLowerCase();
   var filteredTracks = library.filter(function(track) {
-    if (filterType!=="all" && track.type!==filterType) return false;
+    if (filterType !== "all" && track.type !== filterType) return false;
     if (search && !(track.title.toLowerCase().includes(search) || track.artist.toLowerCase().includes(search))) return false;
     return true;
   });
   
   if (filteredTracks.length === 0) return;
   
-  // Se só há uma faixa, reproduzir ela
   if (filteredTracks.length === 1) {
     var trackIndex = library.indexOf(filteredTracks[0]);
     playTrack(trackIndex);
     return;
   }
   
-  // Garantir que não repita a mesma faixa
   var currentFilteredIndex = filteredTracks.findIndex(track => library.indexOf(track) === currentTrack);
   var randomIndex;
   do {
@@ -578,7 +752,7 @@ function toggleRandom() {
 
 function setFilter(type) {
   filterType = type;
-  document.querySelectorAll("#filters button").forEach(btn=>btn.classList.remove("active"));
+  document.querySelectorAll("#filters button").forEach(btn => btn.classList.remove("active"));
   var buttons = document.querySelectorAll("#filters button");
   for (var i = 0; i < buttons.length; i++) {
     if (buttons[i].textContent.toLowerCase().includes(type)) {
@@ -592,14 +766,26 @@ function setFilter(type) {
 function exitFullscreen() {
   if (document.fullscreenElement) {
     document.exitFullscreen().catch(function(err) {
-      console.error("Erro ao sair da tela cheia:", err);
+      console.log("Erro ao sair da tela cheia:", err);
     });
   }
-  closeBtn.style.display="none";
+  closeBtn.style.display = "none";
 }
 
-// Inicializar o player
-loadPlaylists();
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadPlaylists);
+} else {
+  loadPlaylists();
+}
+
+// Marcar interação do usuário para autoplay
+document.addEventListener('click', function() {
+  if (!userInteracted) {
+    userInteracted = true;
+    console.log('Usuário interagiu com a página');
+  }
+}, { once: true });
 </script>
 </body>
 </html>
