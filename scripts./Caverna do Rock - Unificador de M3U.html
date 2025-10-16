@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Caverna do Rock - Unificador de M3U</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: sans-serif;
+    padding: 20px;
+    text-align: center;
+  }
+  input[type="file"] {
+    margin: 20px auto;
+    display: block;
+    background: #222;
+    color: #eee;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button {
+    background: #444;
+    color: #eee;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 20px;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #666;
+  }
+  #status {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #9f9;
+    white-space: pre-wrap;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎶 Caverna do Rock - Unificador de M3U</h1>
+<p>Selecione várias listas M3U abaixo para unificar em uma só com <b>group-title</b> e numeração preservada:</p>
+
+<input type="file" id="arquivos" multiple accept=".m3u">
+<button onclick="unificarListas()">Gerar Caverna_do_Rock_69.m3u</button>
+
+<div id="status"></div>
+
+<script>
+async function unificarListas() {
+  const arquivos = document.getElementById('arquivos').files;
+  const status = document.getElementById('status');
+  status.textContent = "";
+
+  if (arquivos.length === 0) {
+    alert("Selecione pelo menos um arquivo .m3u para unificar.");
+    return;
+  }
+
+  let finalM3U = "#EXTM3U\n\n";
+
+  for (const file of arquivos) {
+    const nome = file.name.replace('.m3u', '');
+
+    // tenta deduzir artista e álbum
+    let partes = nome.split(/[_-]+/);
+    let artista = partes[0] ? partes[0] : "Desconhecido";
+    artista = artista.replace(/\b\w/g, l => l.toUpperCase());
+
+    let album = partes.slice(1).join(' ')
+      .replace(/\b(flac|mp3|wav|mp4|mkv|h264)\b/gi, '')
+      .trim();
+    album = album.replace(/\b\w/g, l => l.toUpperCase()) || "Sem Álbum";
+
+    const grupo = `${artista} - ${album}`;
+    status.textContent += `Adicionando grupo: ${grupo}\n`;
+
+    const texto = await file.text();
+    const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+
+    finalM3U += `#----------------------------------------------------\n`;
+    finalM3U += `# Grupo: ${grupo}\n`;
+    finalM3U += `#----------------------------------------------------\n\n`;
+
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
+
+      if (linha.startsWith("#EXTINF")) {
+        // Preserva o título original da faixa e adiciona group-title
+        // Ex: #EXTINF:-1,01 Track Name -> #EXTINF:-1 group-title="Artista - Álbum",01 Track Name
+        let partesLinha = linha.split(',');
+        let duracao = partesLinha[0].split(':')[1] ? partesLinha[0] : "-1";
+        let titulo = partesLinha.slice(1).join(',').trim();
+        finalM3U += `#EXTINF:${duracao} group-title="${grupo}",${titulo}\n`;
+      } else {
+        finalM3U += linha + "\n";
+      }
+    }
+    finalM3U += "\n";
+  }
+
+  // Cria o arquivo final unificado
+  const blob = new Blob([finalM3U], { type: "audio/x-mpegurl" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "Caverna_do_Rock_69.m3u";
+  link.click();
+
+  status.textContent += "\n✅ Unificação concluída! Arquivo pronto para download.";
+}
+</script>
+
+</body>
+</html>
+

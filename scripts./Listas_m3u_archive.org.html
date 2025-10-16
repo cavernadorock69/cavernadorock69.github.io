@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de M3U do Archive.org</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+    }
+    input {
+      background: #222;
+      color: #eee;
+    }
+    button {
+      cursor: pointer;
+      background: #333;
+      color: #eee;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #555;
+    }
+    .formatos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    h1 {
+      color: #6cf;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 Gerador de M3U do Archive.org</h1>
+  <input type="text" id="link" placeholder="Cole o link do Archive.org aqui">
+
+  <div class="formatos">
+    <button onclick="gerarM3U('mp3')">🎧 MP3</button>
+    <button onclick="gerarM3U('flac')">💽 FLAC</button>
+    <button onclick="gerarM3U('wav')">🔊 WAV</button>
+    <button onclick="gerarM3U('mp4')">🎬 MP4</button>
+    <button onclick="gerarM3U('mkv')">🎞️ MKV</button>
+    <button onclick="gerarM3U('h264')">📹 H.264</button>
+  </div>
+
+  <script>
+    async function gerarM3U(formato) {
+      const url = document.getElementById('link').value.trim();
+      if (!url) {
+        alert('Por favor, cole o link de um item do Archive.org.');
+        return;
+      }
+
+      const id = url.split('/').pop();
+      const api = `https://archive.org/metadata/${id}`;
+
+      try {
+        const res = await fetch(api);
+        const data = await res.json();
+
+        const base = `https://archive.org/download/${id}/`;
+        const files = data.files.filter(f => f.name.toLowerCase().endsWith(`.${formato}`));
+        if (files.length === 0) {
+          alert(`Nenhum arquivo .${formato} encontrado neste item.`);
+          return;
+        }
+
+        const artist = data.metadata.creator || 'Desconhecido';
+        const album = data.metadata.title || 'Sem título';
+        const cover = base + (data.files.find(f => f.name.match(/\.(jpg|png)$/))?.name || '');
+
+        let m3u = '#EXTM3U\n';
+        m3u += `#EXTART:${artist}\n`;
+        m3u += `#EXTALB:${album}\n`;
+        if (cover) m3u += `#EXTIMG:${cover}\n\n`;
+
+        files.forEach(f => {
+          const title = f.name.split('/').pop().replace(/\.(.*)/, '');
+          const length = f.length ? `${Math.floor(f.length/60)}:${String(Math.round(f.length%60)).padStart(2,'0')}` : '??:??';
+          m3u += `#EXTINF:-1,${title} (${length})\n`;
+          m3u += base + encodeURIComponent(f.name) + '\n\n';
+        });
+
+        // Cria e baixa o arquivo .m3u
+        const blob = new Blob([m3u], { type: 'audio/x-mpegurl' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${id}_${formato}.m3u`;
+        link.click();
+
+      } catch (erro) {
+        console.error(erro);
+        alert('Erro ao acessar os dados do Archive.org.');
+      }
+    }
+  </script>
+</body>
+</html>
+
