@@ -1,6 +1,17 @@
 #EXTM3U
 
 #----------------------------------------------------
+# Grupo: 1991 - Acdc Live At Donington
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:AC/DC
+#EXTALB:1991 - ACDC - Live at Donington
+#EXTIMG:https://archive.org/download/1991-acdc-live-at-donington/1991-acdc-live-at-donington.thumbs/1991 - ACDC - Live at Donington_000001.jpg
+#EXTINF:#EXTINF:-1 group-title="1991 - Acdc Live At Donington",1991 - ACDC - Live at Donington (118:05)
+https://archive.org/download/1991-acdc-live-at-donington/1991%20-%20ACDC%20-%20Live%20at%20Donington.mkv
+
+#----------------------------------------------------
 # Grupo: Ac - Dc 202509
 #----------------------------------------------------
 
@@ -26,6 +37,81 @@ https://archive.org/download/ac-dc_202509/ACDC%2F1980%20-%20Back%20in%20Black%2F
 https://archive.org/download/ac-dc_202509/ACDC%2F1980%20-%20Back%20in%20Black%2F08%20-%20Have%20A%20Drink%20On%20Me.flac
 #EXTINF:#EXTINF:-1 group-title="Ac - Dc 202509",09 - Shake A Leg (4:06)
 https://archive.org/download/ac-dc_202509/ACDC%2F1980%20-%20Back%20in%20Black%2F09%20-%20Shake%20A%20Leg.flac
+
+#----------------------------------------------------
+# Grupo: Acdc - Video Clips 202510
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:AC/DC
+#EXTALB:AC/DC - Video Clips
+#EXTIMG:https://archive.org/download/acdc-video-clips_202510/Video Clipes/Logo.png
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",1 - AC⧸DC - Walk All Over You (Official Video) (5:10)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201970s%20Music%20Videos%2F1%20-%20AC%E2%A7%B8DC%20-%20Walk%20All%20Over%20You%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",2 - AC⧸DC - Shot Down In Flames (Official Video) (3:26)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201970s%20Music%20Videos%2F2%20-%20AC%E2%A7%B8DC%20-%20Shot%20Down%20In%20Flames%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",3 - AC⧸DC - Touch Too Much (Official Video) (4:27)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201970s%20Music%20Videos%2F3%20-%20AC%E2%A7%B8DC%20-%20Touch%20Too%20Much%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",4 - AC⧸DC - Highway to Hell (Official Video) (3:27)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201970s%20Music%20Videos%2F4%20-%20AC%E2%A7%B8DC%20-%20Highway%20to%20Hell%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",5 - AC⧸DC - If You Want Blood (You've Got It) (Official HD Video) (4:39)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201970s%20Music%20Videos%2F5%20-%20AC%E2%A7%B8DC%20-%20If%20You%20Want%20Blood%20(You've%20Got%20It)%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",01 - AC⧸DC - Sink the Pink (Official Music Video) (4:02)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F01%20-%20AC%E2%A7%B8DC%20-%20Sink%20the%20Pink%20(Official%20Music%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",02 - AC⧸DC - Stand Up (Official Music Video) (3:39)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F02%20-%20AC%E2%A7%B8DC%20-%20Stand%20Up%20(Official%20Music%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",03 - AC⧸DC - You Shook Me All Night Long (Official 4K Video) (3:28)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F03%20-%20AC%E2%A7%B8DC%20-%20You%20Shook%20Me%20All%20Night%20Long%20(Official%204K%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",04 - AC⧸DC - Shake Your Foundations (Official Music Video) (3:58)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F04%20-%20AC%E2%A7%B8DC%20-%20Shake%20Your%20Foundations%20(Official%20Music%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",05 - AC⧸DC - Rock And Roll Ain't Noise Pollution (Official Video) (4:12)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F05%20-%20AC%E2%A7%B8DC%20-%20Rock%20And%20Roll%20Ain't%20Noise%20Pollution%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",06 - AC⧸DC - That's the Way I Wanna Rock 'N' Roll (Official HD Video) (3:49)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F06%20-%20AC%E2%A7%B8DC%20-%20That's%20the%20Way%20I%20Wanna%20Rock%20'N'%20Roll%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",07 - AC⧸DC - Fly on the Wall (Official Music Video) (3:33)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F07%20-%20AC%E2%A7%B8DC%20-%20Fly%20on%20the%20Wall%20(Official%20Music%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",08 - AC⧸DC - What Do You Do for Money Honey (Official 4K Video) (3:34)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F08%20-%20AC%E2%A7%B8DC%20-%20What%20Do%20You%20Do%20for%20Money%20Honey%20(Official%204K%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",09 - AC⧸DC - Flick of the Switch (Official HD Video) (3:20)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F09%20-%20AC%E2%A7%B8DC%20-%20Flick%20of%20the%20Switch%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",10 - AC⧸DC - Heatseeker (Official HD Video) (3:55)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F10%20-%20AC%E2%A7%B8DC%20-%20Heatseeker%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",11 - AC⧸DC - Nervous Shakedown (Official HD Video) (4:33)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F11%20-%20AC%E2%A7%B8DC%20-%20Nervous%20Shakedown%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",12 - AC⧸DC - Danger (Official Music Video) (4:08)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F12%20-%20AC%E2%A7%B8DC%20-%20Danger%20(Official%20Music%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",13 - AC⧸DC - Hells Bells (Official 4K Video) (5:10)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F13%20-%20AC%E2%A7%B8DC%20-%20Hells%20Bells%20(Official%204K%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",14 - AC⧸DC - Who Made Who (Official HD Video) (3:26)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F14%20-%20AC%E2%A7%B8DC%20-%20Who%20Made%20Who%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",15 - AC⧸DC - Back In Black (Official 4K Video) (4:14)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201980s%20Music%20Videos%2F15%20-%20AC%E2%A7%B8DC%20-%20Back%20In%20Black%20(Official%204K%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",1 - AC⧸DC - Thunderstruck (Official Video) (4:53)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F1%20-%20AC%E2%A7%B8DC%20-%20Thunderstruck%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",2 - AC⧸DC - Dirty Deeds Done Dirt Cheap (Official Video – AC⧸DC Live) (4:42)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F2%20-%20AC%E2%A7%B8DC%20-%20Dirty%20Deeds%20Done%20Dirt%20Cheap%20(Official%20Video%20%E2%80%93%20AC%E2%A7%B8DC%20Live).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",3 - AC⧸DC - Cover You In Oil (Official Video) (4:32)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F3%20-%20AC%E2%A7%B8DC%20-%20Cover%20You%20In%20Oil%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",4 - AC⧸DC - Hard as a Rock (Official HD Video) (4:30)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F4%20-%20AC%E2%A7%B8DC%20-%20Hard%20as%20a%20Rock%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",5 - AC⧸DC - Hail Caesar (Official HD Video) (4:31)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F5%20-%20AC%E2%A7%B8DC%20-%20Hail%20Caesar%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",6 - AC⧸DC - Are You Ready (Official HD Video) (4:17)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F6%20-%20AC%E2%A7%B8DC%20-%20Are%20You%20Ready%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",7 - AC⧸DC - Moneytalks (Official HD Video) (3:46)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%201990s%20Music%20Videos%2F7%20-%20AC%E2%A7%B8DC%20-%20Moneytalks%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",1 - AC⧸DC - Safe In New York City (Official HD Video) (3:60)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F1%20-%20AC%E2%A7%B8DC%20-%20Safe%20In%20New%20York%20City%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",2 - AC⧸DC - Stiff Upper Lip (Official HD Video) (3:53)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F2%20-%20AC%E2%A7%B8DC%20-%20Stiff%20Upper%20Lip%20(Official%20HD%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",3 - AC⧸DC - Satellite Blues (Official Video) (3:49)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F3%20-%20AC%E2%A7%B8DC%20-%20Satellite%20Blues%20(Official%20Video).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",4 - AC⧸DC - You Shook Me All Night Long (Live At River Plate, December 2009) (4:25)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F4%20-%20AC%E2%A7%B8DC%20-%20You%20Shook%20Me%20All%20Night%20Long%20(Live%20At%20River%20Plate%2C%20December%202009).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",5 - AC⧸DC - Highway To Hell (Iron Man 2 Version) (3:19)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F5%20-%20AC%E2%A7%B8DC%20-%20Highway%20To%20Hell%20(Iron%20Man%202%20Version).mp4
+#EXTINF:#EXTINF:-1 group-title="Acdc - Video Clips 202510",6 - AC⧸DC - Shoot To Thrill (Iron Man 2 Version) (5:33)
+https://archive.org/download/acdc-video-clips_202510/Video%20Clipes%2FAC%E2%A7%B8DC%20-%202000s%20Music%20Videos%2F6%20-%20AC%E2%A7%B8DC%20-%20Shoot%20To%20Thrill%20(Iron%20Man%202%20Version).mp4
 
 #----------------------------------------------------
 # Grupo: Back - To The Beginning
