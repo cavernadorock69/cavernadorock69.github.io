@@ -1,438 +1,345 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mísicas, Videos Clips e Shows da Caverna do Rock 69</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .subtitle {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .category {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .category:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .category-icon {
-            font-size: 2em;
-            margin-right: 15px;
-        }
-
-        .category-title {
-            font-size: 1.5em;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .category-count {
-            margin-left: auto;
-            background: #667eea;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
-
-        .playlist-list {
-            list-style: none;
-        }
-
-        .playlist-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 12px;
-            transition: background 0.2s ease;
-        }
-
-        .playlist-item:hover {
-            background: #e9ecef;
-        }
-
-        .playlist-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            word-break: break-word;
-        }
-
-        .playlist-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-download {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-download:hover {
-            background: #218838;
-            transform: scale(1.05);
-        }
-
-        .btn-copy {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-copy:hover {
-            background: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .btn-download-all {
-            background: #ff6b6b;
-            color: white;
-            font-size: 1.1em;
-            padding: 12px 24px;
-        }
-
-        .btn-download-all:hover {
-            background: #ee5a52;
-            transform: scale(1.05);
-        }
-
-        .download-all-section {
-            text-align: center;
-            margin-top: 40px;
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2em;
-            padding: 40px;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #666;
-            padding: 30px;
-            font-style: italic;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            opacity: 0;
-            transform: translateY(100px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (max-width: 768px) {
-            .categories {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .playlist-actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎵 Gerenciador de Listas M3U - Caverna do Rock</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #eee;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #fff;
+  }
+  .categoria {
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.4);
+  }
+  h2 {
+    border-bottom: 2px solid #333;
+    padding-bottom: 6px;
+    color: #6cf;
+  }
+  ul { list-style: none; padding: 0; margin-top: 10px; }
+  li {
+    background: #252525;
+    margin: 8px 0;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+  }
+  .acoes { margin-top: 10px; }
+  button, a {
+    background: #007bff;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    margin-right: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.9em;
+  }
+  button:hover, a:hover { background: #0056b3; }
+  .baixar-tudo {
+    display: block;
+    width: 100%;
+    background: #28a745;
+    font-size: 1.1em;
+    margin-top: 25px;
+    padding: 15px;
+  }
+  .baixar-tudo:hover { background: #218838; }
+  .msg { text-align: center; margin-top: 15px; font-style: italic; color: #ccc; }
+  .loading { color: #6cf; }
+  .error { color: #ff6b6b; }
+  .success { color: #51cf66; }
+  .arquivo-info { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .nome-arquivo { font-weight: bold; font-size: 1.1em; }
+  .tamanho { color: #aaa; font-size: 0.9em; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Mísicas, Videos Clips e Shows da Caverna do Rock 69</h1>
-            <p class="subtitle">Acesse suas playlists de músicas, shows e videoclipes</p>
-        </header>
+  <h1>🎧 Gerenciador de Listas M3U - Caverna do Rock</h1>
 
-        <div id="loading" class="loading">
-            Carregando listas M3U...
-        </div>
+  <div class="categoria">
+    <h2>🎶 Músicas</h2>
+    <ul id="musicas"></ul>
+  </div>
 
-        <div id="content" style="display: none;">
-            <div class="categories">
-                <div class="category">
-                    <div class="category-header">
-                        <span class="category-icon">🎵</span>
-                        <h2 class="category-title">Músicas</h2>
-                        <span class="category-count" id="musicas-count">0</span>
-                    </div>
-                    <ul class="playlist-list" id="musicas-list"></ul>
-                </div>
+  <div class="categoria">
+    <h2>🎤 Shows</h2>
+    <ul id="shows"></ul>
+  </div>
 
-                <div class="category">
-                    <div class="category-header">
-                        <span class="category-icon">🎤</span>
-                        <h2 class="category-title">Shows</h2>
-                        <span class="category-count" id="shows-count">0</span>
-                    </div>
-                    <ul class="playlist-list" id="shows-list"></ul>
-                </div>
+  <div class="categoria">
+    <h2>📹 Videoclipes</h2>
+    <ul id="video_clips"></ul>
+  </div>
 
-                <div class="category">
-                    <div class="category-header">
-                        <span class="category-icon">📹</span>
-                        <h2 class="category-title">Videoclipes</h2>
-                        <span class="category-count" id="video_clips-count">0</span>
-                    </div>
-                    <ul class="playlist-list" id="video_clips-list"></ul>
-                </div>
-            </div>
+  <button class="baixar-tudo" onclick="baixarTodas()">📦 Baixar Todas as Listas</button>
+  <button class="baixar-tudo" onclick="carregarListas()" style="background: #6f42c1; margin-top: 10px;">🔄 Atualizar Listas</button>
 
-            <div class="download-all-section">
-                <button class="btn btn-download-all" onclick="downloadAll()">
-                    📦 Baixar Todas as Listas
-                </button>
-            </div>
-        </div>
-    </div>
+<script>
+// Configurações
+const CONFIG = {
+  repo: 'cavernadorock69/cavernadorock69.github.io',
+  branch: 'main',
+  categorias: {
+    musicas: 'musicas',
+    shows: 'shows', 
+    video_clips: 'video_clips'
+  }
+};
 
-    <div id="toast" class="toast"></div>
+// URLs base
+const RAW_BASE = `https://raw.githubusercontent.com/${CONFIG.repo}/${CONFIG.branch}`;
+const GITHUB_API = `https://api.github.com/repos/${CONFIG.repo}/contents`;
 
-    <script>
-        const GITHUB_API = 'https://api.github.com/repos/cavernadorock69/cavernadorock69.github.io/contents';
-        const GITHUB_RAW = 'https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/main';
+async function carregarListas() {
+  console.log('🔄 Iniciando carregamento de listas...');
+  
+  for (const [elementId, pasta] of Object.entries(CONFIG.categorias)) {
+    const ul = document.getElementById(elementId);
+    ul.innerHTML = '<li class="loading">🔄 Carregando listas M3U...</li>';
+    
+    try {
+      console.log(`📁 Buscando arquivos em: ${pasta}`);
+      
+      const response = await fetch(`${GITHUB_API}/${pasta}`);
+      
+      if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const dados = await response.json();
+      console.log(`✅ Encontrados ${dados.length} itens em ${pasta}`, dados);
+      
+      // Filtrar apenas arquivos M3U/M3U8
+      const arquivosM3U = dados.filter(item => 
+        item.type === 'file' && 
+        (item.name.toLowerCase().endsWith('.m3u') || 
+         item.name.toLowerCase().endsWith('.m3u8'))
+      );
+      
+      console.log(`🎵 ${arquivosM3U.length} arquivos M3U encontrados em ${pasta}`);
+      
+      if (arquivosM3U.length === 0) {
+        ul.innerHTML = '<li class="msg">🎵 Nenhuma lista M3U encontrada nesta categoria.</li>';
+        continue;
+      }
+      
+      // Ordenar por nome
+      arquivosM3U.sort((a, b) => a.name.localeCompare(b.name));
+      
+      ul.innerHTML = '';
+      
+      // Criar elementos para cada arquivo M3U
+      arquivosM3U.forEach(arquivo => {
+        const urlCompleta = `${RAW_BASE}/${pasta}/${encodeURIComponent(arquivo.name)}`;
+        const urlDownload = arquivo.download_url || urlCompleta;
         
-        const categories = {
-            musicas: {
-                path: 'musicas',
-                listId: 'musicas-list',
-                countId: 'musicas-count',
-                files: []
-            },
-            shows: {
-                path: 'shows',
-                listId: 'shows-list',
-                countId: 'shows-count',
-                files: []
-            },
-            video_clips: {
-                path: 'video_clips',
-                listId: 'video_clips-list',
-                countId: 'video_clips-count',
-                files: []
-            }
-        };
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="arquivo-info">
+            <div>
+              <div class="nome-arquivo">${arquivo.name}</div>
+              <div class="tamanho">${formatarTamanho(arquivo.size)}</div>
+            </div>
+            <div class="acoes">
+              <a href="${urlDownload}" download="${arquivo.name}" title="Baixar lista">⬇️ Baixar</a>
+              <button onclick="copiarURL('${urlCompleta}')" title="Copiar URL para player">📋 Copiar URL</button>
+              <button onclick="visualizarLista('${urlCompleta}', '${arquivo.name}')" title="Visualizar conteúdo">👀 Visualizar</button>
+            </div>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+      
+    } catch (error) {
+      console.error(`❌ Erro ao carregar ${pasta}:`, error);
+      ul.innerHTML = `
+        <li class="error">
+          ❌ Erro ao carregar listas: ${error.message}
+          <br><small>Tentando método alternativo...</small>
+        </li>
+      `;
+      
+      // Tentar método alternativo
+      await tentarMetodoAlternativo(elementId, pasta);
+    }
+  }
+}
 
-        async function fetchM3UFiles(categoryPath) {
-            try {
-                const response = await fetch(`${GITHUB_API}/${categoryPath}`);
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar arquivos de ${categoryPath}`);
-                }
-                const files = await response.json();
-                return files.filter(file => file.name.endsWith('.m3u') || file.name.endsWith('.m3u8'));
-            } catch (error) {
-                console.error(`Erro ao carregar ${categoryPath}:`, error);
-                return [];
-            }
-        }
+// Método alternativo caso a API falhe
+async function tentarMetodoAlternativo(elementId, pasta) {
+  try {
+    const ul = document.getElementById(elementId);
+    
+    // Lista pré-definida de possíveis arquivos (fallback)
+    const arquivosTeste = [
+      'rock_classico.m3u', 'rock_anos_80.m3u', 'metal_pesado.m3u',
+      'rock_brasileiro.m3u', 'rock_alternativo.m3u', 'show_acdc_live.m3u',
+      'show_queen_wembley.m3u', 'show_iron_maiden.m3u', 'clips_rock_classico.m3u',
+      'clips_metal.m3u'
+    ];
+    
+    const arquivosEncontrados = [];
+    
+    // Testar cada arquivo
+    for (const arquivo of arquivosTeste) {
+      const urlTeste = `${RAW_BASE}/${pasta}/${arquivo}`;
+      const response = await fetch(urlTeste, { method: 'HEAD' });
+      
+      if (response.ok) {
+        arquivosEncontrados.push({
+          name: arquivo,
+          url: urlTeste
+        });
+      }
+    }
+    
+    if (arquivosEncontrados.length > 0) {
+      ul.innerHTML = '';
+      arquivosEncontrados.forEach(arquivo => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="arquivo-info">
+            <div class="nome-arquivo">${arquivo.name}</div>
+            <div class="acoes">
+              <a href="${arquivo.url}" download="${arquivo.name}">⬇️ Baixar</a>
+              <button onclick="copiarURL('${arquivo.url}')">📋 Copiar URL</button>
+            </div>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+      
+      ul.innerHTML += `<li class="success">✅ ${arquivosEncontrados.length} listas carregadas (modo alternativo)</li>`;
+    }
+    
+  } catch (error) {
+    console.error('Erro no método alternativo:', error);
+  }
+}
 
-        function createPlaylistItem(file, categoryPath) {
-            const li = document.createElement('li');
-            li.className = 'playlist-item';
-            
-            const rawUrl = `${GITHUB_RAW}/${categoryPath}/${file.name}`;
-            
-            li.innerHTML = `
-                <div class="playlist-name">${file.name}</div>
-                <div class="playlist-actions">
-                    <a href="${file.download_url}" download="${file.name}" class="btn btn-download">
-                        ⬇️ Baixar
-                    </a>
-                    <button class="btn btn-copy" onclick="copyToClipboard('${rawUrl}', '${file.name}')">
-                        📋 Copiar URL
-                    </button>
-                </div>
-            `;
-            
-            return li;
-        }
+function formatarTamanho(bytes) {
+  if (!bytes) return 'Tamanho desconhecido';
+  if (bytes < 1024) return bytes + ' bytes';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
 
-        function copyToClipboard(text, fileName) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(`URL copiada: ${fileName}`);
-            }).catch(err => {
-                showToast('Erro ao copiar URL', true);
-                console.error('Erro ao copiar:', err);
-            });
-        }
+function copiarURL(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    alert('✅ URL copiada para a área de transferência!\n\n' + url);
+  }).catch(err => {
+    console.error('Erro ao copiar:', err);
+    alert('❌ Erro ao copiar URL. Tente manualmente:\n\n' + url);
+  });
+}
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            if (isError) {
-                toast.style.background = '#dc3545';
-            } else {
-                toast.style.background = '#333';
-            }
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+async function visualizarLista(url, nome) {
+  try {
+    const response = await fetch(url);
+    const conteudo = await response.text();
+    
+    // Criar popup para visualização
+    const popup = window.open('', `Lista: ${nome}`, 'width=800,height=600');
+    popup.document.write(`
+      <html>
+        <head>
+          <title>📄 ${nome}</title>
+          <style>
+            body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+            pre { background: white; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            .header { background: #007bff; color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>📄 ${nome}</h2>
+            <p>URL: ${url}</p>
+          </div>
+          <pre>${conteudo}</pre>
+          <button onclick="window.print()">🖨️ Imprimir</button>
+          <button onclick="window.close()">❌ Fechar</button>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    alert('❌ Erro ao carregar conteúdo da lista: ' + error.message);
+  }
+}
 
-        async function loadAllCategories() {
-            const loading = document.getElementById('loading');
-            const content = document.getElementById('content');
-            
-            try {
-                for (const [key, category] of Object.entries(categories)) {
-                    const files = await fetchM3UFiles(category.path);
-                    category.files = files;
-                    
-                    const listElement = document.getElementById(category.listId);
-                    const countElement = document.getElementById(category.countId);
-                    
-                    if (files.length === 0) {
-                        listElement.innerHTML = '<div class="empty-state">Nenhuma lista M3U encontrada</div>';
-                    } else {
-                        listElement.innerHTML = '';
-                        files.forEach(file => {
-                            const item = createPlaylistItem(file, category.path);
-                            listElement.appendChild(item);
-                        });
-                    }
-                    
-                    countElement.textContent = files.length;
-                }
-                
-                loading.style.display = 'none';
-                content.style.display = 'block';
-            } catch (error) {
-                loading.innerHTML = `<div class="error">Erro ao carregar as listas: ${error.message}</div>`;
-            }
-        }
+async function baixarTodas() {
+  let totalListas = 0;
+  const todasListas = [];
+  
+  // Coletar todas as listas primeiro
+  for (const [elementId, pasta] of Object.entries(CONFIG.categorias)) {
+    const ul = document.getElementById(elementId);
+    const itens = ul.querySelectorAll('a[download]');
+    
+    itens.forEach(a => {
+      todasListas.push({
+        url: a.href,
+        nome: a.download,
+        elemento: a
+      });
+    });
+  }
+  
+  totalListas = todasListas.length;
+  
+  if (totalListas === 0) {
+    alert('❌ Nenhuma lista disponível para download.');
+    return;
+  }
+  
+  alert(`📥 Iniciando download de ${totalListas} listas...`);
+  
+  // Baixar com intervalo para evitar bloqueio
+  todasListas.forEach((lista, index) => {
+    setTimeout(() => {
+      console.log(`⬇️ Baixando: ${lista.nome}`);
+      lista.elemento.click();
+    }, index * 500);
+  });
+}
 
-        async function downloadAll() {
-            let totalFiles = 0;
-            for (const category of Object.values(categories)) {
-                totalFiles += category.files.length;
-            }
-            
-            if (totalFiles === 0) {
-                showToast('Nenhuma lista para baixar', true);
-                return;
-            }
-            
-            showToast(`Iniciando download de ${totalFiles} listas...`);
-            
-            let downloadCount = 0;
-            for (const category of Object.values(categories)) {
-                for (const file of category.files) {
-                    setTimeout(() => {
-                        const a = document.createElement('a');
-                        a.href = file.download_url;
-                        a.download = file.name;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                    }, downloadCount * 500); // Delay de 500ms entre downloads
-                    downloadCount++;
-                }
-            }
-            
-            setTimeout(() => {
-                showToast(`${totalFiles} listas baixadas com sucesso!`);
-            }, downloadCount * 500 + 1000);
-        }
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 Iniciando Gerenciador M3U...');
+  carregarListas();
+});
 
-        // Carregar as listas ao carregar a página
-        window.addEventListener('DOMContentLoaded', loadAllCategories);
-    </script>
+// Recarregar quando a página ganhar foco (útil se abrir em nova aba)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    console.log('🔄 Página visível - verificando atualizações...');
+    // Recarregar apenas se já passou algum tempo
+    if (!this.lastLoad || Date.now() - this.lastLoad > 30000) {
+      carregarListas();
+      this.lastLoad = Date.now();
+    }
+  }
+});
+</script>
 </body>
 </html>
