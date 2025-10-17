@@ -28,6 +28,55 @@ https://archive.org/download/ac-dc_202509/ACDC%2F1980%20-%20Back%20in%20Black%2F
 https://archive.org/download/ac-dc_202509/ACDC%2F1980%20-%20Back%20in%20Black%2F09%20-%20Shake%20A%20Leg.flac
 
 #----------------------------------------------------
+# Grupo: Back - To The Beginning
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:Ozzy Osbourne
+#EXTALB:Back To The Beginning
+#EXTIMG:https://archive.org/download/back-to-the-beginning/ Back To The Beginning_thumb.jpg
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",01 - Mastodon (14:46)
+https://archive.org/download/back-to-the-beginning/01%20-%20Mastodon.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",02 - Rival Sons (19:32)
+https://archive.org/download/back-to-the-beginning/02%20-%20Rival%20Sons.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",03 - Anthrax (13:32)
+https://archive.org/download/back-to-the-beginning/03%20-%20Anthrax.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",04 - Halestorm (16:04)
+https://archive.org/download/back-to-the-beginning/04%20-%20Halestorm.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",05 - Lamb of God (16:02)
+https://archive.org/download/back-to-the-beginning/05%20-%20Lamb%20of%20God.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",06 - Tom Morello e as Estrelas (31:42)
+https://archive.org/download/back-to-the-beginning/06%20-%20Tom%20Morello%20e%20as%20Estrelas.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",07 - Alice in Chains (16:02)
+https://archive.org/download/back-to-the-beginning/07%20-%20Alice%20in%20Chains.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",07 - Tom Morello e as Estrelas II (42:12)
+https://archive.org/download/back-to-the-beginning/07%20-%20Tom%20Morello%20e%20as%20Estrelas%20II.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",08 - Gojira (19:02)
+https://archive.org/download/back-to-the-beginning/08%20-%20Gojira.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",09 - Drum Off (4:52)
+https://archive.org/download/back-to-the-beginning/09%20-%20Drum%20Off.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",10 - Pantera (23:48)
+https://archive.org/download/back-to-the-beginning/10%20-%20Pantera.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",11 - Toll (21:02)
+https://archive.org/download/back-to-the-beginning/11%20-%20Toll.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",12 - Slayer (28:38)
+https://archive.org/download/back-to-the-beginning/12%20-%20Slayer.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",13 - Guns N’ Roses (31:52)
+https://archive.org/download/back-to-the-beginning/13%20-%20Guns%20N%E2%80%99%20Roses.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",14 - Earlier in the day (12:32)
+https://archive.org/download/back-to-the-beginning/14%20-%20Earlier%20in%20the%20day....mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",15 - Metallica (39:52)
+https://archive.org/download/back-to-the-beginning/15%20-%20Metallica.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",16 - Earlier in the day (11:22)
+https://archive.org/download/back-to-the-beginning/16%20-%20Earlier%20in%20the%20day....mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",17 - Ozzy (30:36)
+https://archive.org/download/back-to-the-beginning/17%20-%20Ozzy.mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",18 - Earlier in the day (11:32)
+https://archive.org/download/back-to-the-beginning/18%20-%20Earlier%20in%20the%20day....mkv
+#EXTINF:#EXTINF:-1 group-title="Back - To The Beginning",19 - Black Sabbat (33:20)
+https://archive.org/download/back-to-the-beginning/19%20-%20Black%20Sabbat.mkv
+
+#----------------------------------------------------
 # Grupo: Black - Sabbath 202510
 #----------------------------------------------------
 
@@ -664,3 +713,34 @@ https://archive.org/download/pink-floyd_202510/Pink%20Floyd%2F1973%20-%20The%20D
 https://archive.org/download/pink-floyd_202510/Pink%20Floyd%2F1973%20-%20The%20Dark%20Side%20Of%20The%20Moon%2F09%20Brain%20Damage.flac
 #EXTINF:#EXTINF:-1 group-title="Pink - Floyd 202510",10 Eclipse (2:07)
 https://archive.org/download/pink-floyd_202510/Pink%20Floyd%2F1973%20-%20The%20Dark%20Side%20Of%20The%20Moon%2F10%20Eclipse.flac
+
+#----------------------------------------------------
+# Grupo: U2 - 20251017
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:U2
+#EXTALB:U2
+#EXTIMG:https://archive.org/download/u2_20251017/U2/1987 - The Joshua Tree/cover.jpg
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",01 - Where The Streets Have No Name (5:38)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F01%20-%20Where%20The%20Streets%20Have%20No%20Name.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",02 - I Still Haven't Found What I'm Looking For (4:38)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F02%20-%20I%20Still%20Haven't%20Found%20What%20I'm%20Looking%20For.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",03 - With Or Without You (4:55)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F03%20-%20With%20Or%20Without%20You.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",04 - Bullet The Blue Sky (4:33)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F04%20-%20Bullet%20The%20Blue%20Sky.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",05 - Running To Stand Still (4:16)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F05%20-%20Running%20To%20Stand%20Still.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",06 - Red Hill Mining Town (4:54)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F06%20-%20Red%20Hill%20Mining%20Town.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",07 - In God's Country (2:56)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F07%20-%20In%20God's%20Country.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",08 - Trip Through Your Wires (3:32)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F08%20-%20Trip%20Through%20Your%20Wires.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",09 - One Tree Hill (4:44)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F09%20-%20One%20Tree%20Hill.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",10 - Exit (4:54)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F10%20-%20Exit.flac
+#EXTINF:#EXTINF:-1 group-title="U2 - 20251017",11 - The Mothers Of The Disappeared (5:15)
+https://archive.org/download/u2_20251017/U2%2F1987%20-%20The%20Joshua%20Tree%2F11%20-%20The%20Mothers%20Of%20The%20Disappeared.flac
