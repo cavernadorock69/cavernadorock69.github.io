@@ -1015,6 +1015,39 @@ https://archive.org/download/nirvana_202510/Nirvana%2F1991%20-%20Nevermind%2F20.
 https://archive.org/download/nirvana_202510/Nirvana%2F1991%20-%20Nevermind%2F21.%20Polly%20(Live).flac
 
 #----------------------------------------------------
+# Grupo: Pearl - Jam
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:Pearl Jam
+#EXTALB:Pearl Jam
+#EXTIMG:https://archive.org/download/pearl-jam_202510/1991 - Ten/folder.jpg
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",01 (3:51)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F01.-Once.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",02 (4:53)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F02.-Even%20Flow.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",03 (5:41)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F03.-Alive.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",04 (3:19)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F04.-Why%20Go.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",05 (5:44)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F05.-Black.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",06 (5:20)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F06.-Jeremy.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",07 (2:42)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F07.-Oceans.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",08 (3:30)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F08.-Porch.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",09 (4:59)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F09.-Garden.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",10 (4:18)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F10.-Deep.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",11 (5:12)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F11.-Release.flac
+#EXTINF:#EXTINF:-1 group-title="Pearl - Jam",12 (3:52)
+https://archive.org/download/pearl-jam_202510/1991%20-%20Ten%2F12.-MasterSlave.flac
+
+#----------------------------------------------------
 # Grupo: Pink - Floyd
 #----------------------------------------------------
 
@@ -1083,6 +1116,75 @@ https://archive.org/download/the-beach-boys/The%20Beach%20Boys%2F1966%20-%20Pet%
 https://archive.org/download/the-beach-boys/The%20Beach%20Boys%2F1966%20-%20Pet%20Sounds%2F15.%20Hang%20On%20To%20Your%20Ego.flac
 #EXTINF:#EXTINF:-1 group-title="The - Beach Boys",16 (2:53)
 https://archive.org/download/the-beach-boys/The%20Beach%20Boys%2F1966%20-%20Pet%20Sounds%2F16.%20Trombone%20Dixie.flac
+
+#----------------------------------------------------
+# Grupo: The - Beatles
+#----------------------------------------------------
+
+#EXTM3U
+#EXTART:The Beatles
+#EXTALB:The Beatles
+#EXTIMG:https://archive.org/download/the-beatles_202510/1969 - Abbey Road/01.-Come Together.png
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",01 (4:17)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F01.-Come%20Together.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",02 (3:00)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F02.-Something.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",03 (3:26)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F03.-Maxwell's%20Silver%20Hammer.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",04 (3:25)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F04.-Oh!%20Darling.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",05 (2:49)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F05.-Octopus's%20Garden.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",06 (7:40)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F06.-I%20Want%20You%20(She's%20So%20Heavy).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",07 (3:04)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F07.-Here%20Comes%20The%20Sun.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",08 (2:44)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F08.-Because.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",09 (4:00)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F09.-You%20Never%20Give%20Me%20Your%20Money.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",10 (2:25)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F10.-Sun%20King.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",11 (1:06)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F11.-Mean%20Mr.%20Mustard.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",12 (1:18)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F12.-Polythene%20Pam.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",13 (1:52)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F13.-She%20Came%20In%20Through%20The%20Bathroom%20Window.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",14 (1:31)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F14.-Golden%20Slumbers.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",15 (1:35)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F15.-Carry%20That%20Weight.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",16 (2:20)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F16.-The%20End.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",17 (0:23)
+https://archive.org/download/the-beatles_202510/1969%20-%20Abbey%20Road%2F17.-Her%20Majesty.flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",01-Sgt (2:02)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F01-Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",02-With A Little Help From My Friends (Remix) (2:45)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F02-With%20A%20Little%20Help%20From%20My%20Friends%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",03-Lucy In The Sky With Diamonds (Remix) (3:28)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F03-Lucy%20In%20The%20Sky%20With%20Diamonds%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",04-Getting Better (Remix) (2:47)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F04-Getting%20Better%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",05-Fixing A Hole (Remix) (2:38)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F05-Fixing%20A%20Hole%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",06-She's Leaving Home (Remix) (3:26)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F06-She's%20Leaving%20Home%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",07-Being For The Benefit Of Mr (2:39)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F07-Being%20For%20The%20Benefit%20Of%20Mr.%20Kite!%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",08-Within You Without You (Remix) (5:08)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F08-Within%20You%20Without%20You%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",09-When I'm Sixty-Four (Remix) (2:40)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F09-When%20I'm%20Sixty-Four%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",10-Lovely Rita (Remix) (2:46)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F10-Lovely%20Rita%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",11-Good Morning Good Morning (Remix) (2:34)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F11-Good%20Morning%20Good%20Morning%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",12-Sgt (1:21)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F12-Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%20(Reprise)%20(Remix).flac
+#EXTINF:#EXTINF:-1 group-title="The - Beatles",13-A Day In The Life (Remix) (5:31)
+https://archive.org/download/the-beatles_202510/The%20Beatles%2F1967%20-%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band%2F13-A%20Day%20In%20The%20Life%20(Remix).flac
 
 #----------------------------------------------------
 # Grupo: The - Beatles
