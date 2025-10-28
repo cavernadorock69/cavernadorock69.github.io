@@ -70,8 +70,8 @@ for arquivo in "${arquivos[@]}"; do
     echo "Convertendo: $(basename "$arquivo") -> $(basename "$saida")"
 
     # Converte para MP3 com tratamento de erro robusto
-    # Usando -nostdin para evitar problemas de input
-    if ffmpeg -nostdin -v error -y -i "$arquivo" -vn -ar 44100 -ac 2 -b:a 192k "$saida" 2>&1; then
+    # MODIFICADO: Agora usando 320kbps FIXO (máximo)
+    if ffmpeg -nostdin -v error -y -i "$arquivo" -vn -ar 44100 -ac 2 -b:a 320k "$saida" 2>&1; then
         echo "✓ Sucesso: $(basename "$arquivo")"
         ((convertidos++))
     else
