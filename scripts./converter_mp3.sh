@@ -25,6 +25,7 @@ IFS=$'\n'
 total=0
 convertidos=0
 erros=0
+ignorados_existentes=0
 
 # Usar array em vez de pipe para preservar variáveis
 arquivos=($(find "$ORIGEM" -type f))
@@ -40,11 +41,11 @@ for arquivo in "${arquivos[@]}"; do
     if [[ "$arquivo" == *.m3u || "$arquivo" == *.txt || "$arquivo" == *.jpg || \
           "$arquivo" == *.jpeg || "$arquivo" == *.png || "$arquivo" == *.cue || \
           "$arquivo" == *.log || "$arquivo" == *.accurip || "$arquivo" == *.m3u8 ]]; then
-        echo "Ignorando arquivo não-aúdio: $(basename "$arquivo")"
+        echo "Ignorando arquivo não-áudio: $(basename "$arquivo")"
         continue
     fi
 
-    # Verifica se arquivo não está vazio (usando método mais confiável)
+    # Verifica se arquivo não está vazio
     if [ ! -s "$arquivo" ]; then
         echo "Arquivo vazio ou inválido: $(basename "$arquivo")"
         ((erros++))
@@ -52,7 +53,7 @@ for arquivo in "${arquivos[@]}"; do
         continue
     fi
 
-    # Verifica se é realmente um arquivo de áudio usando file
+    # Verifica se é realmente um arquivo de áudio usando 'file'
     if ! file "$arquivo" | grep -q -E "(Audio|WAVE|FLAC|OGG)"; then
         echo "Arquivo não reconhecido como áudio: $(basename "$arquivo")"
         ((erros++))
@@ -67,16 +68,23 @@ for arquivo in "${arquivos[@]}"; do
     # Cria pasta destino
     mkdir -p "$(dirname "$saida")"
 
+    # NOVO TRECHO: verifica se o arquivo já existe
+    if [ -f "$saida" ]; then
+        echo "🔁 Já existe, ignorando: $(basename "$saida")"
+        ((ignorados_existentes++))
+        ((total++))
+        echo "---"
+        continue
+    fi
+
     echo "Convertendo: $(basename "$arquivo") -> $(basename "$saida")"
 
-    # Converte para MP3 com tratamento de erro robusto
-    # MODIFICADO: Agora usando 320kbps FIXO (máximo)
+    # Converte para MP3 com 320 kbps fixo
     if ffmpeg -nostdin -v error -y -i "$arquivo" -vn -ar 44100 -ac 2 -b:a 320k "$saida" 2>&1; then
         echo "✓ Sucesso: $(basename "$arquivo")"
         ((convertidos++))
     else
         echo "✗ Erro na conversão: $(basename "$arquivo")"
-        # Remove arquivo corrompido se foi criado parcialmente
         [ -f "$saida" ] && rm -f "$saida"
         ((erros++))
     fi
@@ -92,6 +100,7 @@ echo "=========================================="
 echo "RELATÓRIO FINAL:"
 echo "Total de arquivos processados: $total"
 echo "Arquivos convertidos com sucesso: $convertidos"
+echo "Arquivos já existentes (ignorados): $ignorados_existentes"
 echo "Arquivos com erro: $erros"
 echo "Arquivos ignorados (não-áudio/MP3): $(( ${#arquivos[@]} - total ))"
 echo "=========================================="
@@ -99,8 +108,9 @@ echo "=========================================="
 if [ $convertidos -eq 0 ] && [ $total -gt 0 ]; then
     echo "AVISO: Nenhum arquivo foi convertido!"
     echo "Possíveis causas:"
-    echo "1. Arquivos corrompidos"
-    echo "2. FFmpeg não instalado corretamente"
-    echo "3. Problemas de permissão"
-    echo "4. Formatos não suportados"
+    echo "1. Arquivos já existiam convertidos"
+    echo "2. Arquivos corrompidos"
+    echo "3. FFmpeg não instalado corretamente"
+    echo "4. Problemas de permissão"
+    echo "5. Formatos não suportados"
 fi
