@@ -1,4 +1,9 @@
 #EXTM3U
+#EXTART:Pink Floyd
+#EXTALB:1982 - The Wall.mkv
+#EXTINF:-1,- The Wall
+https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mkv
+
 #EXTART:Ozzy Osbourne
 #EXTALB:01 - Mastodon.mkv
 #EXTINF:-1,- Mastodon
@@ -98,11 +103,6 @@ https://archive.org/download/back-to-the-beginning/18%20-%20Earlier%20in%20the%2
 #EXTALB:19 - Black Sabbat.mkv
 #EXTINF:-1,- Black Sabbat
 https://archive.org/download/back-to-the-beginning/19%20-%20Black%20Sabbat.mkv
-
-#EXTART:Pink Floyd
-#EXTALB:1982 - The Wall.mkv
-#EXTINF:-1,- The Wall
-https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mkv
 
 #EXTART:AC/DC
 #EXTALB:1991 - ACDC - Live at Donington.mkv
