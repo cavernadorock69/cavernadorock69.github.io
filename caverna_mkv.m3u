@@ -1,9 +1,4 @@
 #EXTM3U
-#EXTART:Pink Floyd
-#EXTALB:1982 - The Wall.mkv
-#EXTINF:-1,- The Wall
-https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mkv
-
 #EXTART:Ozzy Osbourne
 #EXTALB:01 - Mastodon.mkv
 #EXTINF:-1,- Mastodon
@@ -104,8 +99,23 @@ https://archive.org/download/back-to-the-beginning/18%20-%20Earlier%20in%20the%2
 #EXTINF:-1,- Black Sabbat
 https://archive.org/download/back-to-the-beginning/19%20-%20Black%20Sabbat.mkv
 
+#EXTART:Pink Floyd
+#EXTALB:1982 - The Wall.mkv
+#EXTINF:-1,- The Wall
+https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mkv
+
 #EXTART:AC/DC
 #EXTALB:1991 - ACDC - Live at Donington.mkv
 #EXTINF:-1,- ACDC - Live at Donington
 https://archive.org/download/1991-acdc-live-at-donington/1991%20-%20ACDC%20-%20Live%20at%20Donington.mkv
+
+#EXTART:Robert Stigwood
+#EXTALB:1977 - Os Embalos de Sábado à Noite
+#EXTINF:-1,- Os Embalos de Sábado à Noite
+https://archive.org/download/1977-os-embalos-de-sabado-a-noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite.mkv
+
+#EXTART:Randal Kleiser
+#EXTALB:1978 - Grease – Nos Tempos da Brilhantina.mkv
+#EXTINF:-1,- Grease – Nos Tempos da Brilhantina
+https://archive.org/download/1978-grease-nos-tempos-da-brilhantina/1978%20-%20Grease%20–%20Nos%20Tempos%20da%20Brilhantina.mkv
 
