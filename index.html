@@ -2,344 +2,235 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎵 Gerenciador de Listas M3U - Caverna do Rock</title>
+<title>Rádio Caverna do Rock 69</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: #eee;
-    margin: 0;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #fff;
-  }
-  .categoria {
-    background: #1e1e1e;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 30px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.4);
-  }
-  h2 {
-    border-bottom: 2px solid #333;
-    padding-bottom: 6px;
-    color: #6cf;
-  }
-  ul { list-style: none; padding: 0; margin-top: 10px; }
-  li {
-    background: #252525;
-    margin: 8px 0;
-    padding: 15px;
-    border-radius: 6px;
-    border-left: 4px solid #007bff;
-  }
-  .acoes { margin-top: 10px; }
-  button, a {
-    background: #007bff;
-    border: none;
-    color: white;
-    padding: 8px 15px;
-    margin-right: 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 0.9em;
-  }
-  button:hover, a:hover { background: #0056b3; }
-  .baixar-tudo {
-    display: block;
-    width: 100%;
-    background: #28a745;
-    font-size: 1.1em;
-    margin-top: 25px;
-    padding: 15px;
-  }
-  .baixar-tudo:hover { background: #218838; }
-  .msg { text-align: center; margin-top: 15px; font-style: italic; color: #ccc; }
-  .loading { color: #6cf; }
-  .error { color: #ff6b6b; }
-  .success { color: #51cf66; }
-  .arquivo-info { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .nome-arquivo { font-weight: bold; font-size: 1.1em; }
-  .tamanho { color: #aaa; font-size: 0.9em; }
+body {
+  background: #111; color: #fff; font-family: Arial, sans-serif; margin: 0;
+}
+.header {
+  background: #000; border-bottom: 2px solid #e94560; padding: 10px;
+  text-align: center;
+}
+.logo { color: #e94560; font-size: 22px; font-weight: bold; }
+.subtitle { font-size: 13px; color: #ccc; }
+
+.container { padding: 10px; text-align: center; }
+#search { width: 90%; max-width: 500px; padding: 8px; border: none; border-radius: 5px; margin-top: 10px; font-size: 14px; }
+
+button {
+  background: #333; color: #fff; border: none; border-radius: 5px;
+  margin: 3px; padding: 8px 12px; font-size: 14px; cursor: pointer;
+}
+button:hover { background: #444; }
+button.active { background: #e94560; }
+
+.track-title { color: #e94560; margin-top: 10px; font-weight: bold; }
+.track-artist { font-size: 14px; color: #ccc; }
+
+.playlist { margin-top: 15px; max-height: 400px; overflow-y: auto; text-align: left; }
+.artist { font-size: 16px; color: #e94560; margin-top: 10px; }
+.album { font-size: 14px; margin-left: 15px; color: #ddd; }
+.track { margin-left: 30px; padding: 4px; cursor: pointer; }
+.track:hover { background: #222; }
+.track.active { background: rgba(233,69,96,0.3); }
 </style>
 </head>
 <body>
-  <h1>🎧 Gerenciador de Listas M3U - Caverna do Rock</h1>
+<div class="header">
+  <div class="logo">🎸 Rádio Caverna do Rock 69</div>
+  <div class="subtitle">A melhor seleção de rock</div>
+</div>
 
-  <div class="categoria">
-    <h2>🎶 Músicas</h2>
-    <ul id="musicas"></ul>
+<div class="container">
+  <input type="text" id="search" placeholder="🔍 Buscar artista, álbum ou música..." onkeyup="filterPlaylist()">
+  <br>
+  <audio id="player" controls style="width:100%; max-width:600px; margin-top:10px;"></audio>
+  <div class="track-title" id="trackTitle">Carregando...</div>
+  <div class="track-artist" id="trackArtist">-</div>
+  <div class="controls">
+    <button id="shuffleBtn" onclick="toggleShuffle()">🔀</button>
+    <button onclick="prevTrack()">⏮</button>
+    <button onclick="togglePlay()">▶/⏸</button>
+    <button onclick="nextTrack()">⏭</button>
   </div>
+  <div id="status" style="margin-top:10px;color:#aaa;">Carregando playlist...</div>
 
-  <div class="categoria">
-    <h2>🎤 Shows</h2>
-    <ul id="shows"></ul>
-  </div>
-
-  <div class="categoria">
-    <h2>📹 Videoclipes</h2>
-    <ul id="video_clips"></ul>
-  </div>
-
-  <button class="baixar-tudo" onclick="baixarTodas()">📦 Baixar Todas as Listas</button>
-  <button class="baixar-tudo" onclick="carregarListas()" style="background: #6f42c1; margin-top: 10px;">🔄 Atualizar Listas</button>
+  <div class="playlist" id="playlist"></div>
+</div>
 
 <script>
-// Configurações
-const CONFIG = {
-  repo: 'cavernadorock69/cavernadorock69.github.io',
-  branch: 'main',
-  categorias: {
-    musicas: 'musicas',
-    shows: 'shows', 
-    video_clips: 'video_clips'
-  }
-};
+var m3uUrl = "https://raw.githubusercontent.com/cavernadorock69/cavernadorock69.github.io/refs/heads/main/caverna_mp3.m3u";
 
-// URLs base
-const RAW_BASE = `https://raw.githubusercontent.com/${CONFIG.repo}/${CONFIG.branch}`;
-const GITHUB_API = `https://api.github.com/repos/${CONFIG.repo}/contents`;
+var audio = document.getElementById("player");
+var titleEl = document.getElementById("trackTitle");
+var artistEl = document.getElementById("trackArtist");
+var playlistEl = document.getElementById("playlist");
+var statusEl = document.getElementById("status");
+var shuffleBtn = document.getElementById("shuffleBtn");
+var searchInput = document.getElementById("search");
 
-async function carregarListas() {
-  console.log('🔄 Iniciando carregamento de listas...');
-  
-  for (const [elementId, pasta] of Object.entries(CONFIG.categorias)) {
-    const ul = document.getElementById(elementId);
-    ul.innerHTML = '<li class="loading">🔄 Carregando listas M3U...</li>';
-    
-    try {
-      console.log(`📁 Buscando arquivos em: ${pasta}`);
-      
-      const response = await fetch(`${GITHUB_API}/${pasta}`);
-      
-      if (!response.ok) {
-        throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const dados = await response.json();
-      console.log(`✅ Encontrados ${dados.length} itens em ${pasta}`, dados);
-      
-      // Filtrar apenas arquivos M3U/M3U8
-      const arquivosM3U = dados.filter(item => 
-        item.type === 'file' && 
-        (item.name.toLowerCase().endsWith('.m3u') || 
-         item.name.toLowerCase().endsWith('.m3u8'))
-      );
-      
-      console.log(`🎵 ${arquivosM3U.length} arquivos M3U encontrados em ${pasta}`);
-      
-      if (arquivosM3U.length === 0) {
-        ul.innerHTML = '<li class="msg">🎵 Nenhuma lista M3U encontrada nesta categoria.</li>';
-        continue;
-      }
-      
-      // Ordenar por nome
-      arquivosM3U.sort((a, b) => a.name.localeCompare(b.name));
-      
-      ul.innerHTML = '';
-      
-      // Criar elementos para cada arquivo M3U
-      arquivosM3U.forEach(arquivo => {
-        const urlCompleta = `${RAW_BASE}/${pasta}/${encodeURIComponent(arquivo.name)}`;
-        const urlDownload = arquivo.download_url || urlCompleta;
-        
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <div class="arquivo-info">
-            <div>
-              <div class="nome-arquivo">${arquivo.name}</div>
-              <div class="tamanho">${formatarTamanho(arquivo.size)}</div>
-            </div>
-            <div class="acoes">
-              <a href="${urlDownload}" download="${arquivo.name}" title="Baixar lista">⬇️ Baixar</a>
-              <button onclick="copiarURL('${urlCompleta}')" title="Copiar URL para player">📋 Copiar URL</button>
-              <button onclick="visualizarLista('${urlCompleta}', '${arquivo.name}')" title="Visualizar conteúdo">👀 Visualizar</button>
-            </div>
-          </div>
-        `;
-        ul.appendChild(li);
-      });
-      
-    } catch (error) {
-      console.error(`❌ Erro ao carregar ${pasta}:`, error);
-      ul.innerHTML = `
-        <li class="error">
-          ❌ Erro ao carregar listas: ${error.message}
-          <br><small>Tentando método alternativo...</small>
-        </li>
-      `;
-      
-      // Tentar método alternativo
-      await tentarMetodoAlternativo(elementId, pasta);
+var tracks = [];
+var organized = {}; // { artista: { album: [faixas] } }
+var flatList = []; // lista linear de todas as faixas (para tocar)
+var current = -1;
+var isShuffle = false;
+
+function loadPlaylist() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", m3uUrl, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      parseM3U(xhr.responseText);
+      organizeTracks();
+      renderPlaylist();
+      if (flatList.length > 0) playTrack(0);
+    }
+  };
+  xhr.send();
+}
+
+function parseM3U(text) {
+  var lines = text.split(/\r?\n/);
+  var currentArt = "Desconhecido";
+  var currentAlb = "Desconhecido";
+  var currentTitle = "";
+  tracks = [];
+  for (var i=0;i<lines.length;i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    if (line.indexOf("#EXTART:") == 0) currentArt = line.substring(8).trim();
+    else if (line.indexOf("#EXTALB:") == 0) currentAlb = line.substring(8).trim();
+    else if (line.indexOf("#EXTINF:") == 0) {
+      var parts = line.split(",");
+      currentTitle = parts.length > 1 ? parts[1].trim() : "Faixa desconhecida";
+    }
+    else if (line.indexOf("http") == 0) {
+      tracks.push({ artist: currentArt, album: currentAlb, title: currentTitle, url: line });
     }
   }
 }
 
-// Método alternativo caso a API falhe
-async function tentarMetodoAlternativo(elementId, pasta) {
-  try {
-    const ul = document.getElementById(elementId);
-    
-    // Lista pré-definida de possíveis arquivos (fallback)
-    const arquivosTeste = [
-      'rock_classico.m3u', 'rock_anos_80.m3u', 'metal_pesado.m3u',
-      'rock_brasileiro.m3u', 'rock_alternativo.m3u', 'show_acdc_live.m3u',
-      'show_queen_wembley.m3u', 'show_iron_maiden.m3u', 'clips_rock_classico.m3u',
-      'clips_metal.m3u'
-    ];
-    
-    const arquivosEncontrados = [];
-    
-    // Testar cada arquivo
-    for (const arquivo of arquivosTeste) {
-      const urlTeste = `${RAW_BASE}/${pasta}/${arquivo}`;
-      const response = await fetch(urlTeste, { method: 'HEAD' });
-      
-      if (response.ok) {
-        arquivosEncontrados.push({
-          name: arquivo,
-          url: urlTeste
-        });
+function organizeTracks() {
+  organized = {};
+  flatList = [];
+  for (var i=0;i<tracks.length;i++) {
+    var t = tracks[i];
+    if (!organized[t.artist]) organized[t.artist] = {};
+    if (!organized[t.artist][t.album]) organized[t.artist][t.album] = [];
+    organized[t.artist][t.album].push(t);
+    flatList.push(t);
+  }
+}
+
+function renderPlaylist(filter) {
+  playlistEl.innerHTML = "";
+  for (var art in organized) {
+    var artistDiv = document.createElement("div");
+    artistDiv.className = "artist";
+    artistDiv.innerHTML = art;
+    playlistEl.appendChild(artistDiv);
+
+    var albums = organized[art];
+    for (var alb in albums) {
+      var albDiv = document.createElement("div");
+      albDiv.className = "album";
+      albDiv.innerHTML = alb;
+      playlistEl.appendChild(albDiv);
+
+      var faixas = albums[alb];
+      for (var i=0;i<faixas.length;i++) {
+        var f = faixas[i];
+        if (filter && !matchFilter(f, filter)) continue;
+        var tDiv = document.createElement("div");
+        tDiv.className = "track";
+        tDiv.innerHTML = f.title;
+        tDiv.setAttribute("data-url", f.url);
+        tDiv.onclick = function() {
+          var idx = findIndexByUrl(this.getAttribute("data-url"));
+          playTrack(idx);
+        };
+        playlistEl.appendChild(tDiv);
       }
     }
-    
-    if (arquivosEncontrados.length > 0) {
-      ul.innerHTML = '';
-      arquivosEncontrados.forEach(arquivo => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <div class="arquivo-info">
-            <div class="nome-arquivo">${arquivo.name}</div>
-            <div class="acoes">
-              <a href="${arquivo.url}" download="${arquivo.name}">⬇️ Baixar</a>
-              <button onclick="copiarURL('${arquivo.url}')">📋 Copiar URL</button>
-            </div>
-          </div>
-        `;
-        ul.appendChild(li);
-      });
-      
-      ul.innerHTML += `<li class="success">✅ ${arquivosEncontrados.length} listas carregadas (modo alternativo)</li>`;
-    }
-    
-  } catch (error) {
-    console.error('Erro no método alternativo:', error);
+  }
+  statusEl.innerHTML = flatList.length + " faixas carregadas.";
+}
+
+function matchFilter(f, text) {
+  var s = text.toLowerCase();
+  return f.title.toLowerCase().indexOf(s) >= 0 ||
+         f.artist.toLowerCase().indexOf(s) >= 0 ||
+         f.album.toLowerCase().indexOf(s) >= 0;
+}
+
+function filterPlaylist() {
+  var text = searchInput.value.trim();
+  if (text == "") renderPlaylist();
+  else renderPlaylist(text);
+}
+
+function findIndexByUrl(url) {
+  for (var i=0;i<flatList.length;i++) if (flatList[i].url == url) return i;
+  return -1;
+}
+
+function playTrack(i) {
+  if (i<0 || i>=flatList.length) return;
+  current = i;
+  var t = flatList[i];
+  audio.src = t.url;
+  audio.play();
+  titleEl.innerHTML = t.title;
+  artistEl.innerHTML = t.artist + " — " + t.album;
+  updateActive();
+}
+
+function updateActive() {
+  var all = playlistEl.getElementsByClassName("track");
+  for (var j=0;j<all.length;j++) {
+    all[j].className = "track" + (flatList[j] && flatList[j].url == flatList[current].url ? " active" : "");
   }
 }
 
-function formatarTamanho(bytes) {
-  if (!bytes) return 'Tamanho desconhecido';
-  if (bytes < 1024) return bytes + ' bytes';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
+function togglePlay() {
+  if (audio.paused) audio.play();
+  else audio.pause();
 }
 
-function copiarURL(url) {
-  navigator.clipboard.writeText(url).then(() => {
-    alert('✅ URL copiada para a área de transferência!\n\n' + url);
-  }).catch(err => {
-    console.error('Erro ao copiar:', err);
-    alert('❌ Erro ao copiar URL. Tente manualmente:\n\n' + url);
-  });
-}
-
-async function visualizarLista(url, nome) {
-  try {
-    const response = await fetch(url);
-    const conteudo = await response.text();
-    
-    // Criar popup para visualização
-    const popup = window.open('', `Lista: ${nome}`, 'width=800,height=600');
-    popup.document.write(`
-      <html>
-        <head>
-          <title>📄 ${nome}</title>
-          <style>
-            body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-            pre { background: white; padding: 15px; border-radius: 5px; overflow-x: auto; }
-            .header { background: #007bff; color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>📄 ${nome}</h2>
-            <p>URL: ${url}</p>
-          </div>
-          <pre>${conteudo}</pre>
-          <button onclick="window.print()">🖨️ Imprimir</button>
-          <button onclick="window.close()">❌ Fechar</button>
-        </body>
-      </html>
-    `);
-  } catch (error) {
-    alert('❌ Erro ao carregar conteúdo da lista: ' + error.message);
+function nextTrack() {
+  if (isShuffle) {
+    var newIndex = current;
+    while (newIndex == current && flatList.length > 1)
+      newIndex = Math.floor(Math.random()*flatList.length);
+    playTrack(newIndex);
+  } else {
+    current++;
+    if (current >= flatList.length) current = 0;
+    playTrack(current);
   }
 }
 
-async function baixarTodas() {
-  let totalListas = 0;
-  const todasListas = [];
-  
-  // Coletar todas as listas primeiro
-  for (const [elementId, pasta] of Object.entries(CONFIG.categorias)) {
-    const ul = document.getElementById(elementId);
-    const itens = ul.querySelectorAll('a[download]');
-    
-    itens.forEach(a => {
-      todasListas.push({
-        url: a.href,
-        nome: a.download,
-        elemento: a
-      });
-    });
+function prevTrack() {
+  if (isShuffle) {
+    var newIndex = current;
+    while (newIndex == current && flatList.length > 1)
+      newIndex = Math.floor(Math.random()*flatList.length);
+    playTrack(newIndex);
+  } else {
+    current--;
+    if (current < 0) current = flatList.length-1;
+    playTrack(current);
   }
-  
-  totalListas = todasListas.length;
-  
-  if (totalListas === 0) {
-    alert('❌ Nenhuma lista disponível para download.');
-    return;
-  }
-  
-  alert(`📥 Iniciando download de ${totalListas} listas...`);
-  
-  // Baixar com intervalo para evitar bloqueio
-  todasListas.forEach((lista, index) => {
-    setTimeout(() => {
-      console.log(`⬇️ Baixando: ${lista.nome}`);
-      lista.elemento.click();
-    }, index * 500);
-  });
 }
 
-// Inicializar quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 Iniciando Gerenciador M3U...');
-  carregarListas();
-});
+function toggleShuffle() {
+  isShuffle = !isShuffle;
+  shuffleBtn.className = isShuffle ? "active" : "";
+  statusEl.innerHTML = isShuffle ? "Modo aleatório ligado." : "Modo normal.";
+}
 
-// Recarregar quando a página ganhar foco (útil se abrir em nova aba)
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) {
-    console.log('🔄 Página visível - verificando atualizações...');
-    // Recarregar apenas se já passou algum tempo
-    if (!this.lastLoad || Date.now() - this.lastLoad > 30000) {
-      carregarListas();
-      this.lastLoad = Date.now();
-    }
-  }
-});
+audio.addEventListener("ended", function() { nextTrack(); });
+window.onload = function() { loadPlaylist(); };
 </script>
 </body>
 </html>
