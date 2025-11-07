@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Gerador de Playlists – Caverna do Rock</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #eee;
+  text-align: center;
+  padding: 20px;
+}
+button {
+  background: #ff6600;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+button:disabled {
+  background: #555;
+}
+pre {
+  background: #222;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: left;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<h2>🎸 Gerador de Playlists – Caverna do Rock</h2>
+<p>Busca itens no Archive.org e cria listas <code>.m3u</code> (FLAC, MP3, MP4, MKV)</p>
+
+<button id="btn">Gerar Playlists</button>
+<pre id="log"></pre>
+
+<script>
+const log = (msg) => {
+  const el = document.getElementById("log");
+  el.textContent += msg + "\n";
+  el.scrollTop = el.scrollHeight;
+};
+
+const playlists = {
+  flac: ["#EXTM3U\n"],
+  mp3:  ["#EXTM3U\n"],
+  mp4:  ["#EXTM3U\n"],
+  mkv:  ["#EXTM3U\n"]
+};
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  return res.json();
+}
+
+function extrairAlbumMelhorado(filePath) {
+  const padrao1 = filePath.match(/[0-9]{4} - [^/]+/);
+  if (padrao1) return padrao1[0];
+
+  const padrao2 = filePath.match(/[^/]+ \([0-9]{4}\)/);
+  if (padrao2) return padrao2[0];
+
+  const partes = filePath.split("/");
+  if (partes.length >= 3) return partes[1];
+  return "Unknown Album";
+}
+
+function processarArquivo(tipo, file, artista, metadata, item) {
+  if (!file) return;
+
+  let album = metadata.metadata?.album || extrairAlbumMelhorado(file);
+  let title = file.replace(/^.*\//, "").replace(/\.[^.]+$/, "");
+  title = title.replace(/^[0-9.-]+/, "").trim();
+
+  playlists[tipo].push(`#EXTART:${artista}`);
+  playlists[tipo].push(`#EXTALB:${album}`);
+  playlists[tipo].push(`#EXTINF:-1,${title}`);
+  playlists[tipo].push(`https://archive.org/download/${item}/${file.replace(/ /g, "%20")}\n`);
+}
+
+async function gerarPlaylists() {
+  const btn = document.getElementById("btn");
+  btn.disabled = true;
+  log("Buscando itens de caverna_do_rock...");
+
+  const searchURL = "https://archive.org/advancedsearch.php?q=creator:caverna_do_rock+OR+uploader:cavernadorock69@gmail.com&fl[]=identifier&rows=1000&output=json";
+  const data = await fetchJSON(searchURL);
+  const itens = data.response.docs.map(d => d.identifier);
+
+  for (const item of itens) {
+    log(`Processando: ${item}`);
+    const metadata = await fetchJSON(`https://archive.org/metadata/${item}`);
+    const artista = metadata.metadata?.artist || metadata.metadata?.creator || "Unknown Artist";
+
+    for (const tipo of ["flac", "mp3", "mp4", "mkv"]) {
+      const files = metadata.files?.filter(f => f.name.endsWith(`.${tipo}`)) || [];
+      for (const f of files) {
+        processarArquivo(tipo, f.name, artista, metadata, item);
+      }
+    }
+  }
+
+  for (const tipo of Object.keys(playlists)) {
+    const blob = new Blob(playlists[tipo], { type: "audio/x-mpegurl" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `caverna_${tipo}.m3u`;
+    a.textContent = `⬇️ Baixar caverna_${tipo}.m3u (${(playlists[tipo].length - 1) / 4} faixas)`;
+    a.style.display = "block";
+    a.style.color = "#0f0";
+    a.style.marginTop = "10px";
+    document.body.appendChild(a);
+  }
+
+  log("✅ Playlists geradas com sucesso!");
+}
+
+document.getElementById("btn").addEventListener("click", gerarPlaylists);
+</script>
+
+</body>
+</html>
