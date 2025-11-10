@@ -1,4 +1,19 @@
 #EXTM3U
+#EXTART:Robert Stigwood
+#EXTALB:1977 - Os Embalos de Sábado à Noite
+#EXTINF:-1,- Os Embalos de Sábado à Noite
+https://archive.org/download/1977-os-embalos-de-sabado-a-noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite.mp4
+
+#EXTART:AC/DC
+#EXTALB:1991 - ACDC - Live at Donington.mp4
+#EXTINF:-1,- ACDC - Live at Donington
+https://archive.org/download/1991-acdc-live-at-donington/1991%20-%20ACDC%20-%20Live%20at%20Donington.mp4
+
+#EXTART:Randal Kleiser
+#EXTALB:1978 - Grease – Nos Tempos da Brilhantina
+#EXTINF:-1,- Grease – Nos Tempos da Brilhantina
+https://archive.org/download/1978-grease-nos-tempos-da-brilhantina_202511/1978%20-%20Grease%20–%20Nos%20Tempos%20da%20Brilhantina/1978%20-%20Grease%20–%20Nos%20Tempos%20da%20Brilhantina.mp4
+
 #EXTART:Ozzy Osbourne
 #EXTALB:01 - Mastodon.mp4
 #EXTINF:-1,- Mastodon
@@ -99,15 +114,10 @@ https://archive.org/download/back-to-the-beginning/18%20-%20Earlier%20in%20the%2
 #EXTINF:-1,- Black Sabbat
 https://archive.org/download/back-to-the-beginning/19%20-%20Black%20Sabbat.mp4
 
-#EXTART:Robert Stigwood
-#EXTALB:1977 - Os Embalos de Sábado à Noite
-#EXTINF:-1,- Os Embalos de Sábado à Noite
-https://archive.org/download/1977-os-embalos-de-sabado-a-noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite/1977%20-%20Os%20Embalos%20de%20Sábado%20à%20Noite.mp4
-
-#EXTART:Randal Kleiser
-#EXTALB:1978 - Grease – Nos Tempos da Brilhantina
-#EXTINF:-1,- Grease – Nos Tempos da Brilhantina
-https://archive.org/download/1978-grease-nos-tempos-da-brilhantina_202511/1978%20-%20Grease%20–%20Nos%20Tempos%20da%20Brilhantina/1978%20-%20Grease%20–%20Nos%20Tempos%20da%20Brilhantina.mp4
+#EXTART:Pink Floyd
+#EXTALB:1982 - The Wall.mp4
+#EXTINF:-1,- The Wall
+https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mp4
 
 #EXTART:Metallica
 #EXTALB:1991 -  Metallica - Live in Moscow
@@ -118,14 +128,4 @@ https://archive.org/download/1991-metallica-live-in-moscow/1991%20-%20%20Metalli
 #EXTALB:1991 -  Metallica - Live in Moscow
 #EXTINF:-1,-  Metallica - Live in Moscow
 https://archive.org/download/1991-metallica-live-in-moscow/1991%20-%20%20Metallica%20-%20Live%20in%20Moscow/1991%20-%20%20Metallica%20-%20Live%20in%20Moscow.mp4
-
-#EXTART:AC/DC
-#EXTALB:1991 - ACDC - Live at Donington.mp4
-#EXTINF:-1,- ACDC - Live at Donington
-https://archive.org/download/1991-acdc-live-at-donington/1991%20-%20ACDC%20-%20Live%20at%20Donington.mp4
-
-#EXTART:Pink Floyd
-#EXTALB:1982 - The Wall.mp4
-#EXTINF:-1,- The Wall
-https://archive.org/download/1982-the-wall-pink-floyd/1982%20-%20The%20Wall.mp4
 
