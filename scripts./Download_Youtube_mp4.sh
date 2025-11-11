@@ -1,130 +1,174 @@
 #!/bin/bash
+# ===========================================================
+#   YouTube Downloader v15 (MP4 / OPUS / MPG + Cookies)
+#   Autor: Fábio Dias Silveira (aperfeiçoado com GPT-5)
+#   Data: 11/11/2025
+# ===========================================================
 
-# ===================================================================================
-# Script para Baixar Mídia do YouTube com Instalação Automática de Dependências
-# Versão 11 - Adicionado suporte a conversão para MPEG usando WinFF
-# Autor: Manus AI (adaptado)
-# ===================================================================================
+# ==========================
+# CONFIGURAÇÕES INICIAIS
+# ==========================
+BASE_DIR="$HOME/Músicas"
+MP4_DIR="$BASE_DIR/MP4"
+OPUS_DIR="$BASE_DIR/OPUS"
+MPG_DIR="$BASE_DIR/MPG"
+ERRO_DIR="$BASE_DIR/Erros"
+LOG_FILE="$ERRO_DIR/yt_dlp_error.log"
 
-# --- Cores ---
-C_GREEN='\033[0;32m'; C_YELLOW='\033[1;33m'; C_RED='\033[0;31m'; C_BLUE='\033[0;34m'; C_NC='\033[0m'
+# Cores para terminal
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[1;36m'
+RESET='\033[0m'
 
-# --- Função de Instalação de Dependências ---
-install_dependencies() {
-    local missing_deps=()
-    if ! command -v yt-dlp &> /dev/null; then missing_deps+=("yt-dlp"); fi
-    if ! command -v ffmpeg &> /dev/null; then missing_deps+=("ffmpeg"); fi
-    if ! command -v winff &> /dev/null; then missing_deps+=("winff"); fi
-    if ! command -v curl &> /dev/null && ! command -v wget &> /dev/null; then missing_deps+=("curl"); fi
+# ==========================
+# FUNÇÕES
+# ==========================
+criar_pastas() {
+    mkdir -p "$MP4_DIR" "$OPUS_DIR" "$MPG_DIR" "$ERRO_DIR"
+}
 
-    if [ ${#missing_deps[@]} -gt 0 ]; then
-        echo -e "${C_YELLOW}Dependências não encontradas: ${missing_deps[*]}.${C_NC}"
-        read -p "Deseja que o script tente instalá-las agora? (s/n): " choice
-        if [[ "$choice" == "s" || "$choice" == "S" ]]; then
-            echo -e "${C_BLUE}Atualizando a lista de pacotes (pode pedir sua senha)...${C_NC}"; sudo apt-get update
-            sudo apt-get install -y ffmpeg winff curl
-            if [[ " ${missing_deps[*]} " =~ " yt-dlp " ]]; then
-                echo -e "\n${C_BLUE}Instalando 'yt-dlp' (última versão)...${C_NC}"
-                if command -v curl &> /dev/null; then
-                    sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-                else
-                    sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
-                fi
-                sudo chmod a+rx /usr/local/bin/yt-dlp
-            fi
-            echo -e "\n${C_GREEN}Tentativa de instalação concluída! Verificando novamente...${C_NC}"
-        else
-            echo -e "${C_RED}Instalação cancelada.${C_NC}"; exit 1
+verificar_dependencias() {
+    echo -e "${CYAN}🔍 Verificando dependências...${RESET}"
+    for dep in yt-dlp ffmpeg curl; do
+        if ! command -v "$dep" &>/dev/null; then
+            echo -e "${YELLOW}Instalando $dep...${RESET}"
+            sudo apt install -y "$dep"
         fi
-    fi
-    if ! command -v yt-dlp &> /dev/null || ! command -v ffmpeg &> /dev/null || ! command -v winff &> /dev/null; then
-        echo -e "${C_RED}Falha ao instalar dependências.${C_NC}"; exit 1
-    fi
-    echo -e "${C_GREEN}Dependências estão prontas!${C_NC}\n"
+    done
+    echo -e "${GREEN}✔ Dependências prontas!${RESET}"
 }
 
-# --- Função Principal de Download ---
-start_download() {
-    read -p "Insira a URL do vídeo ou da playlist: " MEDIA_URL
-    if [ -z "$MEDIA_URL" ]; then echo -e "${C_RED}URL não pode ser vazia.${C_NC}"; return; fi
+atualizar_yt_dlp() {
+    echo -e "${CYAN}🔄 Atualizando yt-dlp...${RESET}"
+    sudo yt-dlp -U
+    echo -e "${GREEN}✔ yt-dlp atualizado com sucesso!${RESET}"
+}
 
+menu_formatos() {
     echo -e "\nQual formato você deseja baixar?"
-    echo "1: ${C_YELLOW}MP4${C_NC} (Vídeo + Áudio)"
-    echo "2: ${C_YELLOW}MP3${C_NC} (Apenas Áudio)"
-    echo "3: ${C_YELLOW}MPG${C_NC} (Vídeo convertido para MPEG)"
-    read -p "Escolha uma opção (1, 2 ou 3): " FORMAT_CHOICE
-
-    local FORMAT_FOLDER=""
-    local BASE_DIR=""
-    local cmd=("yt-dlp")
-
-    case $FORMAT_CHOICE in
-        1) FORMAT_FOLDER="MP4"; BASE_DIR="${HOME}/Vídeos"; cmd+=(-f 'bestvideo+bestaudio/best' --merge-output-format mp4);;
-        2) FORMAT_FOLDER="MP3"; BASE_DIR="${HOME}/Músicas"; cmd+=(-x --audio-format mp3 --audio-quality 0);;
-        3) FORMAT_FOLDER="MPG"; BASE_DIR="${HOME}/Vídeos"; cmd+=(-f 'bestvideo+bestaudio/best' --merge-output-format mp4);;
-        *) echo -e "${C_RED}Opção de formato inválida.${C_NC}"; return;;
-    esac
-
-    # --- FUNCIONALIDADE DE COOKIES ---
-    echo -e "\nPara evitar erros de 'Sign in', é recomendado usar os cookies do seu navegador."
-    echo -e "Certifique-se de que você está ${C_YELLOW}logado no YouTube${C_NC} no navegador escolhido."
-    echo "Qual navegador você usa?"
-    echo "1: Firefox"
-    echo "2: Chrome / Chromium"
-    echo "3: Edge"
-    echo "4: Vivaldi"
-    echo "5: Nenhum (não recomendado para playlists grandes)"
-    read -p "Escolha uma opção: " BROWSER_CHOICE
-
-    case $BROWSER_CHOICE in
-        1) cmd+=(--cookies-from-browser firefox);;
-        2) cmd+=(--cookies-from-browser chrome);;
-        3) cmd+=(--cookies-from-browser edge);;
-        4) cmd+=(--cookies-from-browser vivaldi);;
-        5) echo -e "${C_YELLOW}Continuando sem cookies. Poderão ocorrer erros.${C_NC}";;
-        *) echo -e "${C_YELLOW}Opção inválida. Continuando sem cookies.${C_NC}";;
-    esac
-
-    # --- CAMINHO DE SAÍDA CORRIGIDO ---
-    local OUTPUT_TEMPLATE="${BASE_DIR}/${FORMAT_FOLDER}/%(playlist_title,title)s/%(playlist_index,NA)s - %(title)s.%(ext)s"
-    cmd+=(-o "$OUTPUT_TEMPLATE" "$MEDIA_URL")
-
-    echo -e "\n${C_BLUE}Iniciando download...${C_NC}"
-    echo -e "Os arquivos serão salvos em: ${C_YELLOW}${BASE_DIR}/${FORMAT_FOLDER}/${C_NC}"
-
-    # Adiciona atraso aleatório para evitar bloqueios
-    cmd+=(--sleep-interval 5 --max-sleep-interval 10)
-    echo -e "Usando um pequeno atraso entre os vídeos para evitar bloqueios."
-
-    # Executa o comando de forma segura
-    "${cmd[@]}"
-
-    # --- Conversão para MPG com WinFF ---
-    if [[ "$FORMAT_CHOICE" == "3" ]]; then
-        echo -e "\n${C_BLUE}Convertendo arquivos para MPEG com WinFF...${C_NC}"
-        find "${BASE_DIR}/${FORMAT_FOLDER}" -type f -name "*.mp4" | while read -r file; do
-            mpg_file="${file%.mp4}.mpg"
-            # Conversão WinFF (perfil MPEG2 genérico)
-            winff -i "$file" -o "$(dirname "$file")" -f MPEG2 -ext mpg
-            rm "$file"  # remove o MP4 original
-        done
-        echo -e "${C_GREEN}Conversão para MPEG concluída com WinFF!${C_NC}"
-    fi
-
-    echo -e "\n${C_GREEN}Download concluído!${C_NC}"
+    echo -e "1: ${YELLOW}MP4${RESET} (Vídeo + Áudio)"
+    echo -e "2: ${YELLOW}OPUS${RESET} (Áudio original em alta qualidade)"
+    echo -e "3: ${YELLOW}MPG${RESET} (Vídeo convertido para MPEG)"
+    read -rp "Escolha uma opção (1, 2 ou 3): " FORMATO_ESCOLHIDO
 }
 
-# --- Execução do Script ---
-install_dependencies
-while true; do
-    echo -e "\n--- ${C_YELLOW}YouTube Downloader v11 (MP4/MP3/MPG + Cookie Auth + WinFF)${C_NC} ---"
-    echo "1: Iniciar um novo download"
-    echo "2: Sair"
-    read -p "Escolha uma opção (1 ou 2): " main_choice
-    case $main_choice in
-        1) start_download;;
-        2) echo -e "${C_GREEN}Saindo...${C_NC}"; exit 0;;
-        *) echo -e "${C_RED}Opção inválida.${C_NC}";;
+menu_navegador() {
+    echo -e "\nPara evitar erros de login, use os cookies do seu navegador."
+    echo -e "1: Firefox"
+    echo -e "2: Chrome / Chromium"
+    echo -e "3: Edge"
+    echo -e "4: Vivaldi"
+    echo -e "5: Nenhum (não recomendado)"
+    read -rp "Escolha uma opção: " NAVEGADOR_ESCOLHIDO
+}
+
+corrigir_sabr() {
+    echo -e "${YELLOW}⚙ Aplicando correção temporária para SABR streaming...${RESET}"
+    export YT_DLP_ENABLE_EXPERIMENTAL=y
+}
+
+executar_download() {
+    URL="$1"
+    criar_pastas
+    menu_formatos
+    menu_navegador
+    corrigir_sabr
+
+    case $FORMATO_ESCOLHIDO in
+        1)
+            DESTINO="$MP4_DIR"
+            OPCOES_FORMATO="-f bestvideo+bestaudio/best --merge-output-format mp4"
+            ;;
+        2)
+            DESTINO="$OPUS_DIR"
+            OPCOES_FORMATO="--extract-audio --audio-format opus --audio-quality 0"
+            ;;
+        3)
+            DESTINO="$MPG_DIR"
+            OPCOES_FORMATO="-f bestvideo+bestaudio/best --recode-video mpg"
+            ;;
+        *)
+            echo -e "${RED}❌ Opção inválida!${RESET}"
+            return
+            ;;
     esac
-done
+
+    # Detectar navegador
+    case $NAVEGADOR_ESCOLHIDO in
+        1) COOKIE="--cookies-from-browser firefox" ;;
+        2) COOKIE="--cookies-from-browser chrome" ;;
+        3) COOKIE="--cookies-from-browser edge" ;;
+        4) COOKIE="--cookies-from-browser vivaldi" ;;
+        5) COOKIE="" ;;
+        *) COOKIE="--cookies-from-browser firefox" ;;
+    esac
+
+    echo -e "\n${CYAN}Iniciando download...${RESET}"
+    echo -e "Arquivos serão salvos em: ${GREEN}$DESTINO${RESET}\n"
+
+    CMD="yt-dlp $OPCOES_FORMATO $COOKIE --no-check-certificates \
+    --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' \
+    -o '$DESTINO/%(uploader)s/%(title)s [%(id)s].%(ext)s' \
+    --sleep-interval 5 --max-sleep-interval 15 --throttled-rate 100K '$URL'"
+
+    echo -e "${YELLOW}Comando executado:${RESET} $CMD\n"
+    eval $CMD 2>>"$LOG_FILE"
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✔ Download concluído com sucesso!${RESET}"
+    else
+        echo -e "${RED}❌ Ocorreu um erro durante o download.${RESET}"
+        echo "[$(date)] Erro ao baixar: $URL" >>"$LOG_FILE"
+        echo -e "1. Verifique login nos cookies."
+        echo -e "2. Atualize yt-dlp: sudo yt-dlp -U"
+        echo -e "3. Tente novamente mais tarde."
+        echo -e "4. Consulte o log: $LOG_FILE\n"
+        echo "$URL" >>"$ERRO_DIR/urls_falhas.txt"
+    fi
+}
+
+teste_rapido() {
+    echo -e "${CYAN}🔧 Testando o yt-dlp...${RESET}"
+    yt-dlp --version && yt-dlp https://www.youtube.com/watch?v=dQw4w9WgXcQ -F | head -n 15
+}
+
+menu_principal() {
+    clear
+    echo -e "${YELLOW}--- YouTube Downloader v15 (MP4 / OPUS / MPG + Cookies) ---${RESET}"
+    echo "1: Iniciar um novo download"
+    echo "2: Atualizar yt-dlp"
+    echo "3: Teste rápido"
+    echo "4: Sair"
+    read -rp "Escolha uma opção (1, 2, 3 ou 4): " OPCAO
+
+    case $OPCAO in
+        1)
+            read -rp "Insira a URL do vídeo ou playlist: " URL
+            executar_download "$URL"
+            ;;
+        2)
+            atualizar_yt_dlp
+            ;;
+        3)
+            teste_rapido
+            ;;
+        4)
+            echo -e "${GREEN}Saindo...${RESET}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Opção inválida.${RESET}"
+            ;;
+    esac
+}
+
+# ==========================
+# EXECUÇÃO PRINCIPAL
+# ==========================
+clear
+criar_pastas
+verificar_dependencias
+menu_principal
 
