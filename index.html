@@ -2,37 +2,171 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rádio Caverna do Rock 69</title>
 <style>
+/* Reset e Base para Smart TV */
 body {
-  background: #111; color: #fff; font-family: Arial, sans-serif; margin: 0;
+  background: #111;
+  color: #fff;
+  font-family: 'Roboto', Arial, sans-serif; /* Fonte mais limpa */
+  margin: 0;
+  font-size: 20px; /* Aumento da fonte base para legibilidade em TV */
+  line-height: 1.4;
 }
+
+/* Cabeçalho */
 .header {
-  background: #000; border-bottom: 2px solid #e94560; padding: 10px;
+  background: #000;
+  border-bottom: 4px solid #e94560; /* Borda mais grossa */
+  padding: 20px;
   text-align: center;
 }
-.logo { color: #e94560; font-size: 22px; font-weight: bold; }
-.subtitle { font-size: 13px; color: #ccc; }
+.logo {
+  color: #e94560;
+  font-size: 36px; /* Logo maior */
+  font-weight: bold;
+}
+.subtitle {
+  font-size: 18px;
+  color: #ccc;
+}
 
-.container { padding: 10px; text-align: center; }
-#search { width: 90%; max-width: 500px; padding: 8px; border: none; border-radius: 5px; margin-top: 10px; font-size: 14px; }
+/* Layout Principal (Duas Colunas para TV) */
+.main-layout {
+  display: flex;
+  flex-direction: column; /* Padrão para mobile/telas pequenas */
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .main-layout {
+    flex-direction: row; /* Duas colunas em telas grandes (TV) */
+    align-items: flex-start;
+  }
+  .player-section {
+    flex: 1;
+    padding-right: 30px;
+    position: sticky; /* Player fixo na lateral */
+    top: 20px;
+  }
+  .playlist-section {
+    flex: 2;
+  }
+}
+
+/* Player e Controles */
+.player-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.track-info {
+  margin-top: 20px;
+  min-height: 100px; /* Espaço reservado para evitar pulos */
+}
+
+.track-title {
+  color: #e94560;
+  font-size: 28px; /* Título maior */
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.track-artist {
+  font-size: 20px;
+  color: #ccc;
+}
+
+.controls {
+  margin-top: 20px;
+}
 
 button {
-  background: #333; color: #fff; border: none; border-radius: 5px;
-  margin: 3px; padding: 8px 12px; font-size: 14px; cursor: pointer;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 10px; /* Bordas mais arredondadas */
+  margin: 10px;
+  padding: 15px 25px; /* Botões maiores */
+  font-size: 24px; /* Ícones maiores */
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
 }
-button:hover { background: #444; }
-button.active { background: #e94560; }
+button:hover {
+  background: #444;
+}
+button.active {
+  background: #e94560;
+}
 
-.track-title { color: #e94560; margin-top: 10px; font-weight: bold; }
-.track-artist { font-size: 14px; color: #ccc; }
+/* Foco para Smart TV (Muito Importante) */
+button:focus, .track:focus {
+  outline: none;
+  box-shadow: 0 0 0 5px #fff, 0 0 0 10px #e94560; /* Destaque duplo e forte */
+  background: #444;
+}
 
-.playlist { margin-top: 15px; max-height: 400px; overflow-y: auto; text-align: left; }
-.artist { font-size: 16px; color: #e94560; margin-top: 10px; }
-.album { font-size: 14px; margin-left: 15px; color: #ddd; }
-.track { margin-left: 30px; padding: 4px; cursor: pointer; }
-.track:hover { background: #222; }
-.track.active { background: rgba(233,69,96,0.3); }
+/* Busca */
+#search {
+  width: 100%;
+  padding: 15px; /* Campo de busca maior */
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  background: #222;
+  color: #fff;
+}
+
+/* Playlist */
+.playlist-section {
+  text-align: left;
+}
+
+.playlist {
+  margin-top: 15px;
+  max-height: 70vh; /* Altura máxima relativa para TV */
+  overflow-y: auto;
+  padding-right: 10px; /* Espaço para a barra de rolagem */
+}
+
+.artist {
+  font-size: 24px; /* Título de artista maior */
+  color: #e94560;
+  margin-top: 25px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 5px;
+}
+.album {
+  font-size: 20px;
+  margin-left: 10px;
+  color: #ddd;
+  margin-top: 10px;
+}
+.track {
+  padding: 10px 15px; /* Item da faixa maior */
+  cursor: pointer;
+  margin-left: 20px;
+  border-radius: 5px;
+  transition: background 0.2s;
+  tabindex: 0; /* Torna o elemento focável */
+}
+.track:hover {
+  background: #222;
+}
+.track.active {
+  background: rgba(233,69,96,0.5); /* Destaque mais forte */
+  font-weight: bold;
+}
+
+/* Status */
+#status {
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 18px;
+}
 </style>
 </head>
 <body>
@@ -41,21 +175,29 @@ button.active { background: #e94560; }
   <div class="subtitle">A melhor seleção de rock</div>
 </div>
 
-<div class="container">
-  <input type="text" id="search" placeholder="🔍 Buscar artista, álbum ou música..." onkeyup="filterPlaylist()">
-  <br>
-  <audio id="player" controls style="width:100%; max-width:600px; margin-top:10px;"></audio>
-  <div class="track-title" id="trackTitle">Carregando...</div>
-  <div class="track-artist" id="trackArtist">-</div>
-  <div class="controls">
-    <button id="shuffleBtn" onclick="toggleShuffle()">🔀</button>
-    <button onclick="prevTrack()">⏮</button>
-    <button onclick="togglePlay()">▶/⏸</button>
-    <button onclick="nextTrack()">⏭</button>
-  </div>
-  <div id="status" style="margin-top:10px;color:#aaa;">Carregando playlist...</div>
+<div class="main-layout">
+  <div class="player-section">
+    <!-- O player nativo foi removido para usar apenas os controles customizados -->
+    <audio id="player" style="display:none;"></audio>
+    
+    <div class="track-info">
+      <div class="track-title" id="trackTitle">Carregando...</div>
+      <div class="track-artist" id="trackArtist">-</div>
+    </div>
 
-  <div class="playlist" id="playlist"></div>
+    <div class="controls">
+      <button id="shuffleBtn" onclick="toggleShuffle()" title="Modo Aleatório">🔀</button>
+      <button onclick="prevTrack()" title="Faixa Anterior">⏮</button>
+      <button id="playPauseBtn" onclick="togglePlay()" title="Tocar/Pausar">▶</button>
+      <button onclick="nextTrack()" title="Próxima Faixa">⏭</button>
+    </div>
+    <div id="status">Carregando playlist...</div>
+  </div>
+
+  <div class="playlist-section">
+    <input type="text" id="search" placeholder="🔍 Buscar artista, álbum ou música..." onkeyup="filterPlaylist()">
+    <div class="playlist" id="playlist"></div>
+  </div>
 </div>
 
 <script>
@@ -67,6 +209,7 @@ var artistEl = document.getElementById("trackArtist");
 var playlistEl = document.getElementById("playlist");
 var statusEl = document.getElementById("status");
 var shuffleBtn = document.getElementById("shuffleBtn");
+var playPauseBtn = document.getElementById("playPauseBtn");
 var searchInput = document.getElementById("search");
 
 var tracks = [];
@@ -124,6 +267,8 @@ function organizeTracks() {
 
 function renderPlaylist(filter) {
   playlistEl.innerHTML = "";
+  var trackIndex = 0; // Novo índice para mapear com flatList
+  
   for (var art in organized) {
     var artistDiv = document.createElement("div");
     artistDiv.className = "artist";
@@ -140,20 +285,33 @@ function renderPlaylist(filter) {
       var faixas = albums[alb];
       for (var i=0;i<faixas.length;i++) {
         var f = faixas[i];
-        if (filter && !matchFilter(f, filter)) continue;
+        
+        // Encontra o índice na flatList para esta faixa
+        var flatIndex = flatList.findIndex(item => item.url === f.url);
+
+        if (filter && !matchFilter(f, filter)) {
+            // Se estiver filtrando e não houver correspondência, apenas pula
+            continue;
+        }
+        
         var tDiv = document.createElement("div");
         tDiv.className = "track";
         tDiv.innerHTML = f.title;
-        tDiv.setAttribute("data-url", f.url);
+        tDiv.setAttribute("data-index", flatIndex); // Armazena o índice da flatList
+        tDiv.setAttribute("tabindex", "0"); // Torna focável para navegação com controle remoto
+        
         tDiv.onclick = function() {
-          var idx = findIndexByUrl(this.getAttribute("data-url"));
+          var idx = parseInt(this.getAttribute("data-index"));
           playTrack(idx);
         };
+        
         playlistEl.appendChild(tDiv);
+        trackIndex++;
       }
     }
   }
   statusEl.innerHTML = flatList.length + " faixas carregadas.";
+  updateActive(); // Atualiza o destaque após renderizar
 }
 
 function matchFilter(f, text) {
@@ -165,13 +323,7 @@ function matchFilter(f, text) {
 
 function filterPlaylist() {
   var text = searchInput.value.trim();
-  if (text == "") renderPlaylist();
-  else renderPlaylist(text);
-}
-
-function findIndexByUrl(url) {
-  for (var i=0;i<flatList.length;i++) if (flatList[i].url == url) return i;
-  return -1;
+  renderPlaylist(text);
 }
 
 function playTrack(i) {
@@ -183,18 +335,34 @@ function playTrack(i) {
   titleEl.innerHTML = t.title;
   artistEl.innerHTML = t.artist + " — " + t.album;
   updateActive();
+  updatePlayPauseButton();
 }
 
 function updateActive() {
-  var all = playlistEl.getElementsByClassName("track");
-  for (var j=0;j<all.length;j++) {
-    all[j].className = "track" + (flatList[j] && flatList[j].url == flatList[current].url ? " active" : "");
-  }
+  var all = playlistEl.querySelectorAll(".track");
+  all.forEach(function(el) {
+    var index = parseInt(el.getAttribute("data-index"));
+    if (index === current) {
+      el.classList.add("active");
+      // Rola para o elemento ativo (útil para TV)
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      el.classList.remove("active");
+    }
+  });
+}
+
+function updatePlayPauseButton() {
+    playPauseBtn.innerHTML = audio.paused ? "▶" : "⏸";
 }
 
 function togglePlay() {
-  if (audio.paused) audio.play();
-  else audio.pause();
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+  updatePlayPauseButton();
 }
 
 function nextTrack() {
@@ -225,11 +393,16 @@ function prevTrack() {
 
 function toggleShuffle() {
   isShuffle = !isShuffle;
-  shuffleBtn.className = isShuffle ? "active" : "";
+  shuffleBtn.classList.toggle("active", isShuffle);
   statusEl.innerHTML = isShuffle ? "Modo aleatório ligado." : "Modo normal.";
 }
 
+// Event Listeners
 audio.addEventListener("ended", function() { nextTrack(); });
+audio.addEventListener("play", updatePlayPauseButton);
+audio.addEventListener("pause", updatePlayPauseButton);
+
+// Inicialização
 window.onload = function() { loadPlaylist(); };
 </script>
 </body>
