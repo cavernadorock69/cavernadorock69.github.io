@@ -1,8 +1,8 @@
 #!/bin/bash
 # ===========================================================
-#   YouTube Downloader v15 (MP4 / OPUS / MPG + Cookies)
+#   YouTube Downloader v16 (MP4 / OPUS / MPG + Cookies)
 #   Autor: Fábio Dias Silveira (aperfeiçoado com GPT-5)
-#   Data: 11/11/2025
+#   Data: 11/12/2025
 # ===========================================================
 
 # ==========================
@@ -76,18 +76,24 @@ executar_download() {
     menu_navegador
     corrigir_sabr
 
+    # ==========================
+    # DEFINIR FORMATO
+    # ==========================
     case $FORMATO_ESCOLHIDO in
         1)
             DESTINO="$MP4_DIR"
             OPCOES_FORMATO="-f bestvideo+bestaudio/best --merge-output-format mp4"
+            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
             ;;
         2)
             DESTINO="$OPUS_DIR"
             OPCOES_FORMATO="--extract-audio --audio-format opus --audio-quality 0"
+            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
             ;;
         3)
             DESTINO="$MPG_DIR"
             OPCOES_FORMATO="-f bestvideo+bestaudio/best --recode-video mpg"
+            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
             ;;
         *)
             echo -e "${RED}❌ Opção inválida!${RESET}"
@@ -95,7 +101,9 @@ executar_download() {
             ;;
     esac
 
-    # Detectar navegador
+    # ==========================
+    # DETECTAR NAVEGADOR
+    # ==========================
     case $NAVEGADOR_ESCOLHIDO in
         1) COOKIE="--cookies-from-browser firefox" ;;
         2) COOKIE="--cookies-from-browser chrome" ;;
@@ -110,7 +118,7 @@ executar_download() {
 
     CMD="yt-dlp $OPCOES_FORMATO $COOKIE --no-check-certificates \
     --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' \
-    -o '$DESTINO/%(uploader)s/%(title)s [%(id)s].%(ext)s' \
+    $PADRAO_SAIDA \
     --sleep-interval 5 --max-sleep-interval 15 --throttled-rate 100K '$URL'"
 
     echo -e "${YELLOW}Comando executado:${RESET} $CMD\n"
@@ -136,7 +144,7 @@ teste_rapido() {
 
 menu_principal() {
     clear
-    echo -e "${YELLOW}--- YouTube Downloader v15 (MP4 / OPUS / MPG + Cookies) ---${RESET}"
+    echo -e "${YELLOW}--- YouTube Downloader v16 ---${RESET}"
     echo "1: Iniciar um novo download"
     echo "2: Atualizar yt-dlp"
     echo "3: Teste rápido"
@@ -171,4 +179,3 @@ clear
 criar_pastas
 verificar_dependencias
 menu_principal
-
