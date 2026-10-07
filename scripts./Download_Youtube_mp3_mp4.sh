@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===========================================================
-#   YouTube Downloader v16 (MP4 / OPUS / MPG + Cookies)
+#   YouTube Downloader v18 (MP4 / MP3 + Capa + Tags / OPUS / MPG)
 #   Autor: Fábio Dias Silveira (aperfeiçoado com GPT-5)
 #   Data: 11/12/2025
 # ===========================================================
@@ -10,6 +10,7 @@
 # ==========================
 BASE_DIR="$HOME/Músicas"
 MP4_DIR="$BASE_DIR/MP4"
+MP3_DIR="$BASE_DIR/MP3"
 OPUS_DIR="$BASE_DIR/OPUS"
 MPG_DIR="$BASE_DIR/MPG"
 ERRO_DIR="$BASE_DIR/Erros"
@@ -26,7 +27,7 @@ RESET='\033[0m'
 # FUNÇÕES
 # ==========================
 criar_pastas() {
-    mkdir -p "$MP4_DIR" "$OPUS_DIR" "$MPG_DIR" "$ERRO_DIR"
+    mkdir -p "$MP4_DIR" "$MP3_DIR" "$OPUS_DIR" "$MPG_DIR" "$ERRO_DIR"
 }
 
 verificar_dependencias() {
@@ -49,9 +50,10 @@ atualizar_yt_dlp() {
 menu_formatos() {
     echo -e "\nQual formato você deseja baixar?"
     echo -e "1: ${YELLOW}MP4${RESET} (Vídeo + Áudio)"
-    echo -e "2: ${YELLOW}OPUS${RESET} (Áudio original em alta qualidade)"
-    echo -e "3: ${YELLOW}MPG${RESET} (Vídeo convertido para MPEG)"
-    read -rp "Escolha uma opção (1, 2 ou 3): " FORMATO_ESCOLHIDO
+    echo -e "2: ${YELLOW}MP3${RESET} (Áudio MP3 320kbps + Capa + Metadados)"
+    echo -e "3: ${YELLOW}OPUS${RESET} (Áudio original sem perda de conversão)"
+    echo -e "4: ${YELLOW}MPG${RESET} (Vídeo convertido para MPEG)"
+    read -rp "Escolha uma opção (1, 2, 3 ou 4): " FORMATO_ESCOLHIDO
 }
 
 menu_navegador() {
@@ -83,17 +85,22 @@ executar_download() {
         1)
             DESTINO="$MP4_DIR"
             OPCOES_FORMATO="-f bestvideo+bestaudio/best --merge-output-format mp4"
-            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
+            PADRAO_SAIDA="$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s"
             ;;
         2)
-            DESTINO="$OPUS_DIR"
-            OPCOES_FORMATO="--extract-audio --audio-format opus --audio-quality 0"
-            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
+            DESTINO="$MP3_DIR"
+            OPCOES_FORMATO="--extract-audio --audio-format mp3 --audio-quality 0 --embed-thumbnail --add-metadata --convert-thumbnails jpg"
+            PADRAO_SAIDA="$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s"
             ;;
         3)
+            DESTINO="$OPUS_DIR"
+            OPCOES_FORMATO="--extract-audio --audio-format opus --audio-quality 0"
+            PADRAO_SAIDA="$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s"
+            ;;
+        4)
             DESTINO="$MPG_DIR"
             OPCOES_FORMATO="-f bestvideo+bestaudio/best --recode-video mpg"
-            PADRAO_SAIDA="-o '$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s'"
+            PADRAO_SAIDA="$DESTINO/%(playlist_title|NO_PLAYLIST)s/%(title)s.%(ext)s"
             ;;
         *)
             echo -e "${RED}❌ Opção inválida!${RESET}"
@@ -116,13 +123,12 @@ executar_download() {
     echo -e "\n${CYAN}Iniciando download...${RESET}"
     echo -e "Arquivos serão salvos em: ${GREEN}$DESTINO${RESET}\n"
 
-    CMD="yt-dlp $OPCOES_FORMATO $COOKIE --no-check-certificates \
-    --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' \
-    $PADRAO_SAIDA \
-    --sleep-interval 5 --max-sleep-interval 15 --throttled-rate 100K '$URL'"
-
-    echo -e "${YELLOW}Comando executado:${RESET} $CMD\n"
-    eval $CMD 2>>"$LOG_FILE"
+    echo -e "${YELLOW}Executando yt-dlp...${RESET}\n"
+    
+    yt-dlp $OPCOES_FORMATO $COOKIE --no-check-certificates \
+        --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' \
+        -o "$PADRAO_SAIDA" \
+        --sleep-interval 5 --max-sleep-interval 15 --throttled-rate 100K "$URL" 2>>"$LOG_FILE"
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✔ Download concluído com sucesso!${RESET}"
@@ -144,7 +150,7 @@ teste_rapido() {
 
 menu_principal() {
     clear
-    echo -e "${YELLOW}--- YouTube Downloader v16 ---${RESET}"
+    echo -e "${YELLOW}--- YouTube Downloader v18 ---${RESET}"
     echo "1: Iniciar um novo download"
     echo "2: Atualizar yt-dlp"
     echo "3: Teste rápido"
