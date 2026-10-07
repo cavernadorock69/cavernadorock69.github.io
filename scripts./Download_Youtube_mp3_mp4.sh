@@ -1,8 +1,9 @@
 #!/bin/bash
 # ===========================================================
-#   YouTube Downloader v18 (MP4 / MP3 + Capa + Tags / OPUS / MPG)
+#   YouTube Downloader v19 - Fedora Edition
+#   (MP4 / MP3 + Capa + Tags / OPUS / MPG + Cookies)
 #   Autor: Fábio Dias Silveira (aperfeiçoado com GPT-5)
-#   Data: 11/12/2025
+#   Data: 06/10/2026
 # ===========================================================
 
 # ==========================
@@ -31,19 +32,32 @@ criar_pastas() {
 }
 
 verificar_dependencias() {
-    echo -e "${CYAN}🔍 Verificando dependências...${RESET}"
+    echo -e "${CYAN}🔍 Verificando dependências no Fedora...${RESET}"
+    
+    # Certifica que o repositório RPM Fusion esteja ativado para o ffmpeg completo se necessário
+    DEPS_PARA_INSTALAR=()
     for dep in yt-dlp ffmpeg curl; do
         if ! command -v "$dep" &>/dev/null; then
-            echo -e "${YELLOW}Instalando $dep...${RESET}"
-            sudo apt install -y "$dep"
+            DEPS_PARA_INSTALAR+=("$dep")
         fi
     done
-    echo -e "${GREEN}✔ Dependências prontas!${RESET}"
+
+    if [ ${#DEPS_PARA_INSTALAR[@]} -ne 0 ]; then
+        echo -e "${YELLOW}Instalando dependências ausentes (${DEPS_PARA_INSTALAR[*]}) via DNF...${RESET}"
+        sudo dnf install -y "${DEPS_PARA_INSTALAR[@]}"
+    else
+        echo -e "${GREEN}✔ Dependências prontas!${RESET}"
+    fi
 }
 
 atualizar_yt_dlp() {
     echo -e "${CYAN}🔄 Atualizando yt-dlp...${RESET}"
-    sudo yt-dlp -U
+    if command -v yt-dlp &>/dev/null && yt-dlp -U &>/dev/null; then
+        sudo yt-dlp -U
+    else
+        echo -e "${YELLOW}Atualizando via dnf...${RESET}"
+        sudo dnf upgrade -y yt-dlp
+    fi
     echo -e "${GREEN}✔ yt-dlp atualizado com sucesso!${RESET}"
 }
 
@@ -136,7 +150,7 @@ executar_download() {
         echo -e "${RED}❌ Ocorreu um erro durante o download.${RESET}"
         echo "[$(date)] Erro ao baixar: $URL" >>"$LOG_FILE"
         echo -e "1. Verifique login nos cookies."
-        echo -e "2. Atualize yt-dlp: sudo yt-dlp -U"
+        echo -e "2. Atualize o yt-dlp."
         echo -e "3. Tente novamente mais tarde."
         echo -e "4. Consulte o log: $LOG_FILE\n"
         echo "$URL" >>"$ERRO_DIR/urls_falhas.txt"
@@ -150,7 +164,7 @@ teste_rapido() {
 
 menu_principal() {
     clear
-    echo -e "${YELLOW}--- YouTube Downloader v18 ---${RESET}"
+    echo -e "${YELLOW}--- YouTube Downloader v19 (Fedora) ---${RESET}"
     echo "1: Iniciar um novo download"
     echo "2: Atualizar yt-dlp"
     echo "3: Teste rápido"
